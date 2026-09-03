@@ -221,6 +221,90 @@ async function run(){
       {k:'spider.poison.champ',x:SLOTS[3].x,y:SLOTS[3].y}]}],0,'wall');
     await zoom3x();
   }
+  else if(M==='e2'){ // E2 断言：遇敌池合法 / 章节门槛 / bossCand 取将 / POI 挂载 / 守门战全流程
+    await cleanStart();
+    const L=[];const ok=(n,c)=>L.push(n+':'+(c?'OK':'FAIL'));
+    const poolSp=mapId=>MAPS[mapId].pool.sp.map(x=>x[0]);
+    const poolEl=mapId=>Object.keys(MAPS[mapId].pool.elemBias);
+    // A) ch1 北境 20 抽：全合法且必为 normal（章节门槛）
+    G.chapter=1;
+    let aOK=true,aTier=true;
+    for(let i=0;i<20;i++){const k=poolRoll('north');
+      if(!FOES[k])aOK=false;
+      if(k.split('.')[2]!=='normal')aTier=false;
+      if(poolSp('north').indexOf(spOf(k))<0||poolEl('north').indexOf(k.split('.')[1])<0)aOK=false;}
+    ok('roll_ch1',aOK&&aTier);
+    // B) ch7 北境 200 抽：全合法 + elite/champ 均出现 + 种/元素在池内
+    G.chapter=7;
+    let bOK=true,hasE=false,hasC=false;
+    for(let i=0;i<200;i++){const k=poolRoll('north');const p=k.split('.');
+      if(!FOES[k]||poolSp('north').indexOf(p[0])<0||poolEl('north').indexOf(p[1])<0)bOK=false;
+      if(p[2]==='elite')hasE=true;if(p[2]==='champ')hasC=true;}
+    ok('roll_ch7',bOK&&hasE&&hasC);
+    // C) 四图各 30 抽全合法
+    let cOK=true;
+    for(const mid of ['north','wolfswood','kingslanding','dragonstone'])
+      for(let i=0;i<30;i++){const k=poolRoll(mid);if(!FOES[k])cOK=false;}
+    ok('roll_maps',cOK);
+    // D) bossCand：ch1 北境=冷牙；旗标后空；ch6=尸堆领主；长城区=寒影
+    G.chapter=1;G.exp.region=REG.north;
+    ok('cand_ch1',(bossCand()||{}).id==='coldfang');
+    G.flags['boss_coldfang']=1;
+    ok('cand_flagged',bossCand()===null);
+    G.chapter=6;
+    ok('cand_ch6',(bossCand()||{}).id==='carrionlord');
+    G.exp.region=REG.wall;G.chapter=1;
+    ok('cand_wall',(bossCand()||{}).id==='castleshadow');
+    G.exp.region=REG.north;delete G.flags['boss_coldfang'];
+    // E) 北境 POI：2 个 boss prop（北境+长城）
+    ok('poi_north',INTERACT.filter(p=>p.kind==='boss').length===2);
+    // F) 守门战：ch1 冷牙 → 胜 → flag+橙装掉落材料+图鉴+回探索
+    G.chapter=1;
+    for(const u of G.players){u.hp=u.maxhp=9999;u.sp=u.maxsp=999;u.atk=999;}
+    const pump=async()=>{
+      if(G.scene==='battle'){
+        if(G.awaiting){const en=alive(G.enemies)[0];if(en){en.hp=1;confirmAction({type:'atk',target:en});}await sleep(15);}
+        else await sleep(25);
+        return;
+      }
+      window.__T.tick(60);await sleep(15);
+    };
+    let bdone=false;Promise.resolve(evBossPoi()).finally(()=>bdone=true);
+    let g=0;while(!bdone&&g++<9000)await pump();
+    ok('bosswin_flag',G.flags['boss_coldfang']===1);
+    ok('bosswin_drop',(G.bossDrops||[]).indexOf('weirwoodbow')>=0);
+    ok('bosswin_seen',!!G.seen['coldfang']&&!!G.seen['wolf']);
+    ok('bosswin_back',G.scene==='explore'&&!G.busy);
+    // G) 四图走查：buildMobs 集成（MOBS 全合法点 key）+ 每图 1 个守门 POI
+    G.chapter=7;
+    let mOK=true;
+    for(const [mid,x,y] of [['winterfell',24,26],['wolfswood',12,35],['kingslanding',45,46],['dragonstone',35,26]]){
+      await loadMap(mid,x,y);
+      for(const m of MOBS){if(!FOES[m.k]||m.k.indexOf('.')<0)mOK=false;}
+      if(mid==='winterfell'&&MOBS.length!==0)mOK=false;
+      if(mid!=='winterfell'&&MOBS.length===0)mOK=false;
+      if(INTERACT.filter(p=>p.kind==='boss').length!==1)mOK=false;
+    }
+    ok('mobs_build',mOK);
+    const pass=L.filter(l=>l.indexOf(':OK')>0).length;
+    document.body.innerHTML='<pre style="font:19px monospace;color:#7fffd4;background:#0b1220;padding:16px 30px;line-height:1.4">'+L.join('\\n')+'\\n'+pass+'/'+L.length+' PASS</pre>';
+    await sleep(300);
+  }
+  else if(M==='bpoi'){ // E2 守门者 POI 目检（北境 100,40 图腾；crop.ps1 局部放大）
+    await cleanStart();
+    window.__T.teleport(100,41);
+    for(let i=0;i<180;i++){window.__T.tick(16);await sleep(16);}
+    dbg();
+  }
+  else if(M==='wmob'){ // E2 池化野怪目检（ch2 可出 elite；传送到首个刷怪点旁，冻结前拍）
+    await cleanStart();
+    G.chapter=2;buildMobs();
+    if(MOBS[0])window.__T.teleport(Math.round(MOBS[0].x/TS)+4,Math.round(MOBS[0].y/TS));
+    for(let i=0;i<10;i++){window.__T.tick(16);await sleep(16);}
+    G.busy=true;
+    for(let i=0;i<30;i++){window.__T.tick(16);await sleep(16);}
+    dbg('mob0='+(MOBS[0]?MOBS[0].k:'none'));
+  }
   else if(M==='wolf'){
     begin();await sleep(800);window.skipStory();await waitExplore();await sleep(200);
     window.__T.teleport(44,66);
@@ -577,5 +661,5 @@ function shoot(mode,file,budget){
   }
 }
 shoot('title',path.join(TMP,'title.html'),12000);
-for(const m of modes)shoot(m,path.join(TMP,'game.html'),(m==='a2'||m==='a4')?45000:(m==='a5')?600000:(m==='c1')?240000:(m==='c2'||m==='clix')?60000:(m==='title'||m==='tcont'||m==='e1')?12000:16000);
+for(const m of modes)shoot(m,path.join(TMP,'game.html'),(m==='a2'||m==='a4')?45000:(m==='a5')?600000:(m==='c1')?240000:(m==='e2')?120000:(m==='c2'||m==='clix')?60000:(m==='title'||m==='tcont'||m==='e1')?12000:16000);
 console.log('DONE');

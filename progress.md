@@ -291,3 +291,12 @@
 - [x] harness：_shot e1 模式 10 断言（total500/variants576/named36/named_in/wb_fields/wight_unchanged/vt_skip/base_tier/tame/sprite_all 全 key unitSprite 无异常）10/10 PASS；var/varz 截图目检：霜霸主异鬼蓝环+大体、毒首领蜘蛛绿环、火精英狼染色 ✅
 - [x] 回归全绿：SMOKE1-4 PASS；c1 19/19；c2 11/11；clix 13/13；camp(a5) 13/13 WIN
 - [ ] 下一步：**E2** 遇敌池化（MAPS.mobs→sp[]+elemBias+tierRoll）+ 世界 boss POI（interact→BOSSNAMED 按章取未灭者，胜→flag+橙装+图鉴），详见 task_plan.md
+
+## 2026-09-03 会话⑲ · E2 遇敌池化与世界 boss（完成）
+- [x] E2a 遇敌池化：MAPS 四图 pool={sp[],weights,elemBias,tierRoll{elite.12/champ.04}}（北境frost/狼林poison/君临fire/龙石岛shadow）；poolRoll 种→元素→阶级（章节门槛 champ ch≥4/elite ch≥2）；**roll-at-spawn**（buildMobs/respawn 抽池，偏差于计划的 startEncounter 抽池，见 findings）；winterfell 无池（城郊无野怪，预期）
+- [x] E2b 世界 boss POI：7 prop（north×2 (100,40)/(60,3)、wf(31,20)、ww(72,45)、kl(15,45)、ds(42,33)）；bossZone north 按 region 拆 wall/north；bossCand 按章取未灭者（ch 升序）；evBossPoi 胜→flag+bossDrops 橙装材料+图鉴，败→50% 复活回城（不走 defeat）；2D 骨柱红带「守门者」标签+3D 浮空标签；bossDrops 存档持久化
+- [x] E2c 剧情波次：DESERTER w1 2×bandit.fire.elite / w2 champ+2×elite；ESCORT 3×poison.elite；FINAL 不动
+- [x] harness：e2 模式 13 断言（roll 合法/门槛/候选序/旗标/墙区/7 POI/胜战全链/四图 buildMobs）+ bpoi/wmob 截图模式；_smoke.js v5 串 E2 链
+- [x] 目检：bpoi 裁切=骨柱+红带+浮空「守门者」标签 ✅；wmob=雪原 3D 池化狼 ✅（教训：zoom3x 在 explore 场景挂死 Chrome ETIMEDOUT → 改 crop.ps1 本地裁切）
+- [x] 回归全绿：SMOKE1-4 PASS + E2 13/13；c1 19/19；c2 11/11；clix 13/13；camp ×3 = 3/3 WIN（通关率 100% ≥60%）
+- [ ] 下一步：**E3** 武器装备系统（槽位/EQUIP_DEF 70+/掉落引擎/锻造/equipPanel/存档 v:2），详见 task_plan.md

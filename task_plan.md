@@ -44,12 +44,14 @@
 - 实测：FOES 619 key（基7+变种576+命名36）；e1 10/10 PASS；var/varz 目检过；回归 SMOKE/c1/c2/clix/camp 全绿
 - 实现细节偏差（优于计划处）：dot-key 免章节档用 vt 标志（命名 boss 无点也免档）；2D 兜底 VARSPR 模板；boss/champ 光环=RingGeometry（色=元素tint）
 
-## Phase E2：遇敌与 boss 接入
-- MAPS.mobs → 池化：{sp[],weights,elemBias(北境frost/君临fire/狼林poison/龙石岛shadow),tierRoll(elite12%/champ4%)}；startEncounter 改抽池；区域章节门槛
-- 世界 BOSS：每图 1–2 守门 POI（interact → BOSSNAMED 按章节取未灭者）；胜 → flag+橙装+图鉴；败复活回城
-- 剧情波次微调：DESERTER/ESCORT 引入 elite 视觉（tier 后缀 key），FINAL 保持原著不魔改
-- 驯服：tame 按 species 判定（元素变体皆可驯，TAMEABLE 扩到 species 级）
-- 验证：smoke 增抽 20 次遇敌全合法 key；boss POI 战胜+掉橙装断言
+## Phase E2：遇敌与 boss 接入 ✅ 2026-09-03 完成
+- MAPS.mobs → 池化：{sp[],weights,elemBias(北境frost/君临fire/狼林poison/龙石岛shadow),tierRoll(elite12%/champ4%)}；**roll-at-spawn**（buildMobs/respawn 调 poolRoll，偏差见下）；区域章节门槛（champ ch≥4/elite ch≥2）
+- 世界 BOSS：7 个守门 POI（north×2/wf/ww/kl/ds 各1）；interact→evBossPoi→bossCand（bossZone north 按 region 拆 wall/north；gate.ch≤章节+未旗标，按 ch 升序取首）；胜→flag+G.bossDrops.push(drop)+图鉴 seen；败→50% 复活回 TOWNS_C[0]
+- 剧情波次微调：DESERTER(w1 2×fire.elite / w2 champ+2×elite)/ESCORT(3×poison.elite) 引入 elite 视觉，FINAL 不动
+- 驯服：E1 已种级（tameSp），池化后自然生效
+- 实测：e2 harness 13/13 PASS（roll 合法性/章节门槛/候选序/旗标/墙区拆分/7 POI 挂载/胜战 flag+drop+seen+scene 恢复/四图 buildMobs）；bpoi 目检（骨柱红带+浮空「守门者」标签）、wmob 目检（雪原池化狼 3D）
+- 回归全绿：SMOKE1-4+E2 链、c1 19/19、c2 11/11、clix 13/13、camp ×3 = 3/3 WIN（100%≥60%）
+- 实现细节偏差：①池抽取放在 spawn（buildMobs/respawn）而非 startEncounter——遇敌直接拿现成 mob key，respawn 也走同一池；②boss 败北不走 defeat()（会进 end 场景），改就地复活 50%+回城，状态契约对齐 enterExplore（partyBar/worldHud/scene/cam）
 
 ## Phase E3：武器装备系统
 - 槽位：p.eq={wpn,arm,acc}；effAtk/effDef/effMaxhp 汇总函数，接入 physicalAttack(L1626 用 effAtk)、hitPlayer(def)、入队/升级时重算 maxhp
@@ -91,3 +93,5 @@
 |-------|---------|------------|
 | c2 ch1/rest_obj flake（虚拟时间预算 60s 被 waitf 空转吃 48s） | v6 规划前 | 先等击杀目标文本再注入 kills（_chK 快照约束：注入须晚于目标激活）；11/11 ×2 |
 | Explore 子代理 400 model Qwen3.8-max 不存在 | 1 | 显式 model=sonnet 重试成功 |
+| e2 cand_flagged FAIL（roll 段遗留 G.chapter=7 致 ch6 boss 仍候选） | 1 | D 段起始重置 `G.chapter=1;G.exp.region=REG.north` → 13/13 |
+| **zoom3x() 在 explore 场景挂死 Chrome**（swiftshader+虚拟时间下 spawnSync ETIMEDOUT 420s，残留进程） | E2 bpoi | 不在探索场景用 zoom3x；改拍原图后用 $TEMP/bfshot/crop.ps1 本地裁切（powershell -ExecutionPolicy Bypass -File crop.ps1 src x y w h dst） |

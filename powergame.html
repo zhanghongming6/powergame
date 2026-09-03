@@ -1168,13 +1168,13 @@ const CRYPT_WAVES=[
 ];
 const ESCORT_WAVES=[
  {banner:'狼林 · 狼袭',sub:'饥狼扑向商队的车辆。',
-  foes:[{k:'wolf',x:290,y:480},{k:'wolf',x:170,y:600},{k:'spider',x:455,y:545}]}
+  foes:[{k:'wolf.poison.elite',x:290,y:480},{k:'wolf.poison.elite',x:170,y:600},{k:'spider.poison.elite',x:455,y:545}]}
 ];
 const DESERTER_WAVES=[
  {banner:'官道 · 逃兵',sub:'叛逃者举着抢来的官刀。',
-  foes:[{k:'bandit',x:300,y:480},{k:'bandit',x:170,y:600}]},
+  foes:[{k:'bandit.fire.elite',x:300,y:480},{k:'bandit.fire.elite',x:170,y:600}]},
  {banner:'叛徒的头目',sub:'哨塔上，逃兵头目狞笑着跳下。',
-  foes:[{k:'bandit',x:330,y:520},{k:'bandit',x:180,y:600},{k:'bandit',x:470,y:560}]}
+  foes:[{k:'bandit.fire.champ',x:330,y:520},{k:'bandit.fire.elite',x:180,y:600},{k:'bandit.fire.elite',x:470,y:560}]}
 ];
 const FINAL_WAVES=[
  {banner:'终局 · 第一夜',sub:'亡者的潮水漫过护城河。',
@@ -2948,6 +2948,8 @@ function worldNorth(){
   gate(10,38,'wolfswood',12,35,'狼林深处','wf_open','狼林迷雾笼罩 · 待第1章与艾莉亚同行时开启');
   gate(95,72,'kingslanding',45,46,'君临','kl_open','都城戒备森严 · 需持王室许可（第4章开启）');
   gate(112,52,'dragonstone',35,26,'船坞 · 渡海','ds_open','狭海对岸 · 需乘船前往（第5章开启）');
+  prop(100,40,null,false,'boss'); // E2 守门者 POI（北境）
+  prop(60,3,null,false,'boss');   // E2 守门者 POI（长城）
 }
 function findInteract(){
   const e=G.exp;if(!e)return null;
@@ -3046,6 +3048,16 @@ function drawDynProp(p,sx,sy,t){
       ctx.strokeStyle='rgba(8,12,24,.8)';ctx.lineWidth=1;ctx.strokeRect(-3,-3,6,6);
       ctx.restore();
     }
+  }else if(p.kind==='boss'){ // E2 守门者图腾：脉动红光+骨柱
+    ctx.fillStyle='rgba(220,60,60,'+(0.14+0.08*Math.sin(t/240)).toFixed(3)+')';
+    ctx.beginPath();ctx.arc(sx+16,sy+18,17,0,7);ctx.fill();
+    ctx.fillStyle='#c9c2b4';ctx.fillRect(sx+10,sy+8,3,18);ctx.fillRect(sx+19,sy+8,3,18);
+    ctx.fillStyle='#8e1f2c';ctx.fillRect(sx+13,sy+12,6,3);ctx.fillRect(sx+14,sy+17,4,2);
+    ctx.fillStyle='#3a4150';ctx.fillRect(sx+8,sy+25,16,3);
+    ctx.font='bold 10px "Noto Serif SC",serif';ctx.textAlign='center';
+    ctx.lineWidth=3;ctx.strokeStyle='rgba(8,12,24,.85)';
+    ctx.strokeText('守门者',sx+16,sy-4);
+    ctx.fillStyle='#e0645a';ctx.fillText('守门者',sx+16,sy-4);ctx.textAlign='left';
   }
 }
 function pickTile(v,x,y){
@@ -3164,6 +3176,7 @@ function worldWinterfell(){
   G1(12,16,'herb','药草','herb');G1(36,17,'herb','药草','herb');G1(11,27,'ore','矿石','ore');
   prop(16,22,null,false,'quest',{q:'q_candle',art:'candle'});
   gate(24,27,'north',60,31,'返回北境',null,'');
+  prop(31,20,null,false,'boss'); // E2 守门者 POI（临冬城）
   poi('主堡','史塔克家族居城',24,13,4);
   poi('神木林','心树凝视着这座城堡',32,12,4);
   poi('墓窖','北境之王长眠于此',14,22,3);
@@ -3197,6 +3210,7 @@ function worldWolfswood(){
   G1(40,36,'ore','矿石','ore');
   prop(43,30,null,false,'quest',{q:'q_hunter',art:'tracks'});
   gate(12,35,'north',11,38,'退出狼林',null,'');
+  prop(72,45,null,false,'boss'); // E2 守门者 POI（狼林）
   poi('立石阵','巨人留下的遗迹',45,36,6);
   poi('狼穴','冰原狼的巢穴',64,15,5);
 }
@@ -3233,6 +3247,7 @@ function worldKingslanding(){
   G1(44,41,'bread','干粮','bread');G1(47,43,'bread','干粮','bread');
   prop(59,42,null,false,'quest',{q:'q_cat',art:'cat'});
   gate(45,49,'north',95,73,'出城',null,'');
+  prop(15,45,null,false,'boss'); // E2 守门者 POI（君临）
   poi('红堡','王座厅所在',45,28,5);
   poi('街市','七国都城的喧嚣',45,40,5);
   poi('跳蚤窝','贫民窟的炊烟',35,45,4);
@@ -3269,6 +3284,7 @@ function worldDragonstone(){
   G1(30,32,'ore','龙晶','ore');G1(40,32,'ore','龙晶','ore');G1(35,34,'ore','龙晶','ore');
   prop(33,26,null,false,'quest',{q:'q_table',art:'table'});
   gate(35,31,'north',114,55,'栈桥 · 回大陆',null,'');
+  prop(42,33,null,false,'boss'); // E2 守门者 POI（龙石岛）
   poi('火山口','岛屿的心脏仍在跳动',35,16,4);
   poi('龙穴','坦格利安旧垒',31,21,4);
   poi('栈桥','狭海的潮汐',18,25,4);
@@ -3280,20 +3296,30 @@ function npcsDragonstone(){
 const MAPS={
   north:{name:'北 境',sub:'风雪呼啸 · 小心亡者游荡',w:120,h:90,seed:20260831,
     terrain:terrainNorth,world:worldNorth,npcs:npcsNorth,region:regionAt,
-    mobs:[['wight',58,16],['wight',66,14],['spider',70,20],['wight',52,20],['spider',76,16],
-      ['wolf',16,44],['wolf',24,46],['spider',14,48],['wolf',28,42],['wolf',34,56],
-      ['wight',40,60],['spider',50,64],['wight',74,60],['spider',56,56],
-      ['spider',96,66],['wight',98,40],['spider',102,44],['wolf',44,70]],
+    pool:{sp:[['wight',5],['wolf',3],['spider',2],['bat',2],['skeleton',1],['zombie',1]], // E2 遇敌池
+      elemBias:{frost:6,none:2,shadow:2},tierRoll:{elite:.12,champ:.04}},
+    mobs:[[58,16],[66,14],[70,20],[52,20],[76,16],
+      [16,44],[24,46],[14,48],[28,42],[34,56],
+      [40,60],[50,64],[74,60],[56,56],
+      [96,66],[98,40],[102,44],[44,70]],
     towns:[[62,35,10],[61,11,8],[87,72,10],[116,54,7]],snowAt:(x,y)=>y<24||(x<46&&y<52)},
   winterfell:{name:'临冬城',sub:'史塔克家族居城',w:48,h:36,seed:101,
     terrain:terrainWinterfell,world:worldWinterfell,npcs:npcsWinterfell,region:()=>REGM.wf,mobs:[],towns:[[24,18,14]],snowAt:()=>true},
   wolfswood:{name:'狼林深处',sub:'迷雾笼罩的古老森林',w:90,h:70,seed:202,
     terrain:terrainWolfswood,world:worldWolfswood,npcs:npcsWolfswood,region:()=>REGM.ww,
-    mobs:[['wolf',30,30],['wolf',55,50],['spider',65,20],['wolf',25,55],['spider',70,45],['wolf',64,17],['wolf',61,18]],towns:[[45,36,10],[64,16,6]],snowAt:()=>true},
+    pool:{sp:[['wolf',4],['spider',3],['direwolf',2],['goblin',2],['snake',1],['slime',1]], // E2 遇敌池
+      elemBias:{poison:4,none:3,frost:2,shadow:1},tierRoll:{elite:.12,champ:.04}},
+    mobs:[[30,30],[55,50],[65,20],[25,55],[70,45],[64,17],[61,18]],towns:[[45,36,10],[64,16,6]],snowAt:()=>true},
   kingslanding:{name:'君 临',sub:'红堡俯瞰黑水湾',w:90,h:70,seed:303,
-    terrain:terrainKingslanding,world:worldKingslanding,npcs:npcsKingslanding,region:()=>REGM.kl,mobs:[],towns:[[45,35,16]]},
+    terrain:terrainKingslanding,world:worldKingslanding,npcs:npcsKingslanding,region:()=>REGM.kl,
+    pool:{sp:[['bandit',4],['rogue',3],['shaman',2],['demon',1],['knightBlack',1]], // E2 遇敌池
+      elemBias:{fire:4,none:3,shadow:2,holy:1},tierRoll:{elite:.12,champ:.04}},
+    mobs:[[10,10],[25,12],[50,10],[8,30],[12,44],[61,32],[10,60],[25,62],[52,58]],towns:[[45,35,16]]},
   dragonstone:{name:'龙石岛',sub:'石头仍记得龙的体温',w:70,h:50,seed:404,
-    terrain:terrainDragonstone,world:worldDragonstone,npcs:npcsDragonstone,region:()=>REGM.ds,mobs:[],towns:[[35,25,12]],rockAt:()=>true}
+    terrain:terrainDragonstone,world:worldDragonstone,npcs:npcsDragonstone,region:()=>REGM.ds,
+    pool:{sp:[['demon',3],['blueDemon',2],['dragonWhelp',2],['wraith',2],['golemEvo',1]], // E2 遇敌池
+      elemBias:{shadow:4,fire:3,none:2,frost:1},tierRoll:{elite:.12,champ:.04}},
+    mobs:[[26,16],[44,16],[26,34],[44,34],[14,25],[20,25]],towns:[[35,25,12]],rockAt:()=>true}
 };
 async function loadMap(id,sx,sy){
   if(!MAPS[id]||G.mapId===id)return;
@@ -3464,6 +3490,23 @@ function drawPropOverlay3D(p,t){
     ctx.fillStyle=locked?'#93a0b8':'#f0d491';ctx.fillText(p.data.label,pr.x,pr.y);ctx.textAlign='left';
     return;
   }
+  if(k==='boss'){ // E2 守门者：红光脉动圈+悬浮名签
+    const pr=A3D.project3D(p.tx+.5,0,p.ty+.5);
+    if(!pr)return;
+    const ph=A3D.project3D(p.tx+.5,1.6,p.ty+.5);
+    ctx.fillStyle='rgba(220,60,60,'+(0.20+0.10*Math.sin(t/240)).toFixed(3)+')';
+    ctx.beginPath();ctx.ellipse(pr.x,pr.y-2,20,9,0,0,7);ctx.fill();
+    ctx.fillStyle='#c9c2b4';ctx.fillRect(pr.x-6,pr.y-22,3,20);ctx.fillRect(pr.x+3,pr.y-22,3,20);
+    ctx.fillStyle='#8e1f2c';ctx.fillRect(pr.x-3,pr.y-17,6,3);
+    if(ph){
+      const bob=Math.sin(t/280)*2;
+      ctx.font='bold 11px "Noto Serif SC",serif';ctx.textAlign='center';
+      ctx.lineWidth=3;ctx.strokeStyle='rgba(8,12,24,.85)';
+      ctx.strokeText('守门者',ph.x,ph.y+bob);
+      ctx.fillStyle='#e0645a';ctx.fillText('守门者',ph.x,ph.y+bob);ctx.textAlign='left';
+    }
+    return;
+  }
   if(k==='quest'){
     const art=(p.data||{}).art;
     if(art==='cart'){ // 车为 3D 模型，只补金色指引
@@ -3588,6 +3631,7 @@ async function tryInteract(){
     if(d.lock&&!G.flags[d.lock]){ribbon('<b>'+d.label+'</b> · '+(d.lockTxt||'时机未到……'),2400);SFX.back();return;}
     SFX.ok();await loadMap(d.to,d.sx,d.sy);
   }
+  else if(p.kind==='boss'){await evBossPoi();}
   else if(p.kind==='crypt'){
     if(G.chapter>=1&&!G.flags.ch1_crypt){await evCrypt();}
     else ribbon(p.data.txt,2600);
@@ -3841,14 +3885,26 @@ function mobImg(k){
 }
 let MOB_SPAWNS=[],TOWNS_C=[];   // 当前地图的刷怪点/城镇排除圈（buildMobs 按图设置）
 function nearTown(tx,ty){return TOWNS_C.some(([cx,cy,r])=>Math.hypot(tx-cx,ty-cy)<r);}
+function poolRoll(mapId){ // E2: 遇敌池抽取（种→元素→阶级；阶级带章节门槛）
+  const P=MAPS[mapId]&&MAPS[mapId].pool;if(!P)return null;
+  const pick=wArr=>{let tw=0;for(const it of wArr)tw+=it[1];let r=Math.random()*tw;for(const it of wArr){r-=it[1];if(r<=0)return it[0];}return wArr[wArr.length-1][0];};
+  const sp=pick(P.sp),el=pick(Object.entries(P.elemBias));
+  const ch=G.chapter||0,tr=P.tierRoll||{};const q=Math.random();
+  let ti='normal';
+  if(q<(tr.champ||0)&&ch>=4)ti='champ';
+  else if(q<(tr.champ||0)+(tr.elite||0)&&ch>=2)ti='elite';
+  return sp+'.'+el+'.'+ti;
+}
 function spawnMob(k,tx,ty){
   MOBS.push({id:++MOBID,k,x:tx*TS+8,y:ty*TS+8,hx:tx*TS+8,hy:ty*TS+8,t:rand(0,2000),dx:0,dy:0,chase:false,face:1});
 }
 function buildMobs(){
   MOBS.length=0;
   MOB_SPAWNS=MAPS[G.mapId].mobs;TOWNS_C=MAPS[G.mapId].towns;
-  for(const[k,tx,ty]of MOB_SPAWNS)
-    if(!blockedAt(tx*TS+8,ty*TS+8)&&!nearTown(tx,ty))spawnMob(k,tx,ty);
+  for(const[tx,ty]of MOB_SPAWNS){
+    const k=poolRoll(G.mapId);
+    if(k&&!blockedAt(tx*TS+8,ty*TS+8)&&!nearTown(tx,ty))spawnMob(k,tx,ty);
+  }
 }
 let mobRespawnT=0;
 function updateMobs(dt){
@@ -3878,8 +3934,8 @@ function updateMobs(dt){
   if(mobRespawnT>0){
     mobRespawnT-=dt;
     if(mobRespawnT<=0&&MOBS.length<MOB_SPAWNS.length){
-      const cands=MOB_SPAWNS.filter(([k,tx,ty])=>!nearTown(tx,ty)&&Math.hypot(tx*TS+8-e.px,ty*TS+8-e.py)>14*TS&&!blockedAt(tx*TS+8,ty*TS+8));
-      if(cands.length){const[k,tx,ty]=cands[irand(0,cands.length-1)];spawnMob(k,tx,ty);}
+      const cands=MOB_SPAWNS.filter(([tx,ty])=>!nearTown(tx,ty)&&Math.hypot(tx*TS+8-e.px,ty*TS+8-e.py)>14*TS&&!blockedAt(tx*TS+8,ty*TS+8));
+      if(cands.length){const[tx,ty]=cands[irand(0,cands.length-1)];const k=poolRoll(G.mapId);if(k)spawnMob(k,tx,ty);}
       else mobRespawnT=8000;
     }
   }
@@ -3903,6 +3959,48 @@ async function startEncounter(m){
     ribbon('<b>驯服成功！</b> '+FOES[G.tameKey].name+' 加入了队伍',2600);
   }
   G.busy=false;
+}
+/* ---- E2: 世界守门 BOSS（POI 交互 → 按章节取未灭者）---- */
+function bossZone(){ // 北境图内按 region 分 wall/north 两区
+  if(G.mapId==='north'){const rg=G.exp&&G.exp.region;return (rg&&rg.k==='wall')?'wall':'north';}
+  return G.mapId;
+}
+function bossCand(){
+  const z=bossZone();
+  const cs=BOSSNAMED.filter(b=>b.gate.map===z&&b.gate.ch<=G.chapter&&!G.flags['boss_'+b.id]).sort((a,b)=>a.gate.ch-b.gate.ch);
+  return cs[0]||null;
+}
+async function evBossPoi(){
+  const b=bossCand();
+  if(!b){ribbon('此地暂无强敌的气息……',1600);return;}
+  G.busy=true;
+  try{
+    screenFlash('rgba(200,60,60,.4)');SFX.hurt();shake(6);
+    ribbon('<b>守门者挑战！</b> '+FOES[b.id].name+' 拦住了去路',2000);
+    await sleep(700);
+    const tone=G.mapId==='dragonstone'?'sea':(G.mapId==='wolfswood'?'forest':(G.mapId==='kingslanding'?'city':'wall'));
+    G.tameKey=null;
+    const r=await runBattle([{banner:'守门者 · '+FOES[b.id].name,sub:'击败这个命名强敌',foes:[{k:b.id,x:SLOTS[1].x,y:SLOTS[1].y}]}],{tone});
+    if(r==='win'){
+      G.flags['boss_'+b.id]=1;
+      (G.bossDrops=G.bossDrops||[]).push(b.drop);
+      G.seen[b.id]=1;G.seen[b.sp]=1;
+      ribbon('<b>击败了 '+FOES[b.id].name+'！</b> 获得锻造材料「'+b.drop+'」（铁匠处可用）',3200);
+    }else{
+      $('#end').classList.add('hidden');
+      setTone(null);
+      $('#partyBar').classList.add('hidden');
+      $('#worldHud').classList.remove('hidden');
+      G.scene='explore';renderObj();
+      for(const u of G.players){u.alive=true;u.dissolve=0;u.hp=Math.max(1,Math.round(u.maxhp*.5));u.sp=Math.max(1,Math.round(u.maxsp*.5));}
+      const t0=TOWNS_C[0]||[Math.round(G.exp.px/TS),Math.round(G.exp.py/TS),1];
+      G.exp.px=t0[0]*TS+8;G.exp.py=t0[1]*TS+8;
+      G.exp.camX=clamp(G.exp.px-VW/2,0,MW*TS-VW);G.exp.camY=clamp(G.exp.py-VH/2,0,MH*TS-VH);
+      G.exp.region=null;G.exp.trail=null;
+      updateWorldHud();
+      ribbon('队伍被击退，在城中苏醒……',2600);
+    }
+  }finally{G.busy=false;}
 }
 function drawMobs(t,cx,cy){
   const r3=RM3D();
@@ -4338,6 +4436,7 @@ function newCampaign(){
   G.stats={dmg:0,kills:0};
   G.flags={};G._lastAct=null;
   G.bag={};
+  G.bossDrops=[];
   G.quests={};
   G.beasts=[];
   G.deploy=null;G.seen={};G.follow=null;
@@ -4377,7 +4476,7 @@ function saveGame(){
   const humans=G.players.filter(p=>!p.isBeast).map(p=>({key:p.key,lv:p.lv,exp:p.exp,hp:p.hp,maxhp:p.maxhp,sp:p.sp,maxsp:p.maxsp,atk:p.atk}));
   try{
     localStorage.setItem(SAVE_KEY,JSON.stringify({v:1,chapter:G.chapter,mapId:G.mapId,flags:G.flags,bag:G.bag,quests:G.quests,
-      stats:G.stats,seen:G.seen,beasts:G.beasts,deploy:G.deploy,locs:G.locs,dragonDone:G.dragonDone,_chK:G._chK||0,
+      stats:G.stats,seen:G.seen,beasts:G.beasts,deploy:G.deploy,locs:G.locs,dragonDone:G.dragonDone,_chK:G._chK||0,bossDrops:G.bossDrops||[],
       px:G.exp.px,py:G.exp.py,players:humans,fog}));
   }catch(e){}
 }
@@ -4391,6 +4490,7 @@ async function loadGame(){
   newCampaign();
   G.chapter=s.chapter;G.flags=s.flags||{};G.bag=s.bag||{};G.quests=s.quests||{};G.stats=s.stats||{dmg:0,kills:0};
   G.seen=s.seen||{};G.beasts=s.beasts||[];G.deploy=s.deploy==null?null:s.deploy;G.locs=s.locs||G.locs;
+  G.bossDrops=s.bossDrops||[];
   G.dragonDone=!!s.dragonDone;G._chK=s._chK||0;
   G.fog={};
   for(const k in (s.fog||{})){

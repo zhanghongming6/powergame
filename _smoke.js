@@ -1,4 +1,5 @@
-// 冒烟总控 v4：SMOKE1-4 断言链（页内 ?smoke：序章/行走/采集/支线/招募/战斗/驯服/墙战/养成）
+// 冒烟总控 v5：SMOKE1-4 断言链（页内 ?smoke：序章/行走/采集/支线/招募/战斗/驯服/墙战/养成）
+// + E2 断言链（遇敌池/boss POI/守门战）
 // + 完整战役 ×3 通关率（_shot.js a5 13 断言链：序章→招募→切图→战斗→第7章→终局），目标 ≥60%
 const fs=require('fs'),path=require('path'),cp=require('child_process');
 const TMP=path.join(process.env.TEMP||'C:/Temp','bfshot');
@@ -30,4 +31,11 @@ const sm=((dom.match(/<pre id="smokeLog"[^>]*>([\s\S]*?)<\/pre>/)||[])[1]||'NO L
 console.log(sm);
 const smOK=['SMOKE1 PASS','SMOKE2 PASS','SMOKE3 PASS','SMOKE4 PASS'].every(s=>sm.indexOf(s)>=0);
 console.log('SMOKE1-4:',smOK?'PASS':'FAIL');
+
+/* ---- 3) E2 断言链（遇敌池/章节门槛/守门 boss 全流程）---- */
+const e2out=shot('e2','dom');
+const e2lines=e2out.match(/\w[\w_]*:(OK|FAIL)/g)||[];
+console.log(e2lines.join('\n'));
+const e2OK=e2lines.length>0&&e2lines.every(l=>/:OK$/.test(l));
+console.log('E2:',e2OK?'PASS':'FAIL');
 console.log('（通关率另跑：node _smoke.js camp ×3）');

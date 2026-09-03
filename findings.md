@@ -146,6 +146,7 @@ w_lsword_f/b、w_dagger_f/b、w_spear_f/b（各 _walk/_idle；武器仅 _walk）
 - 每 rAF 里渲 WebGL 会饿死虚拟时间 → __NORT（frame 跳过实时渲染）、__SHOTSTOP（run 后停 rAF 截最后合成帧）、__NOGL（smoke 跳 tick/brender）
 - 显式驱动：__T.tick（探索）、__T.brender（战斗），冰火旅人.html ~3831/3840
 - zoom3x/zwall 在 3D 模式只复制 2D #cv 层 → 无效；目检用 Temp/bfshot/crop.ps1 裁全分辨率 shot
+- **zoom3x 在 explore 场景会挂死 Chrome**（swiftshader+虚拟时间，spawnSync ETIMEDOUT 420s 且残留 chrome 进程）→ 探索截图一律原图+crop.ps1 本地裁，勿在 harness 内缩放探索帧
 - BENV 雾：相机距 ~40 → fogN 42-46 / fogF 78-95，旧值 14-20/40-60 会把单位雾化
 - **file:// URL 教训（2026-09-03）**：bash 直接拼 `file:///$PWD/…`（中文路径）→ Chrome ERR_FILE_NOT_FOUND、dump-dom 输出错误页（看着像「空输出」）；正解=仿 _shot.js：node `cp.execFileSync(CHROME,[…,'file:///'+path.join(__dirname,f).replace(/\\/g,'/')])`；probe3d 验证脚本=_probe_run.js
 
@@ -166,3 +167,14 @@ w_lsword_f/b、w_dagger_f/b、w_spear_f/b（各 _walk/_idle；武器仅 _walk）
 - 3D：bModel 认 u.sp/dot key → MOB3D；bEnsure tint 乘材质色（白模乘火橙=棕橙，符合预期）；tscale 体型；RingGeometry 光环仅 boss(.5)/champ(.32)，色=元素 tint
 - 2D 兜底 VARSPR/VARPAL 通用模板（新 18 种无 LPC/MF）；TAMEABLE 种级+tameSp(spOf(k))
 - harness：_shot.js e1（10 断言 dom）/var/varz（截图）；budget e1=12000
+
+## E2 遇敌池与世界 boss（2026-09-03）
+- 池结构：MAPS[id].pool={sp:[[种,权重]…],elemBias:[[元素,权重]…],tierRoll:{elite:.12,champ:.04}}；north=frost 主、wolfswood=poison、kingslanding=fire、dragonstone=shadow；winterfell 无池（towns 近郊无野怪，MOBS 恒 0 为预期）
+- **roll-at-spawn**（偏差）：poolRoll 在 buildMobs/respawn 调用生成 mob key，startEncounter 直接吃现成 mob——不改 startEncounter 签名，respawn 自动同池
+- 章节门槛在 poolRoll 内：champ 需 ch≥4、elite 需 ch≥2（q<champ→champ；q<champ+elite→elite；否则 normal）
+- boss POI 坐标（prop kind 'boss'，非实体）：north (100,40)+(60,3)、winterfell (31,20)、wolfswood (72,45)、kingslanding (15,45)、dragonstone (42,33)
+- bossCand：bossZone() north 图按 G.exp.region.k==='wall' 拆 wall/north 两区；候选=gate.map===zone && gate.ch<=G.chapter && !flags['boss_'+id]，按 gate.ch 升序取首（ch1 北境=寒獠 coldfang；ch6=腐尸领主 carrionlord；墙区=城堡之影 castleshadow）
+- evBossPoi：tone 按图（ds→sea/ww→forest/kl→city/余→wall）；胜→flag+bossDrops.push(b.drop)+seen[b.id/b.sp]；败不走 defeat()（避免 end 场景），就地 50% 复活+传送 TOWNS_C[0]+清 region/trail+renderObj，状态契约对齐 enterExplore
+- 视觉：drawDynProp 骨柱(灰白 fillRect)+红带 #8e1f2c+脉冲红弧+描边「守门者」标签；3D 层地面红椭圆脉冲+project3D 浮空标签（bob）
+- 持久化：newCampaign G.bossDrops=[]；save/load 带 bossDrops（E3 锻造消耗）
+- harness：_shot.js e2（13 断言，budget 120000）/bpoi（totem 目检，勿加 zoom3x）/wmob（池化野外 mob 目检：+4 格传送避遭遇→10 tick→G.busy 冻结）；_smoke.js 已串 E2 链
