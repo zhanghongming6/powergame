@@ -1,0 +1,3009 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>冰火旅人 · OCTOPATH 长夜远征</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Noto+Serif+SC:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#c9a55a; --gold-hi:#f0d491; --gold-dim:rgba(201,165,90,.35);
+  --navy:#0a1020; --navy2:#101a30; --ink:#060a14;
+  --ice:#8fd8ff; --blood:#c0453e;
+  --disp:'Cinzel','Noto Serif SC','STZhongsong','SimSun',serif;
+  --body:'Noto Serif SC','STZhongsong','SimSun',serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;user-select:none}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;font-family:var(--body);color:#dfe6f2}
+#stage{position:absolute;left:50%;top:50%;width:1280px;height:720px;transform-origin:center;transform:translate(-50%,-50%);overflow:hidden;background:var(--ink)}
+#world{position:absolute;inset:0}
+
+/* ---------- 背景层 ---------- */
+.sky{position:absolute;inset:0;background:linear-gradient(#04060e 0%,#081222 34%,#0e2036 56%,#16304c 72%,#1d3a58 80%)}
+.aurora{position:absolute;left:-10%;top:-6%;width:120%;height:46%;filter:blur(30px);mix-blend-mode:screen;opacity:.55;
+  background:radial-gradient(45% 60% at 30% 40%,rgba(64,201,178,.32),transparent 70%),
+             radial-gradient(40% 55% at 62% 30%,rgba(90,140,255,.28),transparent 70%),
+             radial-gradient(30% 45% at 80% 55%,rgba(140,90,255,.16),transparent 70%);
+  animation:aurora 14s ease-in-out infinite alternate}
+@keyframes aurora{from{transform:translateX(-30px) skewX(-4deg)}to{transform:translateX(40px) skewX(3deg)}}
+.moon{position:absolute;right:170px;top:64px;width:78px;height:78px;border-radius:50%;
+  background:radial-gradient(circle at 38% 36%,#fdfaf0,#dfe8f2 58%,#aebfd4);
+  box-shadow:0 0 40px 14px rgba(220,235,255,.22),0 0 120px 50px rgba(180,210,255,.10)}
+.stars{position:absolute;inset:0}
+.star{position:absolute;background:#cfe2ff;border-radius:50%;animation:twk 3s ease-in-out infinite alternate}
+@keyframes twk{from{opacity:.15}to{opacity:.9}}
+.bgsvg{position:absolute;left:0;width:100%;pointer-events:none}
+#far{bottom:230px;height:340px;filter:blur(2.2px) saturate(.85);opacity:.92}
+#mid{bottom:190px;height:300px}
+.ground{position:absolute;left:0;right:0;bottom:0;height:280px;
+  background:linear-gradient(#20344e 0%,#2c4361 12%,#48607f 30%,#6d82a0 55%,#8b9cb6 78%,#a7b4ca 100%)}
+.ground::after{content:"";position:absolute;inset:0;opacity:.5;
+  background:repeating-linear-gradient(100deg,transparent 0 46px,rgba(255,255,255,.05) 46px 49px),
+             repeating-linear-gradient(80deg,transparent 0 71px,rgba(20,35,60,.08) 71px 75px)}
+.horizon-glow{position:absolute;left:0;right:0;bottom:250px;height:60px;
+  background:linear-gradient(transparent,rgba(150,190,235,.16),transparent);filter:blur(6px)}
+.fg-drift{position:absolute;bottom:-40px;width:620px;height:190px;border-radius:50% 50% 0 0;
+  background:radial-gradient(closest-side,rgba(210,222,240,.9),rgba(190,205,228,.55) 60%,transparent);
+  filter:blur(7px);pointer-events:none}
+.lightrays{position:absolute;inset:-10%;mix-blend-mode:screen;opacity:.10;pointer-events:none;
+  background:repeating-linear-gradient(112deg,transparent 0 90px,rgba(210,230,255,.9) 90px 118px,transparent 118px 260px);
+  animation:rays 26s linear infinite}
+#world.expmode .lightrays,#world.expmode .fg-drift,#world.expmode .horizon-glow{display:none}
+@keyframes rays{from{transform:translateX(0)}to{transform:translateX(260px)}}
+.vignette{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 95% at 50% 42%,transparent 52%,rgba(0,2,8,.42) 82%,rgba(0,1,5,.78) 100%)}
+.grain{position:absolute;inset:0;pointer-events:none;opacity:.055;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E")}
+canvas#cv{position:absolute;inset:0}
+
+/* ---------- 通用 UI ---------- */
+.hidden{display:none!important}
+.ribbon{position:absolute;left:50%;top:86px;transform:translateX(-50%);padding:8px 40px;
+  background:linear-gradient(90deg,transparent,rgba(6,10,22,.92) 16%,rgba(6,10,22,.92) 84%,transparent);
+  color:#e8ecf5;font-size:19px;letter-spacing:2px;text-shadow:0 1px 4px #000;opacity:0;transition:opacity .35s;
+  white-space:nowrap;pointer-events:none;z-index:30}
+.ribbon.show{opacity:1}
+.ribbon b{color:var(--gold-hi);font-weight:700}
+#turnBadge{position:absolute;left:26px;top:22px;z-index:30;pointer-events:none;
+  font-family:var(--disp);letter-spacing:3px;color:var(--gold);font-size:15px;text-shadow:0 1px 4px #000}
+#turnBadge .cn{font-family:var(--body);color:#cfd9ea;font-size:13px;letter-spacing:2px;margin-left:10px}
+#muteBtn{position:absolute;right:24px;top:20px;z-index:60;width:38px;height:38px;border:1px solid var(--gold-dim);
+  background:rgba(8,12,24,.7);color:var(--gold);font-size:17px;cursor:pointer;border-radius:3px}
+#muteBtn:hover{border-color:var(--gold);color:var(--gold-hi)}
+
+/* ---------- 章节横幅 ---------- */
+#banner{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:linear-gradient(180deg,rgba(3,5,12,.2),rgba(3,5,12,.82) 32%,rgba(3,5,12,.82) 68%,rgba(3,5,12,.2));
+  opacity:0;pointer-events:none;transition:opacity .6s}
+#banner.show{opacity:1}
+#banner .bn-top,#banner .bn-bot{width:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transition:width 1s ease}
+#banner.show .bn-top,#banner.show .bn-bot{width:640px}
+#banner h1{font-family:var(--body);font-weight:900;font-size:52px;letter-spacing:16px;color:#f2e6c8;margin:22px 0 14px;
+  text-shadow:0 0 24px rgba(201,165,90,.35),0 2px 6px #000}
+#banner p{color:#9fb0c8;letter-spacing:5px;font-size:15px}
+
+/* ---------- 底部角色栏 ---------- */
+#partyBar{position:absolute;left:0;right:0;bottom:0;height:122px;z-index:35;display:flex;justify-content:center;gap:14px;align-items:flex-end;padding-bottom:12px;
+  background:linear-gradient(180deg,rgba(5,8,18,0),rgba(6,9,18,.88) 26%,rgba(4,6,14,.96));
+  border-top:1px solid rgba(201,165,90,.28)}
+#partyBar::before{content:"";position:absolute;left:6%;right:6%;top:7px;height:1px;background:linear-gradient(90deg,transparent,rgba(201,165,90,.5),transparent)}
+.ptile{position:relative;width:236px;height:96px;padding:9px 12px;cursor:default;
+  background:linear-gradient(160deg,rgba(16,26,48,.92),rgba(9,14,28,.94));
+  border:1px solid rgba(201,165,90,.30);box-shadow:inset 0 0 0 1px rgba(0,0,0,.5),inset 0 12px 22px rgba(0,0,0,.35);
+  clip-path:polygon(9px 0,100% 0,calc(100% - 9px) 100%,0 100%);transition:filter .3s,box-shadow .3s}
+.ptile .nm{font-size:15px;letter-spacing:1px;color:var(--gold-hi);font-weight:700}
+.ptile .cl{float:right;font-size:11px;color:#7f8ea6;letter-spacing:2px;margin-top:2px}
+.bar{position:relative;height:11px;margin-top:7px;background:#05070f;border:1px solid rgba(255,255,255,.10);overflow:hidden}
+.bar i{position:absolute;left:0;top:0;bottom:0;transition:width .35s}
+.bar.hp i{background:linear-gradient(90deg,#4f9e4a,#8ed060)}
+.bar.hp.low i{background:linear-gradient(90deg,#a3382f,#e06248)}
+.bar.sp i{background:linear-gradient(90deg,#2f6fae,#5fb2e8)}
+.bar .tx{position:absolute;right:5px;top:-1px;font-size:9px;color:#cfd9ea;letter-spacing:1px;font-style:normal}
+.ptile .bp{margin-top:6px;display:flex;gap:5px;align-items:center}
+.ptile .bp .lbl{font-size:10px;color:#7f8ea6;letter-spacing:2px;margin-right:2px}
+.bpd{width:11px;height:11px;transform:rotate(45deg);border:1px solid rgba(201,165,90,.45);background:rgba(10,14,26,.8)}
+.bpd.on{background:radial-gradient(circle at 35% 30%,#ffe9b0,var(--gold) 70%);box-shadow:0 0 7px rgba(240,212,145,.7);border-color:var(--gold-hi)}
+.ptile.active{box-shadow:inset 0 0 0 1px rgba(0,0,0,.5),0 0 18px rgba(201,165,90,.35),inset 0 12px 22px rgba(0,0,0,.35);border-color:var(--gold)}
+.ptile.active::after{content:"▶ 行动中";position:absolute;right:14px;bottom:8px;font-size:10px;color:var(--gold-hi);letter-spacing:2px}
+.ptile.dead{filter:grayscale(1) brightness(.5)}
+.ptile.allyTarget{cursor:pointer;border-color:var(--ice);box-shadow:0 0 16px rgba(143,216,255,.5)}
+
+/* ---------- 指令菜单 ---------- */
+#cmdWrap{position:absolute;left:38px;bottom:140px;z-index:36;width:288px;transform:skewX(-4deg);
+  background:linear-gradient(165deg,rgba(14,22,42,.96),rgba(7,11,24,.97));
+  border:1px solid var(--gold);box-shadow:inset 0 0 0 3px rgba(6,9,18,.9),inset 0 0 0 4px rgba(201,165,90,.4),0 12px 34px rgba(0,0,0,.6)}
+#cmdWrap .cw-name{padding:9px 18px 7px;font-size:15px;letter-spacing:2px;color:var(--gold-hi);font-weight:700;border-bottom:1px solid rgba(201,165,90,.3)}
+#cmdWrap .cw-name small{float:right;color:#7f8ea6;font-weight:400;font-size:11px;margin-top:3px;letter-spacing:1px}
+#cmdList{padding:6px 0}
+.cmd{position:relative;padding:8px 20px;font-size:16px;letter-spacing:6px;color:#c9d4e6;cursor:pointer;display:flex;align-items:center}
+.cmd::before{content:"◇";color:var(--gold);font-size:11px;margin-right:12px;letter-spacing:0}
+.cmd.sel{background:linear-gradient(90deg,rgba(201,165,90,.28),rgba(201,165,90,.05) 80%,transparent);color:#fff}
+.cmd.sel::before{content:"◆";text-shadow:0 0 8px rgba(240,212,145,.8)}
+.cmd.dis{color:#54607a;cursor:default}
+.cmd .cost{margin-left:auto;font-size:11px;color:#6fa8d8;letter-spacing:0;font-family:var(--disp)}
+.cmd .cost.cnt{color:#8fae7f}
+#boostRow{display:flex;align-items:center;gap:8px;padding:8px 18px 10px;border-top:1px solid rgba(201,165,90,.25)}
+#boostRow .bl{font-size:12px;letter-spacing:3px;color:var(--gold)}
+#boostRow .pips{display:flex;gap:4px}
+#boostRow .pips .bpd{width:9px;height:9px}
+#boostRow button{margin-left:auto;width:24px;height:22px;background:rgba(201,165,90,.12);border:1px solid var(--gold-dim);color:var(--gold-hi);cursor:pointer;font-size:13px;line-height:1}
+#boostRow button:hover{background:rgba(201,165,90,.3)}
+#boostRow .bv{font-family:var(--disp);color:var(--gold-hi);font-size:13px;min-width:26px;text-align:center}
+#targetHint{position:absolute;left:50%;bottom:150px;transform:translateX(-50%) skewX(-4deg);z-index:36;display:none;
+  padding:8px 26px;font-size:14px;letter-spacing:3px;color:var(--gold-hi);
+  background:rgba(6,10,22,.9);border:1px solid var(--gold-dim)}
+
+/* ---------- 伤害飘字 ---------- */
+.flt{position:absolute;z-index:45;pointer-events:none;font-family:var(--disp);font-weight:700;
+  transform:translate(-50%,0);animation:flt 1.05s ease-out forwards;text-shadow:0 2px 0 #000,0 0 8px rgba(0,0,0,.6)}
+@keyframes flt{0%{opacity:0;margin-top:10px}12%{opacity:1;margin-top:0}70%{opacity:1}100%{opacity:0;margin-top:-46px}}
+.flt.dmg{font-size:26px;color:#f4f7fc}
+.flt.weak{color:var(--gold-hi)}
+.flt.weak::after{content:" 弱点";font-size:12px;font-family:var(--body);letter-spacing:2px;vertical-align:6px}
+.flt.crit{font-size:33px;color:#ff8f7d}
+.flt.crit::after{content:" 会心";font-size:12px;font-family:var(--body);letter-spacing:2px;vertical-align:6px}
+.flt.heal{color:#8fe89a}
+.flt.sp{color:#7fc8f0;font-size:20px}
+.flt.pdmg{color:#f0b9a8;font-size:23px}
+.flt.fear{color:#ffb46a;font-size:18px;letter-spacing:2px}
+#breakFlash{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);z-index:46;display:none;pointer-events:none;
+  font-family:var(--disp);font-weight:900;font-size:74px;letter-spacing:24px;color:var(--gold-hi);
+  text-shadow:0 0 30px rgba(240,212,145,.6),0 3px 8px #000;animation:brk 1s ease-out forwards}
+@keyframes brk{0%{opacity:0;transform:translate(-50%,-50%) scale(1.7)}18%{opacity:1;transform:translate(-50%,-50%) scale(1)}75%{opacity:1}100%{opacity:0}}
+#flash{position:absolute;inset:0;z-index:28;pointer-events:none;opacity:0}
+
+/* ---------- 标题 / 结算 ---------- */
+#title,#end{position:absolute;inset:0;z-index:50;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:radial-gradient(90% 80% at 50% 40%,rgba(4,7,16,.55),rgba(3,5,12,.9))}
+#title .t-lat{font-family:var(--disp);letter-spacing:8px;font-size:13px;color:var(--gold);opacity:.9}
+#title h1{font-family:var(--body);font-weight:900;font-size:88px;letter-spacing:22px;color:#f4e9cd;margin:18px 0 8px;
+  text-shadow:0 0 34px rgba(201,165,90,.35),0 3px 10px #000}
+#title .t-sub{font-family:var(--disp);letter-spacing:10px;font-size:18px;color:#8fa3bd}
+#title .t-div{display:flex;align-items:center;gap:16px;margin:34px 0 10px;color:var(--gold)}
+#title .t-div .ln{width:170px;height:1px;background:linear-gradient(90deg,transparent,var(--gold))}
+#title .t-div .ln.r{background:linear-gradient(270deg,transparent,var(--gold))}
+#title .roster{display:flex;gap:44px;margin-top:8px}
+#title .roster div{text-align:center}
+#title .roster b{display:block;color:#e8ecf5;font-size:16px;letter-spacing:3px}
+#title .roster span{color:#7f8ea6;font-size:12px;letter-spacing:3px}
+#title .t-go{margin-top:52px;font-size:19px;letter-spacing:8px;color:var(--gold-hi);animation:pulse 1.8s ease-in-out infinite;cursor:pointer}
+@keyframes pulse{0%,100%{opacity:.35;text-shadow:none}50%{opacity:1;text-shadow:0 0 18px rgba(240,212,145,.6)}}
+#title .t-hint{position:absolute;bottom:26px;font-size:12px;letter-spacing:3px;color:#5d6c84}
+#end h1{font-family:var(--body);font-weight:900;font-size:64px;letter-spacing:18px;margin-bottom:16px;text-shadow:0 0 30px rgba(201,165,90,.3)}
+#end.win h1{color:#f4e9cd}
+#end.lose h1{color:#9fb4cf}
+#end .e-sub{letter-spacing:6px;color:#8fa3bd;font-size:16px;margin-bottom:30px}
+#end .e-stats{display:flex;gap:56px;margin-bottom:44px}
+#end .e-stats div{text-align:center}
+#end .e-stats b{display:block;font-family:var(--disp);font-size:30px;color:var(--gold-hi)}
+#end .e-stats span{font-size:12px;letter-spacing:3px;color:#7f8ea6}
+#end .e-btn{padding:12px 54px;font-size:17px;letter-spacing:8px;color:var(--gold-hi);background:rgba(10,16,32,.8);
+  border:1px solid var(--gold);cursor:pointer;transition:all .25s}
+#end .e-btn:hover{background:rgba(201,165,90,.2);box-shadow:0 0 22px rgba(201,165,90,.35)}
+
+/* ---------- 对话框（剧情） ---------- */
+#dlg{position:absolute;left:50%;bottom:32px;transform:translateX(-50%);width:980px;z-index:48;cursor:pointer;
+  background:linear-gradient(165deg,rgba(10,16,32,.96),rgba(6,10,22,.97));
+  border:1px solid var(--gold);box-shadow:inset 0 0 0 3px rgba(6,9,18,.9),inset 0 0 0 4px rgba(201,165,90,.35),0 10px 30px rgba(0,0,0,.6);
+  padding:18px 30px 20px 112px;min-height:120px}
+#dlg.noface{padding-left:30px}
+#dlgFace{position:absolute;left:24px;top:50%;transform:translateY(-50%);width:64px;height:64px;
+  border:1px solid var(--gold-dim);background:#0a1020;image-rendering:pixelated}
+#dlg.noface #dlgFace{display:none}
+#dlgName{font-size:15px;letter-spacing:3px;color:var(--gold-hi);font-weight:700;margin-bottom:7px}
+#dlgText{font-size:17px;line-height:1.72;color:#dfe6f2;letter-spacing:1px;min-height:56px}
+#dlgNext{position:absolute;right:20px;bottom:9px;color:var(--gold);font-size:13px;animation:pulse 1.4s ease-in-out infinite}
+#dlgChoices{display:none;flex-direction:column;gap:8px;margin-top:10px}
+#dlgChoices.show{display:flex}
+.dlgc{padding:9px 18px;border:1px solid var(--gold-dim);background:rgba(201,165,90,.07);
+  color:#c9d4e6;font-size:15px;letter-spacing:2px;cursor:pointer;transition:all .2s}
+.dlgc:hover{background:rgba(201,165,90,.22);color:#fff;border-color:var(--gold)}
+.dlgc.selk{background:rgba(201,165,90,.22);color:#fff;border-color:var(--gold)}
+.dlgc::before{content:"◇ ";color:var(--gold)}
+
+/* ---------- 大地图 HUD ---------- */
+#worldHud{position:absolute;left:26px;top:54px;z-index:44;width:256px;pointer-events:none;
+  background:rgba(8,12,24,.88);border:1px solid var(--gold-dim);padding:12px 14px}
+.wh-title{font-size:14px;letter-spacing:3px;color:var(--gold-hi);font-weight:700;
+  border-bottom:1px solid rgba(201,165,90,.25);padding-bottom:7px;margin-bottom:8px}
+.wh-hint{font-size:12px;color:#8fa3bd;letter-spacing:1px;line-height:1.7;margin-bottom:8px}
+.whp{display:flex;align-items:center;gap:8px;margin-top:5px;font-size:12px;color:#cfd9ea}
+.whp .nm{width:44px;flex:none;color:#f0d491;letter-spacing:1px}
+.whp .hpn{width:36px;flex:none;text-align:right;color:#9fb3cc}
+.whp .bar{flex:1;margin:0;height:8px}
+#whProg{margin-top:9px;font-size:12px;color:var(--gold);letter-spacing:1px}
+#questLog{position:absolute;left:26px;top:210px;z-index:45;width:286px;max-height:440px;overflow:auto;
+  background:rgba(8,12,24,.93);border:1px solid var(--gold-dim);padding:14px 16px;display:none}
+#questLog.show{display:block}
+#questLog h3{font-size:14px;letter-spacing:3px;color:var(--gold-hi);margin-bottom:8px;border-bottom:1px solid rgba(201,165,90,.25);padding-bottom:6px}
+#questLog .qlk{font-size:12px;color:#8fa3bd;letter-spacing:2px;margin:8px 0 4px}
+#questLog .qli{font-size:12px;color:#cfd9ea;line-height:1.6;margin:3px 0}
+#questLog .qli .st{color:#7d8fa8}
+#questLog .qli.on{color:var(--gold)}
+#questLog .qli.done{color:#7d8fa8;text-decoration:line-through}
+#questLog .qld{font-size:11px;color:#8fa3bd;line-height:1.6;margin:0 0 4px}
+#beastPanel{position:absolute;right:26px;top:190px;z-index:45;width:300px;max-height:460px;overflow:auto;
+  background:rgba(8,12,24,.93);border:1px solid var(--gold-dim);padding:14px 16px;display:none}
+#beastPanel.show{display:block}
+#beastPanel h3{font-size:14px;letter-spacing:3px;color:var(--gold-hi);margin-bottom:8px;border-bottom:1px solid rgba(201,165,90,.25);padding-bottom:6px}
+#beastPanel .brow{margin:8px 0;padding:8px 10px;border:1px solid rgba(201,165,90,.25);background:rgba(20,28,46,.6);font-size:12px;color:#cfd9ea;line-height:1.7}
+#beastPanel .brow b{color:var(--gold)}
+#beastPanel .brow .st{color:#8fa3bd;font-size:11px}
+#beastPanel .bbtns{margin-top:6px;display:flex;gap:6px}
+#beastPanel .bbtn{cursor:pointer;font-size:11px;letter-spacing:1px;color:var(--gold-hi);border:1px solid var(--gold-dim);padding:3px 8px;background:rgba(201,165,90,.12)}
+#beastPanel .bbtn:hover{background:rgba(201,165,90,.3)}
+#beastPanel .bempty{font-size:12px;color:#8fa3bd;line-height:1.7}
+#beastPanel h4{font-size:12px;letter-spacing:2px;color:#8fa3bd;margin:10px 0 4px;border-top:1px solid rgba(201,165,90,.2);padding-top:8px}
+#beastPanel .bdex{font-size:12px;color:#cfd9ea;margin:2px 0}
+#beastPanel .bdex.un{color:#5d6b82}
+#tone{position:absolute;inset:0;pointer-events:none;transition:background .8s}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="world">
+    <div class="sky"></div>
+    <div class="aurora"></div>
+    <div class="stars" id="stars"></div>
+    <div class="moon"></div>
+    <!-- 远景：长城与雪山（焦外虚化） -->
+    <svg id="far" class="bgsvg" viewBox="0 0 1280 340" preserveAspectRatio="none">
+      <polygon points="0,340 0,235 90,180 180,225 260,150 360,215 430,175 520,230 610,140 700,205 790,170 880,225 960,160 1060,220 1140,185 1230,235 1280,205 1280,340" fill="#0d1a2c"/>
+      <polygon points="60,235 90,180 130,222" fill="#1b3350" opacity=".8"/>
+      <polygon points="560,205 610,140 668,200" fill="#1b3350" opacity=".8"/>
+      <polygon points="905,215 960,160 1018,212" fill="#1b3350" opacity=".8"/>
+      <rect x="880" y="120" width="330" height="130" fill="url(#wallg)" opacity=".9"/>
+      <polygon points="880,120 1210,120 1210,132 880,138" fill="#cfe2f2" opacity=".5"/>
+      <rect x="985" y="150" width="26" height="100" fill="#0b1626" opacity=".85"/>
+      <rect x="1090" y="150" width="26" height="100" fill="#0b1626" opacity=".85"/>
+      <defs><linearGradient id="wallg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#b9d4ea"/><stop offset=".55" stop-color="#7fa2c2"/><stop offset="1" stop-color="#48688c"/>
+      </linearGradient></defs>
+    </svg>
+    <!-- 中景：临冬城与松林 -->
+    <svg id="mid" class="bgsvg" viewBox="0 0 1280 300" preserveAspectRatio="none">
+      <g fill="#0a1322">
+        <rect x="96" y="120" width="46" height="180"/>
+        <polygon points="96,120 119,92 142,120"/>
+        <rect x="150" y="160" width="90" height="140"/>
+        <rect x="248" y="130" width="40" height="170"/>
+        <polygon points="248,130 268,104 288,130"/>
+        <rect x="150" y="188" width="138" height="10" fill="#101c30"/>
+        <rect x="112" y="150" width="8" height="14" fill="#31506f"/><rect x="262" y="158" width="8" height="14" fill="#31506f"/>
+      </g>
+      <g fill="#08101d">
+        <polygon points="360,300 392,196 424,300"/><rect x="386" y="290" width="12" height="12"/>
+        <polygon points="430,300 470,168 510,300"/>
+        <polygon points="520,300 548,214 576,300"/>
+        <polygon points="1130,300 1165,186 1200,300"/>
+        <polygon points="1200,300 1240,150 1280,300"/>
+        <polygon points="60,300 92,208 124,300"/>
+      </g>
+      <rect x="0" y="292" width="1280" height="8" fill="#0a1322"/>
+    </svg>
+    <div class="horizon-glow"></div>
+    <div class="ground"></div>
+    <canvas id="cv" width="1280" height="720"></canvas>
+    <div id="tone"></div>
+    <div class="fg-drift" style="left:-160px"></div>
+    <div class="fg-drift" style="right:-180px"></div>
+    <div class="lightrays"></div>
+    <div class="vignette"></div>
+    <div class="grain"></div>
+    <div id="flash"></div>
+  </div>
+
+  <div id="turnBadge" class="hidden"></div>
+  <button id="muteBtn" title="音乐开关 (M)">♪</button>
+  <div class="ribbon" id="ribbon"></div>
+  <div id="breakFlash">BREAK</div>
+  <div id="targetHint">选择目标 · 右键取消</div>
+
+  <div id="banner">
+    <div class="bn-top"></div>
+    <h1 id="bnTitle"></h1>
+    <p id="bnSub"></p>
+    <div class="bn-bot"></div>
+  </div>
+
+  <div id="cmdWrap" class="hidden">
+    <div class="cw-name" id="cmdName"></div>
+    <div id="cmdList"></div>
+    <div id="boostRow">
+      <span class="bl">增 幅</span>
+      <span class="pips" id="boostPips"></span>
+      <button id="bpDown">−</button>
+      <span class="bv" id="boostVal">×0</span>
+      <button id="bpUp">＋</button>
+    </div>
+  </div>
+
+  <div id="partyBar"></div>
+
+  <div id="dlg" class="hidden">
+    <canvas id="dlgFace" width="64" height="64"></canvas>
+    <div id="dlgName"></div>
+    <div id="dlgText"></div>
+    <div id="dlgChoices"></div>
+    <div id="dlgNext">▼</div>
+  </div>
+
+  <div id="worldHud" class="hidden">
+    <div class="wh-title">维斯特洛 · 远征队</div>
+    <div class="wh-hint">WASD/方向键移动 · E 互动 · Q 任务日志 · C 魔物面板</div>
+    <div id="whParty"></div>
+    <div id="whProg"></div>
+  </div>
+
+  <div id="questLog">
+    <h3>任 务 日 志</h3>
+    <div id="qlBody"></div>
+  </div>
+
+  <div id="beastPanel">
+    <h3>魔 物 伙 伴 · 图 鉴</h3>
+    <div id="bpList"></div>
+  </div>
+
+  <div id="title">
+    <div class="t-lat">OCTOPATH STYLE · A SONG OF ICE AND FIRE</div>
+    <h1>冰火旅人</h1>
+    <div class="t-sub">长 夜 远 征</div>
+    <div class="t-div"><div class="ln"></div>❖<div class="ln r"></div></div>
+    <div class="roster">
+      <div><b>琼恩·雪诺</b><span>北境之子</span></div>
+      <div><b>丹妮莉丝</b><span>龙之母</span></div>
+      <div><b>艾莉亚</b><span>无面者</span></div>
+      <div><b>布蕾妮</b><span>誓言骑士</span></div>
+    </div>
+    <div class="t-go" id="titleGo">— 点击 开始征程 —</div>
+    <div class="t-hint">WASD/方向键 移动 · E 互动 · ↑↓ 选择 / 回车确认 / ESC 返回 / B 增幅 · M 静音</div>
+  </div>
+
+  <div id="end" class="hidden">
+    <h1 id="endTitle"></h1>
+    <div class="e-sub" id="endSub"></div>
+    <div class="e-stats" id="endStats"></div>
+    <button class="e-btn" id="endBtn">再 战 一 次</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+/* ================= 工具 ================= */
+const $=s=>document.querySelector(s);
+const rand=(a,b)=>a+Math.random()*(b-a);
+const irand=(a,b)=>Math.floor(rand(a,b+1));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const alive=a=>a.filter(u=>u.alive);
+
+/* ================= 像素画 ================= */
+const PAL={
+  jon:{K:'#16161f',F:'#e8b98f',E:'#20222c',C:'#262a36',D:'#3d332a',W:'#9096a4',B:'#12141c',S:'#d3dcea',G:'#c9a55a'},
+  dany:{W:'#eef1f6',F:'#f2cba4',E:'#274',U:'#4a7ab5',L:'#d3e4f6',B:'#262c3a'},
+  arya:{N:'#5a4632',F:'#eec39a',E:'#22242e',A:'#4a4c56',B:'#15171f',S:'#dde3ec',G:'#98a0ae'},
+  bri:{Y:'#d9b36a',F:'#e8b98f',E:'#232630',M:'#8d99a8',O:'#c9a55a',S:'#e2e8f0',B:'#1a1d26'},
+  wight:{R:'#7d8a78',B:'#7de8ff',T:'#3a404c',D:'#1c1f28'},
+  walker:{I:'#cfe4ef',C:'#9fc6da',B:'#45d6ff',K:'#28323f',H:'#66798c',P:'#c4ecff'},
+  nk:{I:'#b6cfdd',N:'#5a7383',B:'#54d8ff',M:'#394a58',K:'#161f2a'},
+  dragon:{K:'#181020',M:'#43283d',R:'#b8453a',O:'#ffc45e'},
+  spider:{L:'#b9d4e8',B:'#66f0ff',G:'#4a607a',T:'#7d9cb8'},
+  giant:{F:'#6b5138',S:'#c9a080',E:'#ffd28f',C:'#4a3a28'},
+  wolf:{H:'#8d99a8',D:'#5a6a7c',E:'#ffd28f',K:'#20242e',W:'#dfe7f2'}
+};
+const SPR={
+jon:[
+".....KKKKK.......",
+"....KKKKKKK......",
+"....KFFFFFK......",
+"....KFEFEFK......",
+"....KFFFFFK......",
+".....FFFFF.......",
+"....WWWWWWW......",
+"...CCCCCCCCC.....",
+"..CCCCCCCCCC..S..",
+"..C.DDDDDDDC..S..",
+"..C.DDDDDDDC..S..",
+"..C.DDDDDDDC..S..",
+"...CCCCCCCCC.GGG.",
+"....DDDDDDD......",
+"....DD...DD......",
+"....DD...DD......",
+"....BB...BB......"],
+dany:[
+"....WWWWWW......",
+"...WWWWWWWW.....",
+"...WFFFFFFW.....",
+"...WFEFEFFW.....",
+"...WFFFFFFW.....",
+"...WWFFFFWW.....",
+"....UUUUUU......",
+"...UUUUUUUU.....",
+"...UULLLLUU.....",
+"...UUUUUUUU.....",
+"...UUUUUUUU.....",
+"...UUUUUUUU.....",
+"..UUUUUUUUUU....",
+"..UUUUUUUUUU....",
+"..UUUUUUUUUU....",
+"..UUUUUUUUUU....",
+"...BB....BB....."],
+arya:[
+".....NNNNN......",
+"....NNNNNNN.....",
+"....NFFFFFN.....",
+"....NFEFEFN.....",
+"....NFFFFFN.....",
+".....FFFFF......",
+"....AAAAAAA.....",
+"...AAAAAAAAA....",
+"..A.AAAAAAAA.S..",
+"..A.AAAAAAAA.S..",
+"...AAAAAAAAA.G..",
+"....AAAAAAA.....",
+"....AA...AA.....",
+"....AA...AA.....",
+"....BB...BB....."],
+bri:[
+".....YYYYY.......",
+"....YYYYYYY......",
+"....YFFFFFY......",
+"....YFEFEFY......",
+"....YFFFFFY......",
+".....FFFFF.......",
+"...MMMMMMMMM.....",
+"..MMOMMMMMOMM..S.",
+"..MMMMMMMMMMM..S.",
+"..MMMMMMMMMMM..S.",
+"..MMMMMMMMMMM..S.",
+"...MMMMMMMMM..GG.",
+"....MMMMMMM......",
+"....MM...MM......",
+"....MM...MM......",
+"....MM...MM......",
+"....BB...BB......"],
+wight:[
+"....RRRR.......",
+"...RRRRRR......",
+"...RBBRRR......",
+"...RRRRRRR.....",
+"....RRRR.......",
+".....RR........",
+"...TTTTTTT.....",
+"..TTTTTTTTT....",
+"..T.TTTTTT.....",
+"....TTTTTTT....",
+"....TTTTTTT....",
+".....TT.TT.....",
+".....TT.TT.....",
+".....DD.DD....."],
+walker:[
+"...C..C..C......",
+"...CIIIIC.......",
+"...IIIIIII......",
+"..IIBIIIIBI.....",
+"...IIIIIII......",
+"....IIIII.......",
+".....III........",
+"..KKKKKKKKK..P..",
+"..KKKKKKKKK..PP.",
+"..K.KKKKKKK..P..",
+"..K.KKKKKKK..H..",
+"....KKKKKKK..H..",
+"....KKKKKKK..H..",
+"....KK...KK..H..",
+"....KK...KK..H..",
+"....II...II.....",
+"....II...II....."],
+nk:[
+"..N...N..N...N....",
+"..NN..N..N..NN....",
+"..IIIIIIIIIIII....",
+"..IIBBIIIIBBII....",
+"..IIIIIIIIIIII....",
+"...IIIIMMIIII.....",
+"..KKKKKKKKKKKK....",
+".KKKKKKKKKKKKKK...",
+".K.KKKKKKKKKKKK...",
+".K.KKKKKKKKKKKK...",
+".K.KKKKKKKKKKKK...",
+"...KKKKKKKKKKK....",
+"...KKKKKKKKKKK....",
+"...KKKKKKKKKKK....",
+"...KKK.....KKK....",
+"...III.....III....",
+"...III.....III...."],
+spider:[
+"..T............T..",
+"...T....LL....T...",
+"....T.LLLLLL.T....",
+".LLLLLLLLLLLLLLLL.",
+".LLBBLLLLLLBBLLLL.",
+"..LLLLLLLLLLLLLL..",
+".T.LLLLLLLLLLLL.T.",
+"..T.LLLLLLLLLL.T..",
+"...T.LLLLLLLL.T...",
+"....T..LLLL..T...."],
+giant:[
+"....SSSSSS......",
+"...SSSSSSSS.....",
+"...SESSESSS.....",
+"...SSSSSSSS.....",
+"....SSSSSS......",
+"..FFFFFFFFFF....",
+".FFFFFFFFFFF.CC.",
+".FF.FFFFFF.F..C.",
+".FF.FFFFFF.F..C.",
+".FF.FFFFFF.F..C.",
+".FFFFFFFFFFF..C.",
+"..FFFFFFFFFF.C..",
+"..FFFFFFFFFF....",
+"..FFF....FFF....",
+"..FFF....FFF....",
+".FFF......FFF..."],
+wolf:[
+"................",
+"................",
+"..D.D...........",
+"..DDD...........",
+".DHHHDK.........",
+".DHEHHK.........",
+".DHHHHKK........",
+"..KHHHHHK.......",
+"...HHHHHHHK.....",
+"..HHHHHHHHHK....",
+"..HHHHHHHHHHWW..",
+"...HH....HHH....",
+"...HD....HH.....",
+"...DD....DD....."],
+dragonA:[
+"..............MM........................",
+".............MMMM.......................",
+"............MMMMMM......................",
+"...........MMMMMMMM.....................",
+"....KK.....MMMMMMMMMM...................",
+"...KKKK.....MMMMMMMM....................",
+"..KKOKKK.....MMMMMM.....................",
+".KKKKKKKK.....MMMM......................",
+".KKKKKKKKKK....MM.......................",
+".KRRKKKKKKKKKKKKKKKKKKKKKKKK............",
+"..KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK.......",
+"...KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK....",
+"....KKKK...KKKK...KKKK...........KKKKK..",
+"....KK.....KK......KK..............KK..."],
+dragonB:[
+"........................................",
+"........................................",
+"............MM..........................",
+"....KK....MMMM..........................",
+"...KKKK..MMMMMM.........................",
+"..KKOKKK.MMMMMMMM.......................",
+".KKKKKKKKMMMMMMMMMM.....................",
+".KKKKKKKKKKMMMMMMMMMMM..................",
+".KRRKKKKKKKKKKKKKKKKKKKKKKKK............",
+"..KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK.......",
+"...KKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK....",
+"....KKKK...KKKK...KKKK...........KKKKK..",
+"....KK.....KK......KK..............KK..."]
+};
+function makeSprite(spr,pal){
+  const h=spr.length,w=Math.max(...spr.map(r=>r.length));
+  const solid=(r,c)=>{const ch=spr[r]&&spr[r][c];return ch&&ch!=='.'&&ch!==' ';};
+  const c=document.createElement('canvas');c.width=w+2;c.height=h+2;
+  const x=c.getContext('2d');
+  x.fillStyle='#05070d';
+  for(const[ox,oy]of[[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,1],[1,-1],[-1,-1]])
+    for(let r=0;r<h;r++)for(let cc=0;cc<w;cc++)if(solid(r,cc))x.fillRect(cc+1+ox,r+1+oy,1,1);
+  for(let r=0;r<h;r++)for(let cc=0;cc<spr[r].length;cc++){
+    if(!solid(r,cc))continue;x.fillStyle=pal[spr[r][cc]]||'#f0f';x.fillRect(cc+1,r+1,1,1);
+  }
+  const f=document.createElement('canvas');f.width=c.width;f.height=c.height;
+  const fx=f.getContext('2d');fx.drawImage(c,0,0);
+  fx.globalCompositeOperation='source-in';fx.fillStyle='#fff';fx.fillRect(0,0,f.width,f.height);
+  return {img:c,flash:f,w:c.width,h:c.height};
+}
+const DRA={a:makeSprite(SPR.dragonA,PAL.dragon),b:makeSprite(SPR.dragonB,PAL.dragon)};
+
+/* ================= 数据定义 ================= */
+const ELE={
+  sword:{n:'剑',c:'#bcd6ff'},dagger:{n:'短剑',c:'#c8f7a0'},fire:{n:'火',c:'#ff9c54'},
+  ice:{n:'冰',c:'#8fe8ff'},valyrian:{n:'瓦钢',c:'#ff7b7b'},dragonglass:{n:'龙晶',c:'#8affc1'}
+};
+const PLAYERS_DEF=[
+ {key:'jon',name:'琼恩·雪诺',cls:'北境之子',hp:460,sp:64,atk:74,speed:54,x:935,y:558,spr:SPR.jon,pal:PAL.jon,scale:4,weap:'valyrian',lv:1,exp:0,g:{hp:46,atk:7,sp:6},
+  skills:[
+   {n:'长爪·连斩',sp:10,mult:.8,hits:2,ele:'sword',t:'one',desc:'瓦雷利亚钢剑二段斩击'},
+   {n:'北境之怒',sp:22,mult:2.6,hits:1,ele:'valyrian',t:'one',desc:'凝聚北境意志的全力一击',req:3}]},
+ {key:'dany',name:'丹妮莉丝',cls:'龙之母',hp:320,sp:84,atk:80,speed:47,x:1105,y:512,spr:SPR.dany,pal:PAL.dany,scale:4,weap:'fire',lv:1,exp:0,g:{hp:34,atk:8,sp:7},
+  skills:[
+   {n:'龙焰·Dracarys',sp:16,mult:1.35,hits:1,ele:'fire',t:'all',desc:'巨龙之焰吞噬所有敌人'},
+   {n:'卓耿之怒',sp:30,mult:2.8,hits:1,ele:'fire',t:'one',desc:'巨龙俯冲焚烧单体',req:3}]},
+ {key:'arya',name:'艾莉亚',cls:'无面者',hp:300,sp:60,atk:58,speed:72,x:955,y:648,spr:SPR.arya,pal:PAL.arya,scale:4,weap:'dagger',lv:1,exp:0,g:{hp:32,atk:6,sp:7},
+  skills:[
+   {n:'缝针·疾风刺',sp:10,mult:.62,hits:4,ele:'dagger',t:'one',desc:'迅捷的四连突刺'},
+   {n:'无面者之影',sp:18,mult:2.3,hits:1,ele:'dagger',t:'one',crit:.35,desc:'暗影中致命的必杀',req:3}]},
+ {key:'bri',name:'布蕾妮',cls:'誓言骑士',hp:560,sp:60,atk:68,speed:40,x:1120,y:612,spr:SPR.bri,pal:PAL.bri,scale:4,weap:'sword',lv:1,exp:0,g:{hp:52,atk:6,sp:5},
+  skills:[
+   {n:'誓约庇护',sp:14,mult:0,hits:0,ele:null,t:'self',buff:'guard',desc:'全队受到伤害减半(可增幅延长)'},
+   {n:'守誓者重斩',sp:16,mult:2.0,hits:1,ele:'sword',t:'one',desc:'以誓言铸就的重击',req:3}]}
+];
+const FOES={
+ wight:{key:'wight',name:'尸鬼',hp:255,atk:48,speed:44,shield:4,def:0,scale:4,spr:SPR.wight,pal:PAL.wight,exp:40,
+   weak:['fire','dagger','dragonglass']},
+ walker:{key:'walker',name:'异鬼',hp:560,atk:72,speed:56,shield:6,def:6,scale:4.4,spr:SPR.walker,pal:PAL.walker,exp:90,
+   weak:['valyrian','fire','dragonglass']},
+ nk:{key:'nk',name:'夜王',hp:1950,atk:88,speed:62,shield:6,def:8,scale:5.4,spr:SPR.nk,pal:PAL.nk,boss:true,exp:400,
+   weak:['valyrian','dragonglass']},
+ spider:{key:'spider',name:'冰蜘蛛',hp:300,atk:54,speed:60,shield:4,def:2,scale:4.2,spr:SPR.spider,pal:PAL.spider,exp:45,
+   weak:['fire','valyrian','dagger']},
+ giant:{key:'giant',name:'巨人',hp:950,atk:80,speed:30,shield:6,def:6,scale:5.6,spr:SPR.giant,pal:PAL.giant,exp:120,
+   weak:['sword','fire']},
+ wolf:{key:'wolf',name:'冰原狼',hp:230,atk:46,speed:66,shield:3,def:0,scale:4,spr:SPR.wolf,pal:PAL.wolf,exp:50,
+   weak:['fire','sword','valyrian']}
+};
+const TAMEABLE=['spider','wolf','giant'];
+function tameChance(e){return .55+(1-e.hp/e.maxhp)*.35+(e.anger?-.15:0);}
+const SLOTS=[{x:160,y:628},{x:300,y:470},{x:455,y:612},{x:565,y:520}];
+const ITEMS_DEF=[
+ {key:'potion',n:'学城秘药',cnt:5,desc:'恢复生命',heal:360},
+ {key:'wine',n:'多恩烈酒',cnt:3,desc:'恢复精力',sp:50},
+ {key:'glass',n:'龙晶匕首',cnt:3,desc:'掷出龙晶重创亡者',dmg:320,ele:'dragonglass'},
+ {key:'meat',n:'鲜肉',cnt:0,desc:'喂食魔物提升好感'}
+];
+
+/* ================= 大地图数据 ================= */
+const LOCS={
+ winterfell:{key:'winterfell',n:'临冬城',x:560,y:255,desc:'史塔克家族祖城 · 远征营地'},
+ wall:{key:'wall',n:'长城',x:640,y:120,desc:'绝境长城 · 守夜人残部'},
+ wolfswood:{key:'wolfswood',n:'狼林',x:400,y:345,desc:'北境古森林 · 巨人出没'},
+ kingslanding:{key:'kingslanding',n:'君临',x:790,y:505,desc:'七国都城 · 瑟曦的王座'},
+ dragonstone:{key:'dragonstone',n:'龙石岛',x:935,y:570,desc:'坦格利安故地 · 龙的居所'}
+};
+const LOCS_KEYS=['winterfell','wall','wolfswood','kingslanding','dragonstone'];
+const ROADS=[['winterfell','wall'],['winterfell','wolfswood'],['winterfell','kingslanding'],['kingslanding','dragonstone']];
+const LAND=[[60,120],[260,60],[520,40],[760,70],[880,180],[860,320],[980,420],[1060,560],[980,660],[760,690],[520,680],[300,640],[140,520],[90,320]];
+const SNOWCAP=[[480,40],[520,40],[760,70],[720,130],[560,120],[420,90],[300,60],[260,60],[360,110]];
+const TOWNS_DOTS=[[500,300],[620,220],[700,420],[850,520],[480,420],[300,500],[760,260],[660,560]];
+/* ================= 剧情脚本 ================= */
+const STORY={
+prologue:[
+ {sp:'旁白',txt:'临冬城的大厅里，烛火在寒风中摇晃。长夜将至，亡者的低语越过长城，七国的命运悬于一线。'},
+ {sp:'琼恩',face:'jon',txt:'诸位，长城之外的亡者不会等待我们的争执结束。唯有生者联合，才能守住黎明。'},
+ {sp:'艾莉亚',face:'arya',txt:'（低声）北境的人只信自己的眼睛……那就让他们看看，什么叫真正的敌人。'},
+ {sp:'布蕾妮',face:'bri',txt:'我以骑士之名起誓——只要还握着剑，就不会让任何一位盟友独自赴死。'},
+ {sp:'旁白',txt:'就在此时，城外传来低沉的轰鸣，仿佛雷声滚过雪原。众人转头望向窗外——',fx:'rumble'},
+ {sp:'旁白',txt:'一道巨大的黑影掠过月亮，羽翼遮蔽了星光。龙，来到了临冬城。',fx:'dragon'},
+ {sp:'丹妮莉丝',face:'dany',txt:'我带来了火焰与誓言。卓耿的怒火，将为生者而战。琼恩·雪诺，你的战争，就是我的战争。'},
+ {sp:'琼恩',face:'jon',txt:'丹妮莉丝……临冬城欢迎你们。今夜之后，我们并肩作战。'},
+ {sp:'旁白',txt:'大厅中响起低低的议论。所有人的目光，落在两位领袖身上——',
+  choices:[
+   {t:'高呼"北境之王！"（士气+攻击）',eff:{atkAll:4},act:'oath_jon',say:'琼恩微微颔首。北境的怒吼在厅中回荡，众人拔剑相击，攻击提升！'},
+   {t:'高呼"龙之母！"（龙焰+精力）',eff:{spAll:12},act:'oath_dany',say:'丹妮莉丝莞尔一笑，卓耿在夜空长啸相和。烈焰的意志注入全队，精力提升！'}]},
+ {sp:'旁白',txt:'联盟缔结。远征队整装待发——长夜将至，而黎明需要有人去夺取。'}
+],
+wf_menu:[
+ {sp:'旁白',txt:'临冬城营地：篝火驱散寒意，这里是远征的起点，也是唯一可以安心休整的地方。',
+  choices:[
+   {t:'全队休整（回满状态）',act:'wf_rest',end:true},
+   {t:'走访营地（队友的独白）',act:'wf_visit',end:true},
+   {t:'启程（打开地图）',act:'wf_leave',end:true}]}
+],
+wf_visit:[
+ {sp:'琼恩',face:'jon',txt:'长爪……瓦雷利亚钢。它曾经属于一个我不配冒充的家族。可如今我握着它，只为了让更多人活到天亮。'},
+ {sp:'艾莉亚',face:'arya',txt:'（木剑破风声）瓦德·佛雷，瑟曦·兰尼斯特……名单上的名字我又背了一遍。缝针，别急，长夜之后才轮到你们。'},
+ {sp:'布蕾妮',face:'bri',txt:'我曾向凯特琳夫人发誓，守护史塔克家的孩子们。誓言不问胜负，只问是否兑现。这就是我的骑士之道。'},
+ {sp:'丹妮莉丝',face:'dany',txt:'（轻抚龙影投下的暗处）卓耿，再忍耐一下。等长夜燃尽，我带你去看从未结冰的海。'},
+ {sp:'旁白',txt:'四段独白，四种坚持。远征队的羁绊，在寒夜里悄然加深。'}
+],
+wall_pre:[
+ {sp:'旁白',txt:'绝境长城。七百尺的寒冰巨墙沉默矗立，守夜人的黑衣在风雪中几乎与夜色融为一体。'},
+ {sp:'守夜人',txt:'你们来得正好……尸鬼的斥候越来越频繁了。昨夜，它们当中混进了巨大的白影，八条腿，眼睛像冰一样蓝。'},
+ {sp:'琼恩',face:'jon',txt:'冰蜘蛛……森林之子古老的梦魇。它们若已越过长城，南下的通路就不止一处了。'},
+ {sp:'丹妮莉丝',face:'dany',txt:'那就把通路烧出来。卓耿的火焰，会替守夜人回答长夜。'},
+ {sp:'旁白',txt:'风雪骤紧——尸群的低吼自墙外涌来。迎战！'}
+],
+wall_post:[
+ {sp:'旁白',txt:'战斗结束。雪地上散落着焦黑的残骸，一只冰蜘蛛的躯体仍在冒着寒气。'},
+ {sp:'艾莉亚',face:'arya',txt:'（剖开蛛腹）看——这个。人类的指骨，还戴着守夜人的戒指。它们连死去的弟兄都不放过。'},
+ {sp:'守夜人',txt:'这是异鬼南下的证据……带上它。诸位，愿黎明眷顾你们。（获得 龙晶匕首×1）'},
+ {sp:'旁白',txt:'远征队获得了 龙晶匕首×1。长城的真相，比传闻更加残酷。'}
+],
+wolf_pre:[
+ {sp:'旁白',txt:'狼林深处，古木参天。巨大的足迹陷在雪地里——每一步都有半个人那么长。'},
+ {sp:'布蕾妮',face:'bri',txt:'巨人……先民的后裔。它们并非天生邪恶，但被惊扰时，连城墙都能推倒。'},
+ {sp:'旁白',txt:'前方传来低沉的鼾声。一头巨人正蹲在结冰的溪边，怀里似乎护着什么东西。',
+  choices:[
+   {t:'潜行绕过（稳妥）',eff:{item:'potion'},act:'wolf_sneak',say:'艾莉亚带路，众人屏息贴树而行。巨人怀中——竟是一窝瑟瑟发抖的幼狼。悄然离开前，你在树洞发现了 学城秘药×1。',end:true},
+   {t:'正面交涉/战斗（风险与奖励）',act:'wolf_fight',end:true}]}
+],
+wolf_win:[
+ {sp:'旁白',txt:'巨人轰然倒地，却在最后一刻侧过身躯——它至死都护着怀中的东西：三只瑟瑟发抖的幼狼。'},
+ {sp:'艾莉亚',face:'arya',txt:'……原来它不是袭击者，是母亲。是我们闯进了它的家。'},
+ {sp:'丹妮莉丝',face:'dany',txt:'长夜让所有人都成了惊弓之鸟。安葬它吧——以战士之礼。'},
+ {sp:'旁白',txt:'众人在狼林安葬了巨人。树洞中，它囤积的补给留给了远征队（获得 学城秘药×2）。'}
+],
+kl_pre:[
+ {sp:'旁白',txt:'君临。红堡的城墙在夕阳下泛着血色。瑟曦·兰尼斯特高坐铁王座，笑意未达眼底。'},
+ {sp:'瑟曦',txt:'亡者？冰蜘蛛？北境的寓言真是越来越精彩了。说吧，你们想要什么——别用末日吓唬我。'},
+ {sp:'琼恩',face:'jon',txt:'这不是寓言。死人正在行军，你的城墙挡不住它们。我们需要龙晶、粮食，和军队。'},
+ {sp:'旁白',txt:'瑟曦的手指轻轻敲击王座扶手。',
+  choices:[
+   {t:'据理力争（强硬）',eff:{item:'wine'},say:'瑟曦冷笑：好大的胆子。也罢——把这些烈酒带走，算我给"黎明"的赌注。（获得 多恩烈酒×1）',act:'kl_argue'},
+   {t:'恳请怜悯（示弱）',eff:{item:'potion'},say:'瑟曦眯起眼：怜悯？哼……把那些药带走，别让我再看见你们摇尾乞怜的样子。（获得 学城秘药×1）',act:'kl_beg'}]},
+ {sp:'艾莉亚',face:'arya',txt:'（走出红堡，低声）记住她现在的每一句话。长夜之后，君临会想起今天它关上了门。'},
+ {sp:'旁白',txt:'宫廷的门在身后合拢。政治的寒冬，有时比长城的风雪更冷。'}
+],
+ds_event:[
+ {sp:'旁白',txt:'龙石岛的断崖之下，海浪拍打着黑石。忽然——',fx:'rumble'},
+ {sp:'旁白',txt:'一声龙啸自云层深处炸开，低沉、悠长，震得胸腔发麻。碎石自崖顶簌簌滚落。'},
+ {sp:'旁白',txt:'云层裂开。巨大的黑影展开双翼，遮蔽了半边天空——卓耿，降临。',fx:'dragon'},
+ {sp:'琼恩',face:'jon',txt:'（屏息）……我在长城见过风暴，见过亡者的眼睛。但这样的生灵……这是另一种力量。'},
+ {sp:'布蕾妮',face:'bri',txt:'（手按剑柄，指节发白）传说是真的。世上真有能够终结战争的东西。'},
+ {sp:'丹妮莉丝',face:'dany',txt:'（缓步上前，张开手臂）卓耿——'},
+ {sp:'旁白',txt:'巨龙垂首，贴着她的掌心喷出一股温热的气流。随后它仰天长啸，火焰映红了整片海面。',fx:'dragon'},
+ {sp:'丹妮莉丝',face:'dany',txt:'从今日起，龙石岛的火焰属于远征队。长夜若想吞没七国，就先问过卓耿的牙齿。'},
+ {sp:'旁白',txt:'联盟，就此牢不可破。众人启程返回临冬城——决战将至。'}
+],
+finale_pre:[
+ {sp:'旁白',txt:'临冬城，决战之夜。城墙之外，亡者的海洋在地平线上涌动，蓝眼睛连成一片冰冷的星河。'},
+ {sp:'琼恩',face:'jon',txt:'所有人，各就各位。今夜我们守的不仅是城墙——是所有还活着的人。'},
+ {sp:'丹妮莉丝',face:'dany',txt:'卓耿已经饥渴难耐了。Dracarys——这个词，长夜会记到天亮。'},
+ {sp:'旁白',txt:'',
+  choices:[
+   {t:'迎战！（开始终局之战）',act:'finale_go',end:true},
+   {t:'再准备一下（返回地图）',act:'finale_wait',end:true}]}
+],
+ending:[
+ {sp:'旁白',txt:'黎明。第一缕阳光越过尸横遍野的雪原，亡者的残躯在晨光中化为灰烬，随风散去。'},
+ {sp:'琼恩',face:'jon',txt:'（拄着长爪，望向南方）结束了……从今往后，守的不是长城，是活着的人。'},
+ {sp:'艾莉亚',face:'arya',txt:'（把缝针插回腰间，咧嘴一笑）名单？长夜把最可怕的名字替我划掉了。剩下的……慢慢来。'},
+ {sp:'布蕾妮',face:'bri',txt:'（单膝跪地，将剑指向晨曦）誓言，兑现了。'},
+ {sp:'丹妮莉丝',face:'dany',txt:'（抚过卓耿焦黑的鳞片）看，卓耿——这就是我们烧出来的黎明。'},
+ {sp:'旁白',txt:'冰与火之歌，于此奏响终章。长夜已尽，旅人当归。'}
+]
+};
+/* ================= 地点战斗波次 ================= */
+const WALL_WAVES=[
+ {banner:'长城保卫战',sub:'尸鬼的斥候攀墙而来……',
+  foes:[{k:'wight',x:290,y:480},{k:'wight',x:170,y:600},{k:'spider',x:455,y:545}]},
+ {banner:'白影突袭',sub:'冰蜘蛛的复眼在黑暗中亮起。',
+  foes:[{k:'spider',x:300,y:470},{k:'spider',x:180,y:590},{k:'wight',x:470,y:620}]}
+];
+const GIANT_WAVES=[
+ {banner:'狼林 · 巨人',sub:'大地随着它的脚步颤抖。',
+  foes:[{k:'giant',x:330,y:520},{k:'wight',x:160,y:625}]}
+];
+const FINAL_WAVES=[
+ {banner:'终局 · 第一夜',sub:'亡者的潮水漫过护城河。',
+  foes:[{k:'wight',x:290,y:480},{k:'wight',x:165,y:595},{k:'spider',x:460,y:555}]},
+ {banner:'终局 · 第二夜',sub:'异鬼踏冰而来，寒雾笼罩城墙。',
+  foes:[{k:'walker',x:300,y:470},{k:'walker',x:480,y:560},{k:'wight',x:165,y:615}]},
+ {banner:'终局 · 长夜降临',sub:'夜王亲至。黎明的最后一道门槛。',
+  foes:[{k:'nk',x:355,y:525},{k:'wight',x:160,y:628}]}
+];
+
+/* ================= 全局状态 ================= */
+const G={scene:'title',wave:0,round:0,players:[],enemies:[],cur:null,boost:0,phase:'idle',
+  targetMode:null,targetKind:null,awaiting:null,guardRounds:0,items:[],stats:{dmg:0,kills:0},hover:null,
+  flags:{},locs:{},world:null,battleWaves:null,battleFinal:false,battleResult:null,prevScene:null,
+  busy:false,worldSel:0,worldHover:null,dragonDone:false,_lastAct:null};
+
+function makeUnit(d,side){
+  const s=makeSprite(d.spr,d.pal);
+  return Object.assign({},d,{side,alive:true,maxhp:d.hp,maxsp:d.sp||0,sp:d.sp||0,bp:side==='player'?1:0,
+    shield:d.shield||0,maxshield:d.shield||0,found:new Set(),broken:false,
+    guardSelf:false,pat:0,phase:rand(0,6),img:s.img,fimg:s.flash,sw:s.w,sh:s.h,
+    flashT:0,shakeT:0,lunge:null,dissolve:0,entryT:0,fear:0});
+}
+
+/* ================= 音效 ================= */
+let AC=null,master=null,muted=false,bgmOn=false;
+function initAudio(){
+  if(AC)return;
+  AC=new (window.AudioContext||window.webkitAudioContext)();
+  master=AC.createGain();master.gain.value=.55;master.connect(AC.destination);
+  const drone=AC.createOscillator(),dg=AC.createGain(),df=AC.createBiquadFilter();
+  drone.type='sawtooth';drone.frequency.value=73.42;df.type='lowpass';df.frequency.value=220;
+  dg.gain.value=.045;drone.connect(df);df.connect(dg);dg.connect(master);drone.start();
+  const B={step:0,next:AC.currentTime+.1};
+  const ARP=[293.66,349.23,440,523.25,440,349.23];let ai=0;
+  function tick(){
+    if(!AC)return;
+    while(B.next<AC.currentTime+.18){
+      const t=B.next,s=B.step;
+      if(!muted){
+        if(s%4===0){ // 低音
+          const o=AC.createOscillator(),g=AC.createGain(),f=AC.createBiquadFilter();
+          o.type='sawtooth';o.frequency.value=s%8===0?73.42:55;f.type='lowpass';f.frequency.value=300;
+          g.gain.setValueAtTime(.16,t);g.gain.exponentialRampToValueAtTime(.001,t+.5);
+          o.connect(f);f.connect(g);g.connect(master);o.start(t);o.stop(t+.55);}
+        if(s%2===0){ // 琶音
+          const o=AC.createOscillator(),g=AC.createGain();
+          o.type='triangle';o.frequency.value=ARP[ai++%ARP.length];
+          g.gain.setValueAtTime(.05,t);g.gain.exponentialRampToValueAtTime(.001,t+.3);
+          o.connect(g);g.connect(master);o.start(t);o.stop(t+.32);}
+        if(s===0||s===8){ // 鼓
+          const o=AC.createOscillator(),g=AC.createGain();
+          o.frequency.setValueAtTime(110,t);o.frequency.exponentialRampToValueAtTime(38,t+.16);
+          g.gain.setValueAtTime(.4,t);g.gain.exponentialRampToValueAtTime(.001,t+.2);
+          o.connect(g);g.connect(master);o.start(t);o.stop(t+.22);}
+      }
+      B.step=(s+1)%16;B.next+=.3125;
+    }
+  }
+  setInterval(tick,80);bgmOn=true;
+}
+function tone(freq,dur,type='square',vol=.15,slide=0,delay=0){
+  if(!AC||muted)return;const t=AC.currentTime+delay;
+  const o=AC.createOscillator(),g=AC.createGain();
+  o.type=type;o.frequency.setValueAtTime(freq,t);
+  if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(20,freq+slide),t+dur);
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  o.connect(g);g.connect(master);o.start(t);o.stop(t+dur+.02);
+}
+function noiseBurst(dur=.15,vol=.2,fq=1800,delay=0){
+  if(!AC||muted)return;const t=AC.currentTime+delay;
+  const n=AC.createBufferSource(),b=AC.createBuffer(1,AC.sampleRate*dur,AC.sampleRate);
+  const d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  n.buffer=b;const f=AC.createBiquadFilter();f.type='lowpass';f.frequency.value=fq;
+  const g=AC.createGain();g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  n.connect(f);f.connect(g);g.connect(master);n.start(t);
+}
+const SFX={
+  menu(){tone(660,.06,'square',.06)},
+  ok(){tone(520,.08,'square',.1);tone(780,.1,'square',.08,0,.06)},
+  back(){tone(360,.08,'square',.08)},
+  slash(){noiseBurst(.12,.25,2400);tone(220,.1,'sawtooth',.1,-120)},
+  fire(){noiseBurst(.4,.22,900);tone(160,.45,'sawtooth',.14,240)},
+  ice(){tone(1240,.3,'triangle',.1,-700);tone(1860,.22,'sine',.07,-900,.05)},
+  hit(){noiseBurst(.1,.3,700);tone(90,.14,'sine',.3,-40)},
+  heal(){[523,659,784].forEach((f,i)=>tone(f,.16,'triangle',.09,0,i*.09))},
+  buff(){[392,523,659].forEach((f,i)=>tone(f,.2,'sine',.09,0,i*.1))},
+  brk(){tone(196,.5,'sawtooth',.2,-60);noiseBurst(.4,.3,500);[784,988,1175].forEach((f,i)=>tone(f,.3,'square',.07,0,.1+i*.07))},
+  die(){tone(300,.5,'sawtooth',.12,-260)},
+  hurt(){noiseBurst(.12,.22,500);tone(70,.16,'sine',.25,-30)},
+  summon(){tone(110,.8,'sawtooth',.12,60);noiseBurst(.6,.1,400,.1)},
+  roar(){tone(160,1.4,'sawtooth',.22,-120);tone(80,1.6,'sawtooth',.18,-50,.05);noiseBurst(1.1,.2,600,.1)},
+  wings(){for(let i=0;i<4;i++)noiseBurst(.16,.13,300,i*.19)},
+  rumble(){tone(48,1.8,'sine',.4,-18);noiseBurst(1.5,.25,200)},
+  stomp(){tone(70,.25,'sine',.45,-30);noiseBurst(.2,.3,350)},
+  win(){[294,370,440,587].forEach((f,i)=>tone(f,.35,'triangle',.14,0,i*.16));tone(587,.9,'triangle',.12,0,.7)},
+  lose(){[220,196,165,110].forEach((f,i)=>tone(f,.5,'sawtooth',.1,-20,i*.3))}
+};
+
+/* ================= 舞台与渲染 ================= */
+const stage=$('#stage'),world=$('#world'),cv=$('#cv'),ctx=cv.getContext('2d');
+function fit(){const s=Math.min(innerWidth/1280,innerHeight/720);stage.style.transform=`translate(-50%,-50%) scale(${s})`;}
+addEventListener('resize',fit);fit();
+(function stars(){const box=$('#stars');for(let i=0;i<46;i++){const d=document.createElement('div');d.className='star';
+  const sz=Math.random()<.7?1:2;d.style.cssText=`left:${rand(0,1280)}px;top:${rand(6,300)}px;width:${sz}px;height:${sz}px;animation-delay:${rand(0,3)}s;animation-duration:${rand(2,5)}s`;box.appendChild(d);}})();
+
+const SNOW=[],FXP=[],SLASH=[];
+for(let i=0;i<95;i++)SNOW.push({x:rand(0,1280),y:rand(0,720),v:rand(.4,2.6),s:rand(1,3.4),ph:rand(0,6)});
+function burst(x,y,o={}){const n=o.n||18;
+  for(let i=0;i<n;i++){const a=rand(0,Math.PI*2),sp=rand(.4,o.spd||3);
+    FXP.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-(o.up?1.4:0),g:o.g!==undefined?o.g:.05,
+      t0:performance.now(),life:o.life||650,size:o.size||3.2,col:o.col||'#ffd28f',glow:o.glow!==false});}}
+function slashFX(x,y,col='#e8f0ff',w=1){SLASH.push({x,y,t0:performance.now(),col,w,ang:rand(-.5,.2)});}
+function shake(m){world.shakeM=Math.max(world.shakeM||0,m);world.shakeT=performance.now();}
+function screenFlash(col,op=.5){const f=$('#flash');f.style.background=col;f.style.transition='none';f.style.opacity=op;
+  requestAnimationFrame(()=>{f.style.transition='opacity .5s';f.style.opacity=0;});}
+function floaty(x,y,txt,cls){const d=document.createElement('div');d.className='flt '+cls;d.textContent=txt;
+  d.style.left=x+'px';d.style.top=y+'px';stage.appendChild(d);setTimeout(()=>d.remove(),1100);}
+
+function drawSprite(u,t){
+  const bob=u.alive?Math.sin(t/520+u.phase)*2.6:0;
+  let x=u.x,y=u.y+bob,alpha=1;
+  if(u.lunge){const p=clamp((t-u.lunge.t0)/340,0,1);const s=Math.sin(p*Math.PI);
+    x+=u.lunge.dx*s;y+=u.lunge.dy*s;if(p>=1)u.lunge=null;}
+  if(u.dissolve){const p=clamp((t-u.dissolve)/750,0,1);alpha=1-p;y-=p*8;if(p>=1)return;}
+  if(u.entryT){const p=clamp((t-u.entryT)/600,0,1);alpha=Math.min(alpha,p);if(p>=1)u.entryT=0;}
+  let sx=0;if(u.shakeT){const p=(t-u.shakeT)/260;if(p<1)sx=Math.sin(p*40)*4*(1-p);else u.shakeT=0;}
+  const w=u.sw*u.scale,h=u.sh*u.scale;
+  ctx.save();ctx.translate(x+sx,y);
+  // 影子
+  ctx.globalAlpha=alpha*.35;ctx.fillStyle='#020409';
+  ctx.beginPath();ctx.ellipse(0,4,w*.30,7,0,0,Math.PI*2);ctx.fill();
+  ctx.globalAlpha=alpha;
+  const flip=u.side==='player';
+  if(flip)ctx.scale(-1,1);
+  ctx.drawImage(u.img,-w/2,-h,w,h);
+  if(u.flashT){const p=clamp((t-u.flashT)/200,0,1);
+    if(p<1){ctx.globalAlpha=alpha*(1-p);ctx.drawImage(u.fimg,-w/2,-h,w,h);}else u.flashT=0;}
+  ctx.restore();
+  return {x,y,top:y-h};
+}
+function drawEnemyOverlay(u,pos,t){
+  if(!pos)return;
+  const {x,top}=pos;let oy=top-16;
+  if(u.entryT)return;
+  // 护盾值
+  const n=u.maxshield;const gap=13,total=(n-1)*gap;
+  for(let i=0;i<n;i++){
+    const px=x-total/2+i*gap;
+    ctx.save();ctx.translate(px,oy);ctx.rotate(Math.PI/4);
+    if(u.broken){ctx.strokeStyle='rgba(255,90,70,.85)';ctx.lineWidth=1;ctx.strokeRect(-4,-4,8,8);}
+    else if(i<u.shield){ctx.fillStyle='#8fd8ff';ctx.shadowColor='#8fd8ff';ctx.shadowBlur=6;ctx.fillRect(-4,-4,8,8);}
+    else {ctx.strokeStyle='rgba(143,216,255,.4)';ctx.lineWidth=1;ctx.strokeRect(-4,-4,8,8);}
+    ctx.restore();
+  }
+  if(u.broken){
+    const a=.6+Math.sin(t/120)*.4;
+    ctx.fillStyle=`rgba(255,120,90,${a})`;ctx.font='700 15px Cinzel,serif';ctx.textAlign='center';
+    ctx.fillText('BREAK',x,oy-14);
+  }
+  // 弱点
+  oy-=u.broken?30:22;
+  const ws=u.weak,m=(ws.length-1)*16;
+  ws.forEach((el,i)=>{
+    const px=x-m/2+i*16;
+    ctx.save();ctx.translate(px,oy);ctx.rotate(Math.PI/4);
+    if(u.found.has(el)){ctx.fillStyle=ELE[el].c;ctx.shadowColor=ELE[el].c;ctx.shadowBlur=5;ctx.fillRect(-5,-5,10,10);
+      ctx.shadowBlur=0;ctx.fillStyle='#0a0f1c';ctx.font='700 8px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.save();ctx.rotate(-Math.PI/4);ctx.fillText(ELE[el].n[0],0,1);ctx.restore();}
+    else{ctx.strokeStyle='rgba(160,175,200,.45)';ctx.lineWidth=1;ctx.strokeRect(-5,-5,10,10);
+      ctx.rotate(-Math.PI/4);ctx.fillStyle='rgba(160,175,200,.6)';ctx.font='8px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('?',0,1);}
+    ctx.restore();
+  });
+  // 龙威
+  if(u.fear>0){
+    const a=.55+Math.sin(t/160)*.3;
+    ctx.fillStyle=`rgba(255,150,60,${a})`;ctx.font='700 12px "Noto Serif SC",serif';ctx.textAlign='center';
+    ctx.fillText('🐉龙威',x,oy-16);
+  }
+  // 目标箭头
+  if(G.targetMode==='enemy'&&G.hover===u){
+    const by=oy-24+Math.sin(t/150)*5;
+    ctx.fillStyle='#f0d491';ctx.shadowColor='#f0d491';ctx.shadowBlur=8;
+    ctx.beginPath();ctx.moveTo(x,by+12);ctx.lineTo(x-9,by);ctx.lineTo(x+9,by);ctx.closePath();ctx.fill();ctx.shadowBlur=0;
+  }
+}
+function drawGuardIcon(u,pos,t){
+  if(!pos||G.guardRounds<=0||!u.alive)return;
+  const a=.45+Math.sin(t/260)*.25;
+  ctx.strokeStyle=`rgba(240,212,145,${a})`;ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(pos.x,pos.y-u.sh*u.scale*.55,u.sw*u.scale*.62,-Math.PI*.85,-Math.PI*.15);ctx.stroke();
+}
+
+/* ================= 消息 ================= */
+let ribbonTimer=null;
+function ribbon(html,ms=1600){const r=$('#ribbon');r.innerHTML=html;r.classList.add('show');
+  clearTimeout(ribbonTimer);ribbonTimer=setTimeout(()=>r.classList.remove('show'),ms);}
+
+/* ================= 角色栏 & 菜单 UI ================= */
+function buildPartyBar(){
+  const bar=$('#partyBar');bar.innerHTML='';
+  G.players.forEach((p,i)=>{
+    const d=document.createElement('div');d.className='ptile';d.dataset.i=i;
+    d.innerHTML=`<span class="nm">${p.name}</span><span class="cl">${p.cls}</span>
+      <div class="bar hp"><i></i><em class="tx"></em></div>
+      <div class="bar sp"><i></i><em class="tx"></em></div>
+      <div class="bp"><span class="lbl">BP</span>${'<span class="bpd"></span>'.repeat(5)}</div>`;
+    d.addEventListener('click',()=>onTileClick(p));
+    bar.appendChild(d);p.tile=d;
+  });
+}
+function updateTiles(){
+  G.players.forEach(p=>{
+    const t=p.tile;if(!t)return;
+    t.classList.toggle('dead',!p.alive);
+    t.classList.toggle('active',G.cur===p&&G.phase!=='idle');
+    t.classList.toggle('allyTarget',G.targetMode==='ally'&&p.alive);
+    const hp=t.querySelector('.hp'),sp=t.querySelector('.sp');
+    hp.classList.toggle('low',p.hp/p.maxhp<.3);
+    hp.firstElementChild.style.width=clamp(p.hp/p.maxhp*100,0,100)+'%';
+    hp.querySelector('.tx').textContent=`${Math.max(0,Math.ceil(p.hp))} / ${p.maxhp}`;
+    sp.firstElementChild.style.width=clamp(p.sp/p.maxsp*100,0,100)+'%';
+    sp.querySelector('.tx').textContent=`${p.sp} / ${p.maxsp}`;
+    t.querySelectorAll('.bpd').forEach((d,i)=>d.classList.toggle('on',i<p.bp));
+  });
+}
+function openCmd(p){
+  G.phase='cmd';G.cur=p;G.boost=0;G.selIdx=0;
+  $('#cmdName').innerHTML=`${p.name}<small>${p.cls}</small>`;
+  renderCmdList();
+  $('#cmdWrap').classList.remove('hidden');
+  updateTiles();
+}
+function renderCmdList(){
+  const p=G.cur,list=$('#cmdList');list.innerHTML='';
+  const items=[
+    {k:'atk',t:'攻 击'},{k:'skill',t:'技 能'},{k:'item',t:'道 具'},{k:'tame',t:'驯 服'},{k:'def',t:'防 御'}
+  ];
+  items.forEach((it,i)=>{
+    const d=document.createElement('div');
+    d.className='cmd'+(i===G.selIdx?' sel':'');d.dataset.i=i;d.dataset.k=it.k;
+    d.innerHTML=it.t;
+    d.addEventListener('mouseenter',()=>{if(G.phase!=='cmd')return;G.selIdx=i;renderCmdList();SFX.menu();});
+    d.addEventListener('click',()=>{if(G.phase!=='cmd')return;G.selIdx=i;pickCmd(it.k);});
+    list.appendChild(d);
+  });
+  renderBoost();
+}
+function renderBoost(){
+  const p=G.cur,pips=$('#boostPips');pips.innerHTML='';
+  for(let i=0;i<5;i++){const d=document.createElement('span');d.className='bpd'+(i<p.bp?' on':'');pips.appendChild(d);}
+  $('#boostVal').textContent='×'+G.boost;
+  $('#bpUp').style.opacity=p.bp-G.boost>0&&G.boost<3?1:.35;
+  $('#bpDown').style.opacity=G.boost>0?1:.35;
+}
+$('#bpUp').addEventListener('click',e=>{e.stopPropagation();const p=G.cur;
+  if(G.boost<3&&p.bp-G.boost>0){G.boost++;SFX.menu();renderBoost();}});
+$('#bpDown').addEventListener('click',e=>{e.stopPropagation();if(G.boost>0){G.boost--;SFX.back();renderBoost();}});
+
+function pickCmd(k){
+  const p=G.cur;SFX.ok();
+  if(k==='atk'){enterTarget('enemy','one',{type:'atk'});}
+  else if(k==='def'){confirmAction({type:'def'});}
+  else if(k==='skill')openSubMenu('skill');
+  else if(k==='item')openSubMenu('item');
+  else if(k==='tame'){enterTarget('enemy','one',{type:'tame'});}
+}
+function openSubMenu(kind){
+  const p=G.cur,list=$('#cmdList');list.innerHTML='';G.subKind=kind;G.phase='sub';G.selIdx=0;
+  const rows=[];
+  if(kind==='skill'){
+    p.skills.forEach(s=>{
+      const lock=s.req&&p.lv<s.req;
+      rows.push({dis:lock||p.sp<s.sp,label:s.n,sub:lock?`Lv.${s.req} 解锁`:`SP ${s.sp}`,ref:s,desc:lock?`达到 Lv.${s.req} 解锁`:s.desc});
+    });
+  }else{
+    G.items.forEach(it=>rows.push({dis:it.cnt<=0,label:it.n,sub:'×'+it.cnt,ref:it,desc:it.desc}));
+  }
+  rows.push({label:'返 回',back:true});
+  rows.forEach((r,i)=>{
+    const d=document.createElement('div');
+    d.className='cmd'+(i===G.selIdx?' sel':'')+(r.dis?' dis':'');d.dataset.i=i;
+    d.innerHTML=`${r.label}${r.sub?`<span class="cost ${kind==='item'?'cnt':''}">${r.sub}</span>`:''}`;
+    d.title=r.desc||'';
+    d.addEventListener('mouseenter',()=>{if(G.phase!=='sub')return;G.selIdx=i;refreshSubSel();SFX.menu();});
+    d.addEventListener('click',()=>{if(G.phase!=='sub')return;G.selIdx=i;pickSub(rows);});
+    list.appendChild(d);
+  });
+  function refreshSubSel(){list.querySelectorAll('.cmd').forEach((c,i)=>c.classList.toggle('sel',i===G.selIdx));}
+  G.subRows=rows;G.refreshSubSel=refreshSubSel;
+}
+function pickSub(rows){
+  const r=rows[G.selIdx];
+  if(!r)return;
+  if(r.back){SFX.back();G.phase='cmd';G.selIdx=0;renderCmdList();return;}
+  if(r.dis){SFX.back();return;}
+  SFX.ok();
+  if(G.subKind==='skill'){
+    const s=r.ref;
+    if(s.t==='all')confirmAction({type:'skill',skill:s,boost:G.boost});
+    else if(s.t==='self')confirmAction({type:'skill',skill:s,boost:G.boost});
+    else enterTarget('enemy','one',{type:'skill',skill:s});
+  }else{
+    const it=r.ref;
+    if(it.key==='glass')enterTarget('enemy','one',{type:'item',item:it});
+    else enterTarget('ally','one',{type:'item',item:it});
+  }
+}
+function enterTarget(mode,kind,act){
+  G.phase='target';G.targetMode=mode;G.targetKind=kind;G.pending=Object.assign({},act,{boost:G.boost});
+  $('#cmdWrap').classList.add('hidden');
+  $('#targetHint').style.display='block';
+  $('#targetHint').textContent=mode==='ally'?'选择友方目标 · 右键取消'
+    :(act&&act.type==='tame'?'选择驯服目标 · 需可驯服且生命<30% · 右键取消'
+    :'选择目标 · 右键取消');
+  updateTiles();
+}
+function leaveTarget(){
+  G.phase='cmd';G.targetMode=null;G.pending=null;G.hover=null;
+  $('#targetHint').style.display='none';
+  $('#cmdWrap').classList.remove('hidden');updateTiles();
+}
+function confirmAction(act){
+  if(act.boost&&G.cur)G.cur.bp=Math.max(0,G.cur.bp-act.boost);
+  $('#cmdWrap').classList.add('hidden');$('#targetHint').style.display='none';
+  G.targetMode=null;G.phase='anim';G.cur=null;updateTiles();
+  if(G.awaiting){const r=G.awaiting;G.awaiting=null;r(act);}
+}
+function onTileClick(p){
+  if(G.targetMode==='ally'&&p.alive&&G.pending){
+    const act=G.pending;SFX.ok();confirmAction(Object.assign({},act,{target:p}));
+  }
+}
+
+/* ================= 战斗流程 ================= */
+function initBattle(waves,opts={}){
+  G.scene='battle';G.wave=0;G.round=0;G.guardRounds=0;
+  $('#world').classList.remove('expmode');
+  G.battleWaves=waves;G.battleFinal=!!opts.final;G.battleResult=null;G.dragonDone=false;
+  G.battleExp=0;G.tameKey=null;
+  for(const p of G.players){p.lunge=null;p.flashT=0;p.shakeT=0;p.dissolve=0;p.guardSelf=false;p._act=null;}
+  setTone(opts.tone||null);
+  buildPartyBar();
+  $('#turnBadge').classList.remove('hidden');
+}
+async function startWave(i){
+  G.wave=i;G.waveRound0=G.round;const w=G.battleWaves[i];
+  G.seen=G.seen||{};
+  for(const f of w.foes)G.seen[f.k]=true;
+  G.enemies=w.foes.map(f=>{const u=makeUnit(FOES[f.k],'enemy');u.x=f.x;u.y=f.y;return u;});
+  await showBanner(w.banner,w.sub);
+}
+function showBanner(t,s){return new Promise(res=>{
+  $('#bnTitle').textContent=t;$('#bnSub').textContent=s;
+  const b=$('#banner');b.classList.add('show');
+  setTimeout(()=>{b.classList.remove('show');setTimeout(res,500);},2100);
+});}
+async function battleLoop(){
+  while(G.scene==='battle'){await playRound();}
+}
+async function playRound(){
+  G.round++;
+  $('#turnBadge').innerHTML=`ROUND ${G.round}<span class="cn">${G.battleWaves[G.wave].banner}</span>`;
+  for(const p of alive(G.players)){p.bp=Math.min(5,p.bp+1);p.sp=Math.min(p.maxsp,p.sp+4);p.guardSelf=false;}
+  updateTiles();
+  // 玩家依次下达指令（魔兽伙伴自动行动）
+  for(const p of alive(G.players)){
+    if(G.scene!=='battle')return;
+    const act=p.isBeast?beastAutoAct(p):await playerTurn(p);
+    if(!act)return;
+    p._act=act;
+    if(checkDead())return;
+  }
+  // 组队列
+  const acts=[];
+  for(const p of alive(G.players))if(p._act)acts.push({actor:p,act:p._act});
+  for(const e of alive(G.enemies)){
+    if(e.broken){acts.push({actor:e,act:{type:'broken'}});}
+    else acts.push({actor:e,act:chooseEnemyMove(e)});
+  }
+  G.players.forEach(p=>delete p._act);
+  acts.sort((a,b)=>(b.actor.speed+rand(-6,6))-(a.actor.speed+rand(-6,6)));
+  for(const a of acts){
+    if(G.scene!=='battle')return;
+    if(!a.actor.alive)continue;
+    await doAction(a.actor,a.act);
+    if(await checkEnd())return;
+    await sleep(230);
+  }
+  // 卓耿助战（终局第三波第二轮）
+  if(G.battleFinal&&G.wave===2&&G.round-G.waveRound0===2&&!G.dragonDone){
+    await dragonAssist();
+    if(await checkEnd())return;
+  }
+  // 破防恢复
+  for(const e of alive(G.enemies)){
+    if(e.broken){e.broken=false;e.shield=e.maxshield;
+      ribbon(`<b>${e.name}</b> 重新凝聚了护盾`);await sleep(500);}
+  }
+  for(const e of G.enemies)if(e.fear>0)e.fear--;
+  if(G.guardRounds>0)G.guardRounds--;
+}
+function playerTurn(p){
+  return new Promise(res=>{G.awaiting=res;openCmd(p);});
+}
+function chooseEnemyMove(e){
+  if(e.boss){
+    if(e.hp<e.maxhp*.4&&Math.random()<.45)return {kind:'atk',n:'寒神凝视',mult:2.1,t:'one',ele:'ice',cast:true};
+    e.pat++;
+    const m=e.pat%3;
+    if(m===0)return {kind:'atk',n:'冰之长枪',mult:1.25,t:'one',ele:'ice',cast:true};
+    if(m===1)return {kind:'atk',n:'死亡风暴',mult:.85,t:'all',ele:'ice',cast:true};
+    if(alive(G.enemies).length<3&&Math.random()<.55)return {kind:'summon',n:'亡者复苏'};
+    return {kind:'atk',n:'冰之长枪',mult:1.25,t:'one',ele:'ice',cast:true};
+  }
+  if(e.key==='walker'){
+    return Math.random()<.68
+      ?{kind:'atk',n:'冰枪术',mult:1.2,t:'one',ele:'ice',cast:true}
+      :{kind:'atk',n:'寒冰波动',mult:.8,t:'all',ele:'ice',cast:true};
+  }
+  if(e.key==='spider'){
+    return Math.random()<.5
+      ?{kind:'atk',n:'寒毒撕咬',mult:1.15,t:'one',spDrain:8}
+      :{kind:'atk',n:'撕咬',mult:1,t:'one'};
+  }
+  if(e.key==='giant'){
+    e.pat++;
+    return e.pat%2===0
+      ?{kind:'atk',n:'木棒横扫',mult:.9,t:'all'}
+      :{kind:'atk',n:'震地猛击',mult:1.7,t:'one'};
+  }
+  return {kind:'atk',n:'撕咬',mult:1,t:'one'};
+}
+
+async function doAction(u,act){
+  if(act.type==='broken'||(u.side==='enemy'&&u.broken)){
+    ribbon(`<b>${u.name}</b> 陷入破防，无法行动！`);
+    u.flashT=performance.now();await sleep(560);return;
+  }
+  if(u.side==='player')await doPlayerAction(u,act);
+  else await doEnemyAction(u,act);
+}
+
+/* ---- 玩家行动 ---- */
+async function doPlayerAction(p,act){
+  const boost=act.boost||0;
+  if(act.type==='tame'){
+    const tgt=act.target;
+    if(!tgt||!tgt.alive)return;
+    ribbon(`<b>${p.name}</b> 试图驯服 <b>${tgt.name}</b>！`);
+    SFX.buff();
+    burst(tgt.x,tgt.y-tgt.sh*tgt.scale*.6,{n:14,col:'#9fe89f',spd:1.6,life:650,up:true,g:-.02});
+    await sleep(600);
+    if(!TAMEABLE.includes(tgt.key)||tgt.hp/tgt.maxhp>=.3||Math.random()>=tameChance(tgt)){
+      tgt.anger=true;
+      ribbon(`<b>${tgt.name}</b> 挣脱了！它被激怒了`,1800);
+      floaty(tgt.x,tgt.y-tgt.sh*tgt.scale-20,'挣脱','pdmg');
+      SFX.back();await sleep(450);return;
+    }
+    G.tameKey=tgt.key;
+    ribbon(`<b>${tgt.name}</b> 放下敌意，愿意追随你！`,2200);
+    SFX.win();
+    for(const q of G.enemies){
+      burst(q.x,q.y-q.sh*q.scale*.5,{n:24,col:'#9fe89f',spd:2.2,life:800,g:-.02});
+      q.alive=false;q.dissolve=performance.now();
+    }
+    await sleep(700);return;
+  }
+  if(act.type==='def'){
+    p.guardSelf=true;p.sp=Math.min(p.maxsp,p.sp+8);
+    ribbon(`<b>${p.name}</b> 摆出防御姿态`);
+    burst(p.x,p.y-p.sh*p.scale*.6,{n:10,col:'#9fc6ff',spd:1.4,life:500,up:true,g:-.01});
+    SFX.buff();await sleep(520);return;
+  }
+  if(act.type==='item'){
+    const it=act.item;it.cnt--;
+    if(it.key==='potion'){
+      const tgt=act.target,hp=Math.round(it.heal+130*boost);
+      tgt.hp=Math.min(tgt.maxhp,tgt.hp+hp);
+      ribbon(`<b>${p.name}</b> 使用了 ${it.n}`);
+      floaty(tgt.x,tgt.y-tgt.sh*tgt.scale-8,'+'+hp,'heal');
+      burst(tgt.x,tgt.y-tgt.sh*tgt.scale*.6,{n:16,col:'#8fe89a',spd:1.6,life:700,up:true,g:-.02});
+      SFX.heal();await sleep(650);return;
+    }
+    if(it.key==='wine'){
+      const tgt=act.target,sp=it.sp+20*boost;
+      tgt.sp=Math.min(tgt.maxsp,tgt.sp+sp);
+      ribbon(`<b>${p.name}</b> 使用了 ${it.n}`);
+      floaty(tgt.x,tgt.y-tgt.sh*tgt.scale-8,'+'+sp+' SP','sp');
+      burst(tgt.x,tgt.y-tgt.sh*tgt.scale*.6,{n:14,col:'#7fc8f0',spd:1.6,life:700,up:true,g:-.02});
+      SFX.heal();await sleep(650);return;
+    }
+    if(it.key==='glass'){
+      const tgt=act.target;
+      ribbon(`<b>${p.name}</b> 掷出了 龙晶匕首！`);
+      p.lunge={t0:performance.now(),dx:(tgt.x-p.x)*.22,dy:(tgt.y-p.y)*.22};
+      SFX.slash();await sleep(260);
+      const dmg=Math.round((it.dmg+80*boost)*rand(.92,1.08));
+      await hitEnemy(p,tgt,dmg,'dragonglass',{});
+      await sleep(420);return;
+    }
+  }
+  if(act.type==='atk'){
+    const tgt=act.target||pickEnemyTarget();if(!tgt)return;
+    await physicalAttack(p,[tgt],{mult:1,hits:1,boostHits:true,ele:p.weap,n:'攻击'},boost);
+    return;
+  }
+  if(act.type==='skill'){
+    const s=act.skill;p.sp-=s.sp;
+    if(s.buff==='guard'){
+      G.guardRounds=1+boost;
+      ribbon(`<b>${p.name}</b> 施展了 ${s.n}！全队获得庇护`);
+      SFX.buff();
+      for(const q of alive(G.players))burst(q.x,q.y-q.sh*q.scale*.6,{n:10,col:'#f0d491',spd:1.4,life:650,up:true,g:-.015});
+      await sleep(700);return;
+    }
+    const list=s.t==='all'?alive(G.enemies):[act.target||pickEnemyTarget()];
+    if(s.t!=='all'&&!list[0])return;
+    if(s.ele==='fire'){
+      ribbon(`<b>${p.name}</b> 释放了 <b>${s.n}</b>！`);
+      SFX.fire();screenFlash('rgba(255,120,40,.35)');shake(6);
+      if(p.key==='dany'&&G.flags.dragonstone)await dragonFlyby(300,s.t==='all');
+      p.lunge={t0:performance.now(),dx:-26,dy:-10};
+      const fmult=s.mult*(1+.55*boost);
+      for(const t of list){
+        await sleep(s.t==='all'?160:0);
+        burst(t.x,t.y-t.sh*t.scale*.55,{n:26,col:'#ff9a4d',spd:3.4,life:750,g:-.01});
+        burst(t.x,t.y-t.sh*t.scale*.55,{n:14,col:'#ffd28f',spd:2,life:550,g:-.03});
+        await hitEnemy(p,t,Math.round(p.atk*fmult*rand(.9,1.1)),'fire',{});
+      }
+      await sleep(400);return;
+    }
+    await physicalAttack(p,list,s,boost);
+    return;
+  }
+}
+function pickEnemyTarget(){const l=alive(G.enemies);return l.length?l[irand(0,l.length-1)]:null;}
+
+async function physicalAttack(p,targets,s,boost=0){
+  const hitsBase=s.hits||1;
+  const multi=!!s.boostHits||hitsBase>1;
+  const hits=multi?hitsBase+boost:hitsBase;
+  const perHit=multi?s.mult:s.mult*(1+.55*boost);
+  ribbon(`<b>${p.name}</b> ${s.n==='攻击'?'发起攻击':'施展了 '+s.n+'！'}`);
+  const t0=targets[0];
+  p.lunge={t0:performance.now(),dx:(t0.x-p.x)*.3,dy:(t0.y-p.y)*.3};
+  SFX.slash();
+  await sleep(240);
+  for(const t of targets){
+    for(let h=0;h<hits;h++){
+      const col=s.ele==='valyrian'?'#ff6b6b':(s.ele==='dagger'?'#c8f7a0':'#e8f0ff');
+      slashFX(t.x+rand(-14,14),t.y-t.sh*t.scale*rand(.35,.7),col,s.mult>1.8?1.5:1);
+      await hitEnemy(p,t,Math.round(p.atk*perHit*rand(.9,1.1)),s.ele,{crit:s.crit});
+      await sleep(hits>1?150:0);
+    }
+  }
+  await sleep(380);
+}
+async function hitEnemy(p,e,dmg,ele,o={}){
+  if(!e.alive)return;
+  let weak=false;
+  if(e.weak.includes(ele)){
+    weak=true;e.found.add(ele);
+    if(!e.broken){
+      e.shield--;
+      if(e.shield<=0){e.broken=true;
+        $('#breakFlash').style.display='block';
+        setTimeout(()=>$('#breakFlash').style.display='none',1000);
+        SFX.brk();shake(10);screenFlash('rgba(240,212,145,.4)');
+        burst(e.x,e.y-e.sh*e.scale*.5,{n:34,col:'#f0d491',spd:4,life:800});
+      }
+    }
+  }
+  let final=Math.round(dmg*(e.broken?1.4:1));
+  final=Math.max(1,final-(e.broken?0:e.def));
+  let crit=Math.random()<(o.crit||.08);
+  if(crit)final=Math.round(final*1.5);
+  e.hp-=final;G.stats.dmg+=final;
+  e.flashT=performance.now();e.shakeT=performance.now();
+  SFX.hit();shake(crit?6:3);
+  burst(e.x,e.y-e.sh*e.scale*.5,{n:8,col:weak?'#f0d491':'#dfe8f5',spd:2.4,life:450});
+  const ty=e.y-e.sh*e.scale-20+rand(-10,10);
+  floaty(e.x+rand(-16,16),ty,final,crit?'crit':(weak?'weak':'dmg'));
+  updateTiles();
+  if(e.hp<=0){
+    e.alive=false;e.dissolve=performance.now();G.stats.kills++;
+    G.battleExp=(G.battleExp||0)+(e.exp||0);
+    SFX.die();
+    burst(e.x,e.y-e.sh*e.scale*.5,{n:30,col:'#b8d4ea',spd:2.6,life:900,g:-.02});
+    ribbon(`<b>${e.name}</b> 化作了飞雪`);
+  }
+}
+
+/* ---- 敌人行动 ---- */
+async function doEnemyAction(e,act){
+  if(e.fear>0&&Math.random()<.18){
+    ribbon(`<b>${e.name}</b> 被龙威慑，行动迟疑了！`);
+    e.flashT=performance.now();await sleep(420);return;
+  }
+  if(act.kind==='summon'){
+    ribbon(`<b>${e.name}</b> 唤醒了亡者……`);
+    SFX.summon();screenFlash('rgba(90,180,255,.25)');
+    e.lunge={t0:performance.now(),dx:0,dy:-16};
+    const used=G.enemies.map(x=>`${x.x},${x.y}`);
+    const slot=SLOTS.find(s=>!used.includes(`${s.x},${s.y}`))||SLOTS[0];
+    await sleep(500);
+    const u=makeUnit(FOES.wight,'enemy');u.x=slot.x;u.y=slot.y;u.entryT=performance.now();
+    G.enemies.push(u);
+    burst(u.x,u.y-u.sh*u.scale*.5,{n:24,col:'#7de8ff',spd:2.2,life:800,g:-.02});
+    await sleep(500);return;
+  }
+  if(act.kind==='atk'){
+    const tgts=act.t==='all'?alive(G.players):[pickPlayerTarget()];
+    if(!tgts.length)return;
+    if(act.cast){
+      ribbon(`<b>${e.name}</b> 释放了 ${act.n}！`);
+      SFX.ice();
+      e.lunge={t0:performance.now(),dx:14,dy:-8};
+      if(act.t==='all'){screenFlash('rgba(120,200,255,.3)');shake(7);}
+      await sleep(300);
+      for(const t of tgts){
+        burst(t.x+rand(-20,0),t.y-t.sh*t.scale*.55,{n:16,col:'#8fe8ff',spd:2.8,life:600});
+        await hitPlayer(t,rollEnemyDmg(e,act.mult));
+        await sleep(act.t==='all'?180:0);
+      }
+      await sleep(400);return;
+    }else{
+      const t=tgts[0];
+      ribbon(`<b>${e.name}</b> 的 ${act.n}！`);
+      if(e.key==='giant'){SFX.stomp();shake(7);}
+      e.lunge={t0:performance.now(),dx:(t.x-e.x)*.32,dy:(t.y-e.y)*.32};
+      await sleep(260);
+      slashFX(t.x,t.y-t.sh*t.scale*.5,'#9fd0ff',1);
+      SFX.slash();
+      for(const tt of tgts){
+        await hitPlayer(tt,rollEnemyDmg(e,act.mult),{spDrain:act.spDrain});
+        if(act.t==='all')await sleep(150);
+      }
+      await sleep(380);return;
+    }
+  }
+}
+function rollEnemyDmg(e,mult){return Math.round(e.atk*mult*rand(.88,1.12)*(e.fear>0?.72:1));}
+function pickPlayerTarget(){const l=alive(G.players);return l[irand(0,l.length-1)];}
+async function hitPlayer(p,dmg,o={}){
+  if(!p.alive)return;
+  let reduced=false;
+  if(G.guardRounds>0){dmg*=.5;reduced=true;}
+  if(p.guardSelf){dmg*=.5;reduced=true;}
+  dmg=Math.max(1,Math.round(dmg));
+  p.hp-=dmg;
+  p.flashT=performance.now();p.shakeT=performance.now();
+  SFX.hurt();shake(4);
+  floaty(p.x+rand(-12,12),p.y-p.sh*p.scale-14,(reduced?'🛡':'')+dmg,'pdmg');
+  burst(p.x,p.y-p.sh*p.scale*.5,{n:8,col:'#f0b9a8',spd:2,life:420});
+  if(o.spDrain&&p.alive){
+    p.sp=Math.max(0,p.sp-o.spDrain);
+    floaty(p.x+rand(-12,12),p.y-p.sh*p.scale-34,'-'+o.spDrain+' SP','sp');
+  }
+  updateTiles();
+  if(p.hp<=0){
+    p.hp=0;p.alive=false;p.dissolve=performance.now();
+    SFX.die();
+    ribbon(`<b>${p.name}</b> 倒在了雪原上……`);
+    updateTiles();
+  }
+}
+
+/* ---- 回合/波次结算 ---- */
+function checkDead(){return alive(G.players).length===0;}
+async function checkEnd(){
+  if(alive(G.players).length===0){await defeat();return true;}
+  if(alive(G.enemies).length===0){await waveClear();return true;}
+  return false;
+}
+async function waveClear(){
+  G.phase='idle';updateTiles();
+  if(G.wave>=G.battleWaves.length-1){await victory();return;}
+  ribbon('<b>残敌已清</b> · 众人稍作休整',2000);
+  SFX.heal();
+  await sleep(1100);
+  for(const p of alive(G.players)){
+    p.hp=Math.min(p.maxhp,Math.round(p.hp+p.maxhp*.4));
+    p.sp=Math.min(p.maxsp,p.sp+Math.round(p.maxsp*.35));
+    floaty(p.x,p.y-p.sh*p.scale-10,'恢复','heal');
+  }
+  updateTiles();
+  await sleep(700);
+  await startWave(G.wave+1);
+}
+async function victory(){
+  SFX.win();
+  await sleep(600);
+  G.battleResult='win';
+  if(G.battleFinal){
+    setTone(null);
+    await playStory('ending');
+    G.scene='end';
+    showEnd(true);
+    return;
+  }
+  for(const p of G.players){
+    if(!p.alive){p.alive=true;p.dissolve=0;p.hp=Math.round(p.maxhp*.25);p.sp=Math.round(p.maxsp*.3);}
+  }
+  const exp=(G.battleExp||0)+(G.tameKey?(FOES[G.tameKey].exp||0):0);
+  G.lastExp=exp;
+  if(exp){
+    for(const p of alive(G.players))if(!p.isBeast)gainExp(p,exp);
+    if(G.deploy!=null&&G.beasts[G.deploy])beastGainExp(G.beasts[G.deploy],exp);
+  }
+  addItem('meat',1);
+  updateTiles();
+  G.scene='battleend';
+}
+async function defeat(){
+  G.battleResult='lose';
+  G.scene='end';SFX.lose();
+  setTone(null);
+  await sleep(900);
+  showEnd(false);
+}
+function showEnd(win){
+  const e=$('#end');
+  e.className=win?'win':'lose';
+  $('#endTitle').textContent=win?'长夜终尽 · 黎明将至':'凛冬已至 · 长夜无尽';
+  $('#endSub').textContent=win?'夜王化作碎冰消散，临冬城的晨曦洒满雪原。':'英雄们倒在了风雪之中……';
+  $('#endStats').innerHTML=`
+    <div><b>${G.round}</b><span>回合数</span></div>
+    <div><b>${G.stats.dmg}</b><span>总伤害</span></div>
+    <div><b>${G.stats.kills}</b><span>消灭敌人</span></div>`;
+  e.classList.remove('hidden');
+}
+
+/* ================= 远征 · 对话 · 大地图（v2） ================= */
+
+/* ---- 通用工具 ---- */
+function addItem(key,n){
+  const it=G.items.find(i=>i.key===key);
+  if(it){it.cnt+=n;ribbon(`获得 <b>${it.n}×${n}</b>`,2000);}
+}
+/* ================= Phase5：养成（成长/驯兽/喂食/图鉴） ================= */
+function expNeed(lv){return 70+(lv-1)*45;}
+function gainExp(p,amt){
+  if(p.isBeast)return;
+  p.exp=(p.exp||0)+amt;
+  while(p.exp>=expNeed(p.lv)){
+    p.exp-=expNeed(p.lv);p.lv++;
+    p.maxhp+=p.g.hp;p.hp=Math.min(p.maxhp,p.hp+p.g.hp);
+    p.atk+=p.g.atk;p.maxsp+=p.g.sp;p.sp=Math.min(p.maxsp,p.sp+p.g.sp);
+    ribbon(`<b>${p.name}</b> 升至 Lv.${p.lv}！生命/攻击/精力成长`,2000);
+    SFX.win();
+    updateTiles();
+  }
+}
+function beastStats(b){
+  const f=FOES[b.key];
+  return {hp:Math.round(f.hp*(1+.12*(b.lv-1))),
+    atk:Math.round(f.atk*(1+.10*(b.lv-1))*(1+Math.min(b.aff,50)*.006)),speed:f.speed};
+}
+function beastUnit(b){
+  const f=FOES[b.key],st=beastStats(b);
+  const u=makeUnit({key:b.key,name:f.name,cls:'魔兽伙伴',hp:st.hp,sp:0,atk:st.atk,speed:st.speed,
+    spr:f.spr,pal:f.pal,scale:f.scale*.9,weap:b.key==='spider'?'dagger':'sword',lv:b.lv},'player');
+  u.isBeast=true;u.x=845;u.y=470;
+  return u;
+}
+function deployBeast(i){
+  if(i<0||i>=G.beasts.length)return;
+  G.players=G.players.filter(p=>!p.isBeast);
+  G.deploy=i;
+  const b=G.beasts[i];
+  G.players.push(beastUnit(b));
+  const e=G.exp;
+  G.follow={x:e?e.px:0,y:e?e.py:0,face:'right'};
+  if(e)e.trail=null;
+  ribbon(`<b>${FOES[b.key].name}</b> 上阵 · 它将跟随你探索`,2000);
+  renderBeastPanel();
+}
+function recallBeast(){
+  if(G.deploy==null)return;
+  G.players=G.players.filter(p=>!p.isBeast);
+  G.deploy=null;G.follow=null;
+  ribbon('魔兽伙伴归队休整',1600);
+  renderBeastPanel();
+}
+function beastGainExp(b,amt){
+  b.exp+=amt;let up=false;
+  while(b.exp>=expNeed(b.lv)){b.exp-=expNeed(b.lv);b.lv++;up=true;}
+  if(up){
+    ribbon(`<b>${FOES[b.key].name}</b> 成长至 Lv.${b.lv}！`,2000);SFX.win();
+    if(G.deploy!=null&&G.beasts[G.deploy]===b){
+      const u=G.players.find(p=>p.isBeast);
+      if(u){const st=beastStats(b);u.maxhp=st.hp;u.hp=st.hp;u.atk=st.atk;u.lv=b.lv;}
+    }
+    updateTiles();
+  }
+}
+function feedBeast(i,food){
+  const b=G.beasts[i];if(!b)return;
+  if(food==='meat'){
+    const it=G.items.find(v=>v.key==='meat');
+    if(!it||it.cnt<=0){ribbon('背包里没有鲜肉',1500);return;}
+    it.cnt--;
+  }else{
+    if(!(G.bag&&G.bag.berry>0)){ribbon('背包里没有浆果',1500);return;}
+    G.bag.berry--;
+  }
+  const d=food==='meat'?2:1;
+  b.aff+=d;
+  ribbon(`<b>${FOES[b.key].name}</b> 开心地进食 · 好感 +${d}`,1800);
+  SFX.heal();
+  beastGainExp(b,food==='meat'?12:7);
+  updateWorldHud();renderBeastPanel();
+}
+function toggleBeastPanel(){
+  const p=$('#beastPanel');
+  if(p.classList.contains('show')){p.classList.remove('show');return;}
+  renderBeastPanel();p.classList.add('show');
+}
+function renderBeastPanel(){
+  const box=$('#bpList');if(!box)return;
+  let h='';
+  if(!G.beasts.length)h+='<div class="bempty">还没有魔物伙伴 · 在战斗中把野兽打残后使用【驯服】</div>';
+  G.beasts.forEach((b,i)=>{
+    const f=FOES[b.key],st=beastStats(b),dep=G.deploy===i;
+    h+=`<div class="brow"><b>${f.name}</b> Lv.${b.lv} <span class="st">HP ${st.hp} · 攻 ${st.atk} · 好感 ${b.aff} · 经验 ${b.exp}/${expNeed(b.lv)}</span>
+      <div class="bbtns">
+        ${dep?'<span class="bbtn" data-act="recall">归队休整中</span>'
+             :`<span class="bbtn" data-act="deploy" data-i="${i}">上 阵</span>`}
+        <span class="bbtn" data-act="meat" data-i="${i}">喂鲜肉</span>
+        <span class="bbtn" data-act="berry" data-i="${i}">喂浆果</span>
+      </div></div>`;
+  });
+  h+='<h4>图 鉴</h4>';
+  for(const k of TAMEABLE){
+    const met=G.seen&&G.seen[k],own=G.beasts.some(b=>b.key===k);
+    h+=`<div class="bdex${met?'':' un'}">${met?FOES[k].name:'？？？'}${own?' ✓ 已驯服':(met?' · 可驯服':' · 未见')}</div>`;
+  }
+  box.innerHTML=h;
+  box.querySelectorAll('.bbtn').forEach(el=>el.addEventListener('click',()=>{
+    const a=el.dataset.act,i=+el.dataset.i;
+    if(a==='deploy')deployBeast(i);
+    else if(a==='recall')recallBeast();
+    else if(a==='meat')feedBeast(i,'meat');
+    else if(a==='berry')feedBeast(i,'berry');
+  }));
+}
+function beastAutoAct(p){return {type:'atk',target:pickEnemyTarget()};}
+function allLocsDone(){return ['wall','wolfswood','kingslanding','dragonstone'].every(k=>G.locs[k]==='done');}
+const TONES={wall:'rgba(120,180,230,.16)',forest:'rgba(40,90,60,.22)',city:'rgba(200,140,60,.14)',night:'rgba(10,18,60,.32)'};
+function setTone(theme){$('#tone').style.background=(theme&&TONES[theme])||'transparent';}
+
+/* ---- 对话系统 ---- */
+let DLG=null;
+function playStory(key){return runDlg(STORY[key]);}
+function runDlg(nodes){
+  return new Promise(res=>{
+    DLG={nodes,i:-1,onEnd:res,typing:false,full:'',shown:0,timer:null,choices:null,selIdx:0,sayEnd:false};
+    G.prevScene=G.scene;G.scene='story';
+    $('#dlg').classList.remove('hidden');
+    nextNode();
+  });
+}
+function closeDlg(){
+  $('#dlg').classList.add('hidden');
+  if(DLG&&DLG.timer)clearInterval(DLG.timer);
+  if(G.scene==='story')G.scene=G.prevScene||'explore';
+  DLG=null;
+}
+function nextNode(){
+  DLG.i++;
+  if(DLG.i>=DLG.nodes.length){const res=DLG.onEnd;closeDlg();res(G._lastAct);return;}
+  renderLine(DLG.nodes[DLG.i]);
+}
+function renderLine(nd){
+  if(nd.fx)runFx(nd.fx);
+  $('#dlgName').textContent=nd.sp||'';
+  if(nd.face){drawFace(nd.face);$('#dlg').classList.remove('noface');}
+  else $('#dlg').classList.add('noface');
+  DLG.choices=nd.choices||null;DLG.sayEnd=false;
+  $('#dlgChoices').classList.remove('show');$('#dlgChoices').innerHTML='';
+  $('#dlgNext').style.visibility='hidden';
+  typeText(nd.txt||'');
+}
+function typeText(txt){
+  DLG.full=txt;DLG.shown=0;DLG.typing=true;
+  $('#dlgText').textContent='';
+  clearInterval(DLG.timer);
+  if(!txt){finishLine();return;}
+  DLG.timer=setInterval(()=>{
+    DLG.shown++;
+    $('#dlgText').textContent=DLG.full.slice(0,DLG.shown);
+    if(DLG.shown>=DLG.full.length)finishLine();
+  },22);
+}
+function finishLine(){
+  clearInterval(DLG.timer);DLG.timer=null;DLG.typing=false;
+  $('#dlgText').textContent=DLG.full;
+  if(DLG.choices)renderChoices();
+  else $('#dlgNext').style.visibility='visible';
+}
+function advanceDlg(){
+  if(!DLG)return;
+  if(DLG.typing){finishLine();return;}
+  if(DLG.choices)return;
+  SFX.menu();
+  if(DLG.sayEnd){const res=DLG.onEnd;closeDlg();res(G._lastAct);return;}
+  nextNode();
+}
+function renderChoices(){
+  const box=$('#dlgChoices');box.innerHTML='';DLG.selIdx=0;
+  DLG.choices.forEach((c,i)=>{
+    const b=document.createElement('button');
+    b.className='dlgc'+(i===0?' selk':'');b.textContent=c.t;
+    b.addEventListener('mouseenter',()=>{if(DLG){DLG.selIdx=i;markChoice();}});
+    b.addEventListener('click',ev=>{ev.stopPropagation();pickChoice(c);});
+    box.appendChild(b);
+  });
+  box.classList.add('show');
+}
+function markChoice(){
+  $('#dlgChoices').querySelectorAll('.dlgc').forEach((b,i)=>b.classList.toggle('selk',i===DLG.selIdx));
+}
+function pickChoice(c){
+  SFX.ok();
+  if(c.eff)applyEff(c.eff);
+  G._lastAct=c.act||null;
+  $('#dlgChoices').classList.remove('show');
+  if(c.say){
+    DLG.choices=null;DLG.sayEnd=!!c.end;
+    $('#dlgName').textContent='旁白';
+    $('#dlg').classList.add('noface');
+    typeText(c.say);
+  }else if(c.end){
+    const res=DLG.onEnd;closeDlg();res(c.act||null);
+  }else nextNode();
+}
+function applyEff(ef){
+  if(ef.atkAll){for(const p of G.players)p.atk+=ef.atkAll;ribbon(`全队攻击 +${ef.atkAll}`,2000);}
+  if(ef.spAll){for(const p of G.players)p.sp=Math.min(p.maxsp,p.sp+ef.spAll);ribbon(`全队精力 +${ef.spAll}`,2000);}
+  if(ef.healAll){for(const p of G.players)p.hp=Math.min(p.maxhp,p.hp+ef.healAll);}
+  if(ef.item)addItem(ef.item,1);
+  if(ef.flag)G.flags[ef.flag]=true;
+}
+function runFx(fx){
+  if(fx==='rumble'){SFX.rumble();shake(6);}
+  else if(fx==='dragon'){SFX.roar();shake(9);screenFlash('rgba(16,10,28,.4)');dragonFlyby(230,false);}
+}
+const FACES={};
+function drawFace(key){
+  const cnv=$('#dlgFace');
+  if(!FACES[key]){
+    const d={jon:[SPR.jon,PAL.jon],dany:[SPR.dany,PAL.dany],arya:[SPR.arya,PAL.arya],bri:[SPR.bri,PAL.bri]}[key];
+    const spr=makeSprite(d[0],d[1]);
+    const c=document.createElement('canvas');c.width=64;c.height=64;
+    const x=c.getContext('2d');x.imageSmoothingEnabled=false;
+    const crop=Math.min(d[0].length,9),sc=64/crop,dw=spr.w*sc;
+    x.drawImage(spr.img,0,0,spr.w,crop,(64-dw)/2,0,dw,64);
+    FACES[key]=c;
+  }
+  const x=cnv.getContext('2d');x.imageSmoothingEnabled=false;
+  x.clearRect(0,0,64,64);x.drawImage(FACES[key],0,0);
+}
+
+/* ---- 龙演出 ---- */
+let FLYBY=null;
+async function dragonFlyby(y,fire){
+  SFX.roar();shake(7);
+  FLYBY={t0:performance.now(),y:y||300,fire:!!fire,dur:1200};
+  await sleep(1200);
+  FLYBY=null;
+}
+function drawFlyby(t){
+  if(!FLYBY)return;
+  const f=FLYBY,p=clamp((t-f.t0)/f.dur,0,1);
+  const x=1420-p*1740;
+  const spr=Math.floor((t-f.t0)/130)%2?DRA.b:DRA.a;
+  const sc=9,w=spr.w*sc,h=spr.h*sc;
+  ctx.drawImage(spr.img,x-w/2,f.y-h/2,w,h);
+  if(f.fire&&Math.random()<.7)burst(x-w/2+rand(-10,20),f.y+rand(-14,18),{n:4,col:'#ff9a4d',spd:2.6,life:520,g:.012});
+}
+async function dragonAssist(){
+  G.dragonDone=true;
+  ribbon('<b>卓耿掠过战场——Dracarys！</b>',2000);
+  await dragonFlyby(250,true);
+  screenFlash('rgba(255,120,40,.4)');shake(10);
+  const dany=G.players.find(p=>p.key==='dany')||G.players[0];
+  for(const e of alive(G.enemies)){
+    burst(e.x,e.y-e.sh*e.scale*.5,{n:22,col:'#ff9a4d',spd:3,life:700,g:-.01});
+    await hitEnemy(dany,e,170,'fire',{});
+    await sleep(120);
+  }
+  for(const e of alive(G.enemies)){e.fear=2;floaty(e.x,e.y-e.sh*e.scale-34,'龙威','fear');}
+  ribbon('<b>龙威</b> 笼罩了残存的敌人！',2000);
+  await sleep(600);
+}
+
+/* ---- 战斗封装 ---- */
+async function runBattle(waves,opts={}){
+  $('#worldHud').classList.add('hidden');
+  $('#partyBar').classList.remove('hidden');
+  initBattle(waves,opts);
+  await startWave(0);
+  await battleLoop();
+  $('#turnBadge').classList.add('hidden');
+  if(G.battleResult==='win'&&!G.battleFinal){
+    setTone(null);
+    $('#partyBar').classList.add('hidden');
+    $('#worldHud').classList.remove('hidden');
+    G.scene='explore';
+    ribbon('<b>战斗胜利</b> · 全员经验 +'+(G.lastExp||0),2200);
+  }
+  return G.battleResult;
+}
+
+/* ---- 大地图（v2节点式，已被 explore 取代） ---- */
+function updateWorldHud(){
+  const box=$('#whParty');box.innerHTML='';
+  for(const p of G.players){
+    const row=document.createElement('div');row.className='whp';
+    const pct=clamp(p.hp/p.maxhp*100,0,100).toFixed(0);
+    row.innerHTML=`<span class="nm">${p.name.split('·')[0]}</span><div class="bar hp${p.hp/p.maxhp<.3?' low':''}"><i style="width:${pct}%"></i></div><span class="hpn">${Math.max(0,Math.ceil(p.hp))}</span>`;
+    box.appendChild(row);
+  }
+  const items=G.items.map(i=>`${i.n}×${i.cnt}`).join(' · ');
+  const BAGN={herb:'药草',berry:'浆果',ore:'矿石'};
+  const bag=Object.keys(G.bag||{}).filter(k=>G.bag[k]>0).map(k=>BAGN[k]+'×'+G.bag[k]).join(' · ');
+  $('#whProg').innerHTML=`道具：${items}<br>材料：${bag||'（空）'}`;
+}
+function adjacent(a,b){return ROADS.some(r=>(r[0]===a&&r[1]===b)||(r[0]===b&&r[1]===a));}
+function partyPos(t){
+  const w=G.world;
+  if(!w.moving)return {x:w.x,y:w.y};
+  const p=clamp((t-w.t0)/650,0,1);
+  const e=p<.5?2*p*p:1-Math.pow(-2*p+2,2)/2;
+  return {x:w.fx+(w.tx-w.fx)*e,y:w.fy+(w.ty-w.fy)*e};
+}
+async function tryTravel(key){
+  if(G.busy||G.scene!=='world')return;
+  const w=G.world;
+  if(key===w.at){G.busy=true;await enterLoc();G.busy=false;return;}
+  if(!adjacent(w.at,key)){ribbon('道路尚未连通——需经临冬城中转。',2000);return;}
+  G.busy=true;SFX.menu();
+  w.moving=true;w.t0=performance.now();w.fx=w.x;w.fy=w.y;w.tx=LOCS[key].x;w.ty=LOCS[key].y;
+  await sleep(700);
+  w.moving=false;w.x=w.tx;w.y=w.ty;w.at=key;
+  await enterLoc();
+  G.busy=false;
+}
+async function enterLoc(){
+  if(G.scene!=='world')return;
+  await LOC_EVENTS[G.world.at]();
+  if(G.scene==='world')updateWorldHud();
+}
+function drawWorldMap(t){
+  const w=G.world;
+  ctx.fillStyle='#081527';ctx.fillRect(0,0,1280,720);
+  ctx.lineWidth=1;
+  for(let i=0;i<7;i++){
+    ctx.strokeStyle=`rgba(120,170,220,${.05+.02*(i%3)})`;
+    ctx.beginPath();
+    for(let x=0;x<=1280;x+=32){
+      const y=80+i*96+Math.sin(x/90+t/1400+i*2)*5;
+      if(x)ctx.lineTo(x,y);else ctx.moveTo(x,y);
+    }
+    ctx.stroke();
+  }
+  ctx.beginPath();
+  LAND.forEach((p,i)=>{if(i)ctx.lineTo(p[0],p[1]);else ctx.moveTo(p[0],p[1]);});
+  ctx.closePath();
+  ctx.fillStyle='#16251c';ctx.fill();
+  ctx.strokeStyle='rgba(201,165,90,.4)';ctx.lineWidth=2;ctx.stroke();
+  ctx.beginPath();
+  SNOWCAP.forEach((p,i)=>{if(i)ctx.lineTo(p[0],p[1]);else ctx.moveTo(p[0],p[1]);});
+  ctx.closePath();ctx.fillStyle='rgba(223,233,244,.8)';ctx.fill();
+  ctx.fillStyle='rgba(90,140,100,.5)';
+  for(const d of TOWNS_DOTS){ctx.beginPath();ctx.arc(d[0],d[1],3,0,7);ctx.fill();}
+  ctx.strokeStyle='rgba(201,165,90,.35)';ctx.lineWidth=2;ctx.setLineDash([7,7]);
+  for(const r of ROADS){ctx.beginPath();ctx.moveTo(LOCS[r[0]].x,LOCS[r[0]].y);ctx.lineTo(LOCS[r[1]].x,LOCS[r[1]].y);ctx.stroke();}
+  ctx.setLineDash([]);
+  // 龙影（氛围演出）
+  if(!w.sky){if(Math.random()<.0009)w.sky={t0:t,y:rand(70,160)};}
+  else{
+    const p=(t-w.sky.t0)/6500;
+    if(p>=1)w.sky=null;
+    else{
+      const spr=Math.floor(t/260)%2?DRA.b:DRA.a;
+      const sc=2.1,dw=spr.w*sc,dh=spr.h*sc;
+      ctx.save();ctx.globalAlpha=.3;
+      ctx.drawImage(spr.img,1350-p*1700-dw/2,w.sky.y-dh/2,dw,dh);
+      ctx.restore();
+    }
+  }
+  const selKey=LOCS_KEYS[G.worldSel];
+  for(const k of LOCS_KEYS){
+    const L=LOCS[k],done=G.locs[k]==='done',at=w.at===k;
+    if(at){
+      const pr=14+Math.sin(t/300)*3;
+      ctx.strokeStyle='rgba(240,212,145,.8)';ctx.lineWidth=2;
+      ctx.beginPath();ctx.arc(L.x,L.y,pr,0,7);ctx.stroke();
+    }
+    if(k===selKey){
+      ctx.strokeStyle='rgba(240,212,145,.5)';ctx.lineWidth=1;ctx.setLineDash([4,4]);
+      ctx.beginPath();ctx.arc(L.x,L.y,19,t/600,t/600+6.28);ctx.stroke();ctx.setLineDash([]);
+    }
+    ctx.beginPath();ctx.arc(L.x,L.y,done?7:8,0,7);
+    ctx.fillStyle=done?'#7dc88c':'#c9a55a';ctx.fill();
+    ctx.strokeStyle='#0a1020';ctx.lineWidth=1.5;ctx.stroke();
+    ctx.font='700 15px "Noto Serif SC","Microsoft YaHei",serif';ctx.textAlign='center';
+    const tw=ctx.measureText(L.n).width;
+    ctx.fillStyle='rgba(5,8,16,.78)';
+    ctx.fillRect(L.x-tw/2-9,L.y+14,tw+18,24);
+    ctx.strokeStyle='rgba(201,165,90,.35)';ctx.lineWidth=1;
+    ctx.strokeRect(L.x-tw/2-9,L.y+14,tw+18,24);
+    ctx.fillStyle=at?'#f0d491':'#cfd9ea';
+    ctx.fillText(L.n,L.x,L.y+31);
+    ctx.font='12px sans-serif';
+    ctx.fillText(done?'✔':(k==='winterfell'&&allLocsDone()?'⚔':'❗'),L.x+tw/2+18,L.y+31);
+    if(G.worldHover===k){
+      ctx.font='13px "Noto Serif SC","Microsoft YaHei",serif';
+      const dw2=ctx.measureText(L.desc).width;
+      ctx.fillStyle='rgba(5,8,16,.78)';
+      ctx.fillRect(L.x-dw2/2-8,L.y-42,dw2+16,20);
+      ctx.fillStyle='#f0d491';
+      ctx.fillText(L.desc,L.x,L.y-27);
+    }
+  }
+  const pp=partyPos(t);
+  ctx.strokeStyle='#dfe6f2';ctx.lineWidth=2;
+  ctx.beginPath();ctx.moveTo(pp.x,pp.y);ctx.lineTo(pp.x,pp.y-26);ctx.stroke();
+  ctx.fillStyle='#c9a55a';
+  ctx.beginPath();ctx.moveTo(pp.x,pp.y-26);ctx.lineTo(pp.x+14,pp.y-21);ctx.lineTo(pp.x,pp.y-16);ctx.closePath();ctx.fill();
+  ctx.fillStyle='rgba(230,240,255,.5)';
+  for(const s of SNOW){
+    s.y+=s.v*.5;s.x+=Math.sin(t/1400+s.ph)*.3;
+    if(s.y>724){s.y=-6;s.x=rand(0,1280);}
+    if(s.s<2){ctx.globalAlpha=.25;ctx.fillRect(s.x,s.y,s.s,s.s);}
+  }
+  ctx.globalAlpha=1;
+}
+
+/* ---- 地点事件 ---- */
+const LOC_EVENTS={
+  winterfell:evWinterfell,wall:evWall,wolfswood:evWolfswood,
+  kingslanding:evKingslanding,dragonstone:evDragonstone
+};
+async function evWinterfell(){
+  for(;;){
+    if(G.scene!=='world')return;
+    if(allLocsDone()){
+      const a=await playStory('finale_pre');
+      if(a==='finale_go'){await runBattle(FINAL_WAVES,{final:true,tone:'night'});return;}
+      return;
+    }
+    const a=await playStory('wf_menu');
+    if(a==='wf_rest'){
+      for(const p of G.players){p.alive=true;p.dissolve=0;p.hp=p.maxhp;p.sp=p.maxsp;}
+      SFX.heal();ribbon('<b>全队休整完毕</b> · 生命/精力回满',2000);
+      updateWorldHud();
+    }else if(a==='wf_visit'){
+      await playStory('wf_visit');
+    }else return;
+  }
+}
+async function evWall(){
+  if(G.locs.wall==='done'){ribbon('长城已肃清。守夜人残部向远征队致意。',2200);return;}
+  await playStory('wall_pre');
+  const r=await runBattle(WALL_WAVES,{tone:'wall'});
+  if(r!=='win')return;
+  G.locs.wall='done';
+  addItem('glass',1);
+  await playStory('wall_post');
+}
+async function evWolfswood(){
+  if(G.locs.wolfswood==='done'){ribbon('狼林恢复了宁静。幼狼在雪地里嬉戏。',2200);return;}
+  const a=await playStory('wolf_pre');
+  if(a==='wolf_sneak'){G.locs.wolfswood='done';return;}
+  const r=await runBattle(GIANT_WAVES,{tone:'forest'});
+  if(r!=='win')return;
+  G.locs.wolfswood='done';
+  addItem('potion',2);
+  await playStory('wolf_win');
+}
+async function evKingslanding(){
+  if(G.locs.kingslanding==='done'){ribbon('红堡的大门紧闭。这里没有更多可争取的了。',2200);return;}
+  await playStory('kl_pre');
+  G.locs.kingslanding='done';
+}
+async function evDragonstone(){
+  if(G.locs.dragonstone==='done'){ribbon('卓耿盘旋在龙石岛上空。',2200);return;}
+  await playStory('ds_event');
+  G.locs.dragonstone='done';
+  G.flags.dragonstone=true;
+}
+
+/* ================= 开放世界探索引擎（v3 · Phase1：地图/行走/相机） ================= */
+const TS=16,SC=2,MW=120,MH=90,VW=1280/SC,VH=720/SC;   // 图块源尺寸/放大倍率/地图宽高/视口(地图像素)
+const KEYS=new Set();
+const ASSET={img:{},ready:false};
+const TILE={};
+let MAP=null,MAPCV=null,MINICV=null,WATER=[];
+
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+function pad4(i){return String(i).padStart(4,'0');}
+function loadImg(k,src){return new Promise(r=>{const im=new Image();im.onload=()=>{ASSET.img[k]=im;r();};im.onerror=()=>{ASSET.img[k]=null;r();};im.src=src;});}
+async function loadAssets(){
+  if(ASSET.ready)return;
+  const ps=[loadImg('rpg','assets/rpg_sheet.png')];
+  for(let i=0;i<132;i++){ps.push(loadImg('t'+i,'assets/town/tile_'+pad4(i)+'.png'));ps.push(loadImg('d'+i,'assets/dun/tile_'+pad4(i)+'.png'));}
+  await Promise.all(ps);
+  buildTiles();genMap();ASSET.ready=true;
+}
+function cnv16(){const c=document.createElement('canvas');c.width=16;c.height=16;return c;}
+function tileOf(im){const c=cnv16();if(im)c.getContext('2d').drawImage(im,0,0,16,16,0,0,16,16);return c;}
+function rpgTile(i){const c=cnv16();const im=ASSET.img.rpg;if(im)c.getContext('2d').drawImage(im,(i%57)*17,Math.floor(i/57)*17,16,16,0,0,16,16);return c;}
+function makeSnowTile(seed){ // 程序化雪地（避免 getImageData 跨域污染）
+  const c=cnv16(),x=c.getContext('2d'),R=mulberry32(seed);
+  x.fillStyle='#dfe7f2';x.fillRect(0,0,16,16);
+  for(let i=0;i<46;i++){
+    const v=R();
+    x.fillStyle=v<.4?'#eef3fa':(v<.72?'#cdd9ea':'#c2d2e6');
+    x.fillRect((R()*16)|0,(R()*16)|0,1+(R()*2|0),1);
+  }
+  for(let i=0;i<7;i++){x.fillStyle='#f6f9fd';x.fillRect((R()*16)|0,(R()*16)|0,1,1);}
+  return c;
+}
+function buildTiles(){
+  const T=ASSET.img;
+  TILE.g=[tileOf(T.t0),tileOf(T.t1),tileOf(T.t2)];
+  TILE.snow=[makeSnowTile(101),makeSnowTile(202),makeSnowTile(303)];
+  TILE.dirt=tileOf(T.t25);TILE.path=tileOf(T.t43);
+  TILE.pine=tileOf(T.t4);TILE.pineS=tileOf(T.t4);   // 松树常绿，雪地直接复用
+  TILE.treeO=tileOf(T.t3);TILE.treeR=tileOf(T.t5);
+  TILE.wall=tileOf(T.t97);
+  TILE.w=rpgTile(0);TILE.iceW=rpgTile(174);
+}
+
+/* ---- 地图数值：0雪 1草 2土 3路 4水 5冰 6松 7雪松 8阔叶 9长城 10桥 ---- */
+function solidTile(v){return v===4||v===5||v===6||v===7||v===8||v===9||v===11;}
+function genMap(){
+  MAP=new Uint8Array(MW*MH);WATER=[];
+  const R=mulberry32(20260831);
+  const set=(x,y,v)=>{if(x>=0&&y>=0&&x<MW&&y<MH)MAP[y*MW+x]=v;};
+  const get=(x,y)=>(x<0||y<0||x>=MW||y>=MH)?4:MAP[y*MW+x];
+  // 基础气候带：北雪 → 过渡 → 南草
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)set(x,y,y<24?0:(y<32?(R()<.85-.09*(y-24)?0:1):(x<46&&y<52?0:1)));
+  // 东海岸（北段为冻海）
+  for(let y=0;y<MH;y++){const edge=111+Math.round(Math.sin(y*.35)*2);for(let x=edge;x<MW;x++)set(x,y,y<22?5:4);}
+  // 长城（横亘北面，留城门）
+  for(let x=4;x<112;x++){set(x,5,9);set(x,6,9);set(x,7,9);}
+  for(let x=58;x<=61;x++){set(x,5,3);set(x,6,3);set(x,7,3);}
+  // 狼林（西北密林）+ 北境零星雪松
+  for(let y=24;y<52;y++)for(let x=5;x<45;x++)if(R()<.36)set(x,y,y<29?7:6);
+  for(let y=10;y<24;y++)for(let x=4;x<108;x++)if(get(x,y)===0&&R()<.05)set(x,y,7);
+  // 南部零星阔叶树
+  for(let y=32;y<MH;y++)for(let x=0;x<106;x++)if(get(x,y)===1&&R()<.045)set(x,y,8);
+  // 河流（东西横贯）
+  const rivY=x=>Math.round(57+Math.sin(x*.33)*3);
+  for(let x=2;x<112;x++){const ry=rivY(x);set(x,ry-1,4);set(x,ry,4);set(x,ry+1,4);}
+  // 道路（桥渡河）
+  const road=pts=>{for(let i=0;i<pts.length-1;i++){let[x,y]=pts[i];const[x1,y1]=pts[i+1];
+    while(x!==x1){if(get(x,y)<4)set(x,y,3);x+=Math.sign(x1-x);}
+    while(y!==y1){if(get(x,y)<4)set(x,y,3);y+=Math.sign(y1-y);}}};
+  road([[60,8],[60,72]]);road([[60,40],[30,40]]);road([[60,72],[86,72]]);
+  for(let y=54;y<=64;y++)set(60,y,10);
+  // 城镇平地（临冬城 / 君临）
+  for(let y=30;y<=38;y++)for(let x=53;x<=68;x++)set(x,y,1);
+  for(let y=68;y<=77;y++)for(let x=80;x<=94;x++)set(x,y,1);
+  // 南方农田
+  for(let y=66;y<MH;y++)for(let x=0;x<104;x++)if(get(x,y)===1&&R()<.12)set(x,y,2);
+  // 巨人巢穴空地（狼林深处）
+  for(let y=34;y<=42;y++)for(let x=14;x<=24;x++)if(get(x,y)===6||get(x,y)===7||get(x,y)===8)set(x,y,0);
+  // 龙石岛（海中开岛）+ 栈桥
+  for(let y=49;y<=60;y++)for(let x=113;x<=118;x++)set(x,y,2);
+  for(let x=106;x<=113;x++)set(x,52,10);
+  set(60,36,1);
+  buildWorld();
+  for(let y=0;y<MH;y++)for(let x=0;x<MW;x++){const v=MAP[y*MW+x];if(v===4||v===5)WATER.push([x,y]);}
+  prerenderMap();prerenderMini();
+}
+
+/* ---- 世界内容：建筑/地标/采集/篝火 ---- */
+const PROPS=[],INTERACT=[],POIS=[];let PROPAT={};
+function prop(tx,ty,im,solid,kind,data){
+  const under=MAP[ty*MW+tx];
+  if(solid)MAP[ty*MW+tx]=11;
+  const p={tx,ty,im,solid,kind,data,under};
+  PROPS.push(p);
+  if(kind)INTERACT.push(p);
+  if(solid)PROPAT[ty*MW+tx]=p;
+  return p;
+}
+function house(x,y,grey){
+  const roof=grey?[48,49,50]:[52,53,54],wall=grey?[76,78,77]:[72,74,73];
+  roof.forEach((t,i)=>prop(x+i,y,ASSET.img['t'+t],true));
+  wall.forEach((t,i)=>prop(x+i,y+1,ASSET.img['t'+t],true));
+}
+function wallRing(x0,y0,x1,y1,gaps){
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+    if(x!==x0&&x!==x1&&y!==y0&&y!==y1)continue;
+    if(gaps&&gaps.some(g=>g[0]===x&&g[1]===y))continue;
+    let t=97;
+    if(y===y0)t=x===x0?96:(x===x1?98:97);
+    else if(x===x0||x===x1)t=108;
+    prop(x,y,ASSET.img['t'+t],true);
+  }
+}
+function poi(n,s,x,y,r){POIS.push({n,s,x:x*TS+8,y:y*TS+8,r:r*TS,seen:false});}
+function buildWorld(){
+  PROPS.length=0;INTERACT.length=0;POIS.length=0;PROPAT={};
+  const P=(tx,ty,k,solid,kind,data)=>prop(tx,ty,ASSET.img[k],solid,kind,data);
+  // 临冬城
+  wallRing(54,30,67,38,[[59,30],[60,30],[59,38],[60,38]]);
+  house(55,32,true);house(63,32,false);house(63,35,false);house(55,35,false);
+  P(62,34,'t105',true);P(58,33,'t106',true);P(66,37,'t92',true);
+  P(61,32,'t83',false,'sign',{txt:'临冬城 · 史塔克家族居城。篝火可休整恢复全队。'});
+  prop(62,36,null,false,'fire');
+  // 黑城堡（长城南门）
+  P(56,9,'t92',true);P(63,9,'t92',true);P(58,9,'t106',true);P(64,10,'d95',true);
+  P(61,9,'t83',false,'sign',{txt:'黑城堡 · 守夜人最后的前哨。'});
+  prop(59,10,null,false,'fire');
+  // 君临
+  wallRing(81,68,93,77,[[81,71],[81,72],[93,72],[93,73]]);
+  house(86,70,true);house(86,73,true);house(83,70,false);house(90,74,false);
+  P(84,73,'t92',true);P(85,70,'t106',true);
+  P(82,73,'t83',false,'sign',{txt:'君临 · 七国都城，红堡俯瞰黑水湾。'});
+  prop(84,72,null,false,'fire');
+  // 巨人巢穴（立石阵）
+  P(15,35,'d64',true);P(23,35,'d65',true);P(15,41,'d65',true);P(23,41,'d64',true);P(19,34,'d63',true);
+  P(19,36,'t83',false,'sign',{txt:'巨人巢穴 · 大地上的脚印深及膝盖。'});
+  // 龙石岛
+  house(114,51,true);P(113,58,'d65',true);P(117,58,'d64',true);
+  P(114,56,'t83',false,'sign',{txt:'龙石岛 · 坦格利安家族的旧垒。'});
+  prop(115,57,null,false,'fire');
+  // 采集点
+  const G1=(tx,ty,item,name,kind)=>prop(tx,ty,null,false,'gather',{item,name,kind});
+  G1(50,44,'herb','药草','herb');G1(66,52,'herb','药草','herb');G1(28,46,'herb','药草','herb');
+  G1(70,64,'berry','浆果','berry');G1(50,70,'berry','浆果','berry');G1(95,80,'berry','浆果','berry');
+  G1(55,12,'ore','矿石','ore');G1(70,10,'ore','矿石','ore');G1(17,38,'ore','矿石','ore');G1(21,38,'ore','矿石','ore');
+  // 地标发现
+  poi('临冬城','史塔克家族居城 · 篝火可休整',60,34,6);
+  poi('黑城堡','守夜人驻守之地',60,10,5);
+  poi('君临','七国都城',87,72,6);
+  poi('龙石岛','坦格利安旧垒 · 龙的气息弥漫',115,54,5);
+  poi('巨人巢穴','狼林深处 · 巨人游荡',19,38,5);
+}
+function findInteract(){
+  const e=G.exp;if(!e)return null;
+  let best=null,bd=24*24;
+  for(const p of INTERACT){
+    if(p.taken)continue;
+    const dx=e.px-(p.tx*TS+8),dy=e.py-(p.ty*TS+10),d=dx*dx+dy*dy;
+    if(d<bd){bd=d;best=p;}
+  }
+  return best;
+}
+function drawDynProp(p,sx,sy,t){
+  if(p.kind==='fire'){
+    ctx.fillStyle='rgba(255,170,60,'+(0.10+0.05*Math.sin(t/90)).toFixed(3)+')';
+    ctx.beginPath();ctx.arc(sx+16,sy+20,15,0,7);ctx.fill();
+    ctx.fillStyle='#5a3a22';ctx.fillRect(sx+8,sy+22,16,4);
+    const f=Math.sin(t/95)*2;
+    ctx.fillStyle='#ff8c2a';ctx.fillRect(sx+12,sy+12+f,8,10);
+    ctx.fillStyle='#ffd76a';ctx.fillRect(sx+14,sy+15+f,4,6);
+  }else if(p.kind==='gather'){
+    const k=p.data.kind;
+    if(k==='herb'){
+      ctx.fillStyle='#2f6d33';ctx.fillRect(sx+14,sy+16,3,10);ctx.fillRect(sx+8,sy+20,3,6);ctx.fillRect(sx+21,sy+20,3,6);
+      ctx.fillStyle='#57a75c';ctx.fillRect(sx+11,sy+10,8,6);ctx.fillRect(sx+6,sy+17,5,4);ctx.fillRect(sx+21,sy+17,5,4);
+    }else if(k==='berry'){
+      ctx.fillStyle='#2c5a2e';ctx.beginPath();ctx.arc(sx+16,sy+20,9,0,7);ctx.fill();
+      ctx.fillStyle='#c23b4a';ctx.fillRect(sx+11,sy+16,3,3);ctx.fillRect(sx+18,sy+14,3,3);ctx.fillRect(sx+15,sy+22,3,3);
+    }else{
+      ctx.fillStyle='#5d6672';ctx.fillRect(sx+8,sy+16,16,10);
+      ctx.fillStyle='#78828e';ctx.fillRect(sx+10,sy+13,10,6);
+      ctx.fillStyle='#cfd6df';ctx.fillRect(sx+12,sy+15,3,3);
+    }
+  }
+}
+function pickTile(v,x,y){
+  const h=(x*31+y*57)%3;
+  switch(v){
+    case 0:return TILE.snow[h];
+    case 1:{const s=(((x*73856093)^(y*19349663))>>>0)%9;return s===0?TILE.g[1]:(s===1?TILE.g[2]:TILE.g[0]);}
+    case 2:return TILE.dirt;
+    case 3:case 10:return TILE.path;case 4:return TILE.w;case 5:return TILE.iceW;
+    case 6:return TILE.pine;case 7:return TILE.pineS;
+    case 8:return h===2?TILE.treeO:TILE.treeR;case 9:return TILE.wall;
+  }
+  return null;
+}
+function prerenderMap(){
+  MAPCV=document.createElement('canvas');MAPCV.width=MW*TS;MAPCV.height=MH*TS;
+  const x=MAPCV.getContext('2d');x.imageSmoothingEnabled=false;
+  for(let ty=0;ty<MH;ty++)for(let tx=0;tx<MW;tx++){
+    let v=MAP[ty*MW+tx];
+    if(v===11){const p=PROPAT[ty*MW+tx];if(p)v=p.under;}
+    const c=pickTile(v,tx,ty);
+    if(v===10)x.drawImage(TILE.w,tx*TS,ty*TS);
+    if(v===6||v===7||v===8){ // 植被精灵透明底，先垫地面
+      const snow=ty<24||(ty<32&&v===7)||(tx<46&&ty<52);
+      x.drawImage(snow?TILE.snow[(tx+ty)%3]:TILE.g[0],tx*TS,ty*TS);
+    }
+    if(c)x.drawImage(c,tx*TS,ty*TS);
+    else{x.fillStyle='#0a1420';x.fillRect(tx*TS,ty*TS,TS,TS);}
+  }
+  for(const p of PROPS){
+    if(p.dyn||!p.im)continue;
+    x.imageSmoothingEnabled=false;
+    x.drawImage(p.im,0,0,16,16,p.tx*TS,p.ty*TS,TS,TS);
+  }
+}
+function prerenderMini(){
+  MINICV=document.createElement('canvas');MINICV.width=MW;MINICV.height=MH;
+  const x=MINICV.getContext('2d');
+  const COL=['#e6edf5','#4d7a46','#6b5b3e','#a3906a','#274a72','#a8cadf','#243f28','#7fa090','#33512f','#8b9cb6','#a3906a','#8b93a3'];
+  for(let ty=0;ty<MH;ty++)for(let tx=0;tx<MW;tx++){x.fillStyle=COL[MAP[ty*MW+tx]]||'#000';x.fillRect(tx,ty,1,1);}
+}
+
+/* ---- 分区 ---- */
+const REG={
+  wall:{k:'wall',n:'长 城',s:'守夜人残部驻守于此',snow:true},
+  north:{k:'north',n:'北境雪原',s:'风雪呼啸 · 小心亡者游荡',snow:true},
+  wolfswood:{k:'wolfswood',n:'狼 林',s:'巨人出没的古老森林',snow:true},
+  riverlands:{k:'riverlands',n:'河间平原',s:'三叉戟河静静流淌',snow:false},
+  plains:{k:'plains',n:'中部平原',s:'远处村落升起炊烟',snow:false},
+  kings:{k:'kings',n:'王领',s:'七国都城所在之地',snow:false},
+  coast:{k:'coast',n:'狭海沿岸',s:'咸风与潮汐的气息',snow:false}
+};
+function regionAt(tx,ty){
+  if(ty<=8)return REG.wall;
+  if(ty<32)return REG.north;
+  if(tx<46&&ty<52)return REG.wolfswood;
+  if(tx>=102&&ty>=44)return REG.coast;
+  if(ty<56)return REG.riverlands;
+  if(ty>=66)return REG.kings;
+  return REG.plains;
+}
+
+/* ---- 进入 / 更新 ---- */
+function enterExplore(){
+  G.scene='explore';setTone(null);
+  $('#world').classList.add('expmode');
+  $('#partyBar').classList.add('hidden');
+  $('#worldHud').classList.remove('hidden');
+  const hint=$('#worldHud .wh-hint');if(hint)hint.textContent='WASD/方向键移动 · E 互动 · Q 任务日志 · C 魔物面板';
+  updateWorldHud();
+}
+function updateExplore(dt,t){
+  const e=G.exp;if(!e)return;
+  if(!G.busy&&!DLG){updateNpcs(dt);updateMobs(dt);}
+  let dx=0,dy=0;
+  if(G.scene==='explore'&&!G.busy&&!DLG){
+    if(KEYS.has('ArrowLeft')||KEYS.has('a'))dx-=1;
+    if(KEYS.has('ArrowRight')||KEYS.has('d'))dx+=1;
+    if(KEYS.has('ArrowUp')||KEYS.has('w'))dy-=1;
+    if(KEYS.has('ArrowDown')||KEYS.has('s'))dy+=1;
+  }
+  if(dx||dy){
+    const l=Math.hypot(dx,dy);dx/=l;dy/=l;
+    const sp=108*dt/1000,nx=e.px+dx*sp,ny=e.py+dy*sp;
+    if(!blockedAt(nx,e.py))e.px=nx;
+    if(!blockedAt(e.px,ny))e.py=ny;
+    e.face=Math.abs(dx)>=Math.abs(dy)?(dx<0?'left':'right'):(dy<0?'up':'down');
+    e.moving=true;e.animT+=dt;
+  }else e.moving=false;
+  const tx=clamp(e.px-VW/2,0,MW*TS-VW),ty2=clamp(e.py-VH/2,0,MH*TS-VH),k=Math.min(1,dt/110);
+  e.camX+=(tx-e.camX)*k;e.camY+=(ty2-e.camY)*k;
+  const rg=regionAt(Math.floor(e.px/TS),Math.floor(e.py/TS));
+  if(!e.region||e.region.k!==rg.k){e.region=rg;showBanner(rg.n,rg.s);}
+  for(const p of POIS){
+    if(p.seen)continue;
+    const dx=e.px-p.x,dy=e.py-p.y;
+    if(dx*dx+dy*dy<p.r*p.r){p.seen=true;showBanner(p.n,p.s);}
+  }
+  updateFollower(dt);
+}
+function updateFollower(dt){
+  const e=G.exp;
+  if(!e||G.deploy==null||!G.follow)return;
+  e.trail=e.trail||[];
+  if(e.moving){e.trail.push({x:e.px,y:e.py});if(e.trail.length>90)e.trail.shift();}
+  const tgt=e.trail.length>26?e.trail[e.trail.length-26]:(e.trail[0]||{x:e.px,y:e.py+10});
+  const k=Math.min(1,dt/90);
+  if(Math.abs(tgt.x-G.follow.x)>.5)G.follow.face=tgt.x<G.follow.x?'left':'right';
+  G.follow.x+=(tgt.x-G.follow.x)*k;
+  G.follow.y+=(tgt.y-G.follow.y)*k;
+}
+function blockedAt(px,py){
+  for(const[ox,oy]of[[-3,3],[3,3],[-3,-2],[3,-2]]){
+    const tx=Math.floor((px+ox)/TS),ty=Math.floor((py+oy)/TS);
+    if(tx<0||ty<0||tx>=MW||ty>=MH)return true;
+    if(solidTile(MAP[ty*MW+tx]))return true;
+  }
+  return false;
+}
+
+/* ---- 渲染 ---- */
+function drawExplore(t){
+  const e=G.exp;
+  ctx.imageSmoothingEnabled=false;
+  ctx.fillStyle='#04070f';ctx.fillRect(0,0,1280,720);
+  if(!e)return;
+  const cx=Math.round(e.camX),cy=Math.round(e.camY);
+  if(MAPCV)ctx.drawImage(MAPCV,cx,cy,VW,VH,0,0,1280,720);
+  // 水面微光
+  ctx.fillStyle='rgba(220,240,255,.5)';
+  const ph=Math.floor(t/420);
+  for(const[wx,wy]of WATER){
+    if(wx<cx/TS-1||wx>(cx+VW)/TS+1||wy<cy/TS-1||wy>(cy+VH)/TS+1)continue;
+    if((wx*7+wy*13+ph)%13===0){
+      ctx.globalAlpha=.22+.18*Math.sin(t/300+wx+wy);
+      ctx.fillRect((wx*TS-cx+4+((wx+ph)%7))*SC,(wy*TS-cy+6+((wy*3)%5))*SC,6,2);
+    }
+  }
+  ctx.globalAlpha=1;
+  // 动态物件（篝火/采集点）
+  for(const p of PROPS){
+    if(p.im||p.taken)continue;
+    const sx=(p.tx*TS-cx)*SC,sy=(p.ty*TS-cy)*SC;
+    if(sx<-40||sy<-40||sx>1300||sy>760)continue;
+    drawDynProp(p,sx,sy,t);
+  }
+  drawNpcs(t,cx,cy);
+  drawMobs(t,cx,cy);
+  drawFollow(t);
+  drawHero(t);
+  // 互动提示
+  const np=findNpc(),ip=np?null:findInteract();
+  if(np||ip){
+    const bx=(np?np.x-cx:ip.tx*TS-cx)*SC+8,by=(np?np.y-cy:ip.ty*TS-cy)*SC-40+Math.sin(t/280)*2;
+    ctx.fillStyle='rgba(8,12,24,.9)';ctx.fillRect(bx,by,16,14);
+    ctx.strokeStyle='rgba(240,212,145,.9)';ctx.lineWidth=1;ctx.strokeRect(bx+.5,by+.5,15,13);
+    ctx.fillStyle='#f0d491';ctx.font='bold 10px monospace';ctx.textAlign='center';ctx.fillText('E',bx+8,by+11);ctx.textAlign='left';
+  }
+  if(e.region&&e.region.snow){ // 北部飘雪
+    ctx.fillStyle='#eef4ff';
+    for(const s of SNOW){
+      s.y+=s.v*.6;s.x+=Math.sin(t/1400+s.ph)*.35+.15;
+      if(s.y>724){s.y=-6;s.x=rand(0,1280);}
+      ctx.globalAlpha=s.s<2?.35:.8;ctx.fillRect(s.x,s.y,s.s,s.s);
+    }
+    ctx.globalAlpha=1;
+  }
+  drawMinimap();
+}
+function drawNpcs(t,cx,cy){
+  const near=findNpc(),mq=mqCurrent();
+  for(const n of NPCS){
+    const sx=(n.x-cx)*SC,sy=(n.y-cy)*SC;
+    if(sx<-40||sy<-40||sx>1320||sy>760)continue;
+    ctx.fillStyle='rgba(0,0,0,.3)';
+    ctx.beginPath();ctx.ellipse(sx,sy+5,9,4,0,0,7);ctx.fill();
+    const im=ASSET.img[n.im];
+    if(im)ctx.drawImage(im,0,0,16,16,sx-16,sy-27,32,32);
+    let mk=null;
+    if(mq&&mq[1]===n.id)mk='!';
+    else{const q=QUESTS.find(q=>q.giver===n.id);
+      if(q&&(!G.quests[q.id]||questReady(q)))mk='?';}
+    if(mk){
+      const my=sy-34+Math.sin(t/300)*2;
+      ctx.font='bold 15px "Noto Serif SC",serif';ctx.textAlign='center';
+      ctx.lineWidth=3;ctx.strokeStyle='rgba(8,12,24,.9)';
+      ctx.strokeText(mk,sx,my);
+      ctx.fillStyle=mk==='!'?'#ffd76a':'#9fe89f';
+      ctx.fillText(mk,sx,my);ctx.textAlign='left';
+    }
+    if(near===n){
+      ctx.font='11px "Noto Serif SC",serif';ctx.textAlign='center';
+      ctx.lineWidth=3;ctx.strokeStyle='rgba(8,12,24,.85)';
+      ctx.strokeText(n.name,sx,sy-44);
+      ctx.fillStyle='#f0d491';ctx.fillText(n.name,sx,sy-44);ctx.textAlign='left';
+    }
+  }
+}
+function drawHero(t){
+  const e=G.exp,img=ASSET.img.d88;
+  const sx=(e.px-e.camX)*SC,syf=(e.py-e.camY)*SC;
+  ctx.fillStyle='rgba(0,0,0,.3)';
+  ctx.beginPath();ctx.ellipse(sx,syf+5,10,4,0,0,7);ctx.fill();
+  if(!img)return;
+  const bob=e.moving?Math.sin(e.animT/85)*1.6:0,dy2=syf-27+bob*2;
+  ctx.save();
+  if(e.face==='left'){ctx.translate(sx,0);ctx.scale(-1,1);ctx.drawImage(img,0,0,16,16,-16,dy2,32,32);}
+  else ctx.drawImage(img,0,0,16,16,sx-16,dy2,32,32);
+  ctx.restore();
+}
+function drawFollow(t){
+  const e=G.exp;
+  if(G.deploy==null||!G.follow||!e||!G.beasts[G.deploy])return;
+  const b=G.beasts[G.deploy];
+  const sx=(G.follow.x-e.camX)*SC,sy=(G.follow.y-e.camY)*SC;
+  if(sx<-40||sy<-40||sx>1320||sy>760)return;
+  ctx.fillStyle='rgba(0,0,0,.3)';
+  ctx.beginPath();ctx.ellipse(sx,sy+5,9,4,0,0,7);ctx.fill();
+  const im=mobImg(b.key),w=im.width*2,h=im.height*2;
+  const bob=Math.sin(t/170)*1.2;
+  ctx.save();
+  if(G.follow.face==='right'){ctx.translate(sx,0);ctx.scale(-1,1);ctx.drawImage(im,0,0,im.width,im.height,-w/2,sy+6-h+bob,w,h);}
+  else ctx.drawImage(im,0,0,im.width,im.height,sx-w/2,sy+6-h+bob,w,h);
+  ctx.restore();
+}
+function drawMinimap(){
+  const e=G.exp;if(!MINICV)return;
+  const mx=1280-120-20,my=76;
+  ctx.fillStyle='rgba(5,8,16,.8)';ctx.fillRect(mx-7,my-22,134,120);
+  ctx.strokeStyle='rgba(201,165,90,.5)';ctx.lineWidth=1;ctx.strokeRect(mx-7,my-22,134,120);
+  ctx.fillStyle='#f0d491';ctx.font='12px "Noto Serif SC",serif';ctx.textAlign='left';
+  ctx.fillText(e.region?e.region.n:'维斯特洛',mx,my-8);
+  ctx.imageSmoothingEnabled=false;
+  ctx.drawImage(MINICV,mx,my);
+  ctx.strokeStyle='rgba(240,212,145,.5)';
+  ctx.strokeRect(mx+e.camX/TS,my+e.camY/TS,VW/TS,VH/TS);
+  ctx.fillStyle='#ffd76a';
+  ctx.fillRect(mx+e.px/TS-1.5,my+e.py/TS-1.5,3,3);
+}
+
+/* ---- 互动（NPC/路牌/篝火/采集） ---- */
+async function tryInteract(){
+  if(G.scene!=='explore'||G.busy||DLG)return;
+  const n=findNpc();
+  if(n){await talkNpc(n);return;}
+  const p=findInteract();
+  if(!p){ribbon('四周静悄悄的……',1200);return;}
+  if(p.kind==='sign')ribbon(p.data.txt,2600);
+  else if(p.kind==='fire'){
+    for(const u of G.players){u.hp=u.maxhp;u.sp=u.maxsp;}
+    updateWorldHud();ribbon('队伍在篝火旁休整，体力尽复。',2200);
+  }else if(p.kind==='gather'&&!p.taken){
+    p.taken=true;G.bag[p.data.item]=(G.bag[p.data.item]||0)+1;
+    updateWorldHud();ribbon('拾取 '+p.data.name+' ×1',1800);
+  }
+}
+
+/* ================= Phase3：NPC 与任务 ================= */
+const NPCS=[];
+function npc(id,name,im,tx,ty,r,idle){NPCS.push({id,name,im,hx:tx*TS+8,hy:ty*TS+8,x:tx*TS+8,y:ty*TS+8,r:r*TS,t:rand(0,2000),dx:0,dy:0,idle});}
+function buildNpcs(){
+  NPCS.length=0;
+  npc('luwin','鲁温学士','d84',61,34,2,'白鸦带来的消息越来越糟了，旅人。');
+  npc('mikken','铁匠米肯','d111',57,36,2,'北境的钢，对付死人正合适。');
+  npc('dorn','学徒多恩','d85',64,36,2,'城外的浆果熟透了，可惜学士不让我乱跑。');
+  npc('oldbear','熊老莫尔蒙','d100',61,11,2,'长城的每一块冰里，都冻着旧夜的故事。');
+  npc('rob','猎人罗布','d86',20,39,2,'巨人的脚印比上回又深了一寸。');
+  npc('sass','酒馆老板娘莎莎','d99',86,72,2,'王都的酒价，比上个月又贵了三枚铜星。');
+  npc('cap','金袍队长','d98',89,71,2,'君临的街道，可不会自己维持秩序。');
+  npc('cressen','克雷森学士','d84',116,54,2,'这岛上的石头，还记得龙的体温。');
+}
+function updateNpcs(dt){
+  for(const n of NPCS){
+    n.t-=dt;
+    if(n.t<=0){
+      n.t=rand(1500,4200);
+      if(Math.random()<.45){n.dx=0;n.dy=0;}
+      else{const a=rand(0,6.283);n.dx=Math.cos(a)*20;n.dy=Math.sin(a)*20;}
+    }
+    if(n.dx||n.dy){
+      const nx=n.x+n.dx*dt/1000,ny=n.y+n.dy*dt/1000;
+      if(Math.abs(nx-n.hx)<n.r&&!blockedAt(nx,n.y))n.x=nx;else n.dx*=-1;
+      if(Math.abs(ny-n.hy)<n.r&&!blockedAt(n.x,ny))n.y=ny;else n.dy*=-1;
+    }
+  }
+}
+function findNpc(){
+  const e=G.exp;if(!e)return null;
+  let best=null,bd=26*26;
+  for(const n of NPCS){const dx=e.px-n.x,dy=e.py-n.y,d=dx*dx+dy*dy;if(d<bd){bd=d;best=n;}}
+  return best;
+}
+/* ---- 任务 ---- */
+const QUESTS=[
+  {id:'q_herb',giver:'luwin',name:'学士的草药',type:'deliver',item:'herb',cnt:2,
+   ask:'城里伤患不少，我正缺药草。若能采来两株，感激不尽。',remind:'药草还差些。城墙外的林地里就有。',
+   desc:'采集药草×2，交给鲁温学士',reward:{item:'potion'},rwd:'治疗药水 ×1'},
+  {id:'q_ore',giver:'mikken',name:'米肯的矿石',type:'deliver',item:'ore',cnt:2,
+   ask:'熔炉要开了，还差两枚矿石。北边的山岩下能敲到。',remind:'矿石还不够数，旅人。',
+   desc:'采集矿石×2，交给铁匠米肯',reward:{atkAll:1},rwd:'全队攻击 +1'},
+  {id:'q_berry',giver:'dorn',name:'浆果嘴馋',type:'deliver',item:'berry',cnt:2,
+   ask:'帮我摘两枚浆果来！甜的！别告诉学士。',remind:'浆果！甜的！两枚！',
+   desc:'采集浆果×2，交给学徒多恩',reward:{item:'wine'},rwd:'葡萄美酒 ×1'},
+  {id:'q_kill',giver:'cap',name:'肃清道路',type:'kill',cnt:3,
+   ask:'城外的亡者斥候越来越猖獗。除掉三个，来领赏。',remind:'斥候的数目还不够。',
+   desc:'击败3个敌人，回报金袍队长',reward:{item:'glass'},rwd:'龙晶匕首 ×1'},
+];
+function questReady(q){
+  const st=G.quests[q.id];
+  if(!st||st.st!=='active')return false;
+  if(q.type==='deliver')return (G.bag[q.item]||0)>=q.cnt;
+  if(q.type==='kill')return G.stats.kills-st.base>=q.cnt;
+  return false;
+}
+const MQ=[['wall','oldbear'],['wolfswood','rob'],['kingslanding','cap'],['dragonstone','cressen']];
+const MQN={wall:'长城 · 黑城堡告急',wolfswood:'狼林 · 巨人巢穴',kingslanding:'君临 · 红堡会谈',dragonstone:'龙石岛 · 驯龙'};
+const MQEV={wall:evWall,wolfswood:evWolfswood,kingslanding:evKingslanding,dragonstone:evDragonstone};
+const MQBRIEF={
+  wall:['渡鸦自长城带回噩耗——死人军在集结，守夜人兵力捉襟见肘。','前往黑城堡，支援守夜人。'],
+  wolfswood:['狼林深处传来巨响，巨人下山了，采石营的村民逃了一半。','前往巨人巢穴，查明真相。'],
+  kingslanding:['红堡来函：女王愿就北境战事与你会谈，攸关七国存亡。','前往君临红堡，赴会。'],
+  dragonstone:['卓耿被龙石岛的旧魔法吸引，在岛上空盘旋不去。长夜将至，唯龙火可敌死神。','前往龙石岛，收服卓耿。'],
+};
+function mqCurrent(){return MQ.find(m=>G.locs[m[0]]!=='done')||null;}
+async function talkNpc(n){
+  G.busy=true;
+  const mq=mqCurrent();
+  if(mq&&mq[1]===n.id){
+    const b=MQBRIEF[mq[0]];
+    const a=await runDlg([
+      {sp:n.name,txt:b[0]},
+      {sp:n.name,txt:b[1],choices:[{t:'立即出发',act:'go'},{t:'稍作准备',act:'wait',end:true}]},
+    ]);
+    if(a==='go')await MQEV[mq[0]]();
+  }else{
+    const q=QUESTS.find(q=>q.giver===n.id);
+    if(q)await questTalk(n,q);
+    else await runDlg([{sp:n.name,txt:n.idle}]);
+  }
+  G.busy=false;
+}
+async function questTalk(n,q){
+  const st=G.quests[q.id];
+  if(!st){
+    const a=await runDlg([
+      {sp:n.name,txt:n.idle},
+      {sp:n.name,txt:q.ask,choices:[{t:'接受委托',act:'ok'},{t:'暂不考虑',act:'no',end:true}]},
+    ]);
+    if(a==='ok'){
+      G.quests[q.id]={st:'active',base:q.type==='kill'?G.stats.kills:0};
+      ribbon('接受支线 · '+q.name,2200);updateQuestLog();
+    }
+  }else if(st.st==='active'){
+    if(questReady(q)){
+      if(q.type==='deliver')G.bag[q.item]-=q.cnt;
+      G.quests[q.id].st='done';
+      if(q.reward.item)addItem(q.reward.item,1);
+      if(q.reward.atkAll)applyEff({atkAll:q.reward.atkAll});
+      updateWorldHud();updateQuestLog();
+      await runDlg([
+        {sp:n.name,txt:'干得漂亮！'+q.rwd+'，收下吧。'},
+        {sp:'旁白',txt:'支线完成 · '+q.name},
+      ]);
+    }else{
+      await runDlg([{sp:n.name,txt:q.remind}]);
+    }
+  }else{
+    await runDlg([{sp:n.name,txt:n.idle}]);
+  }
+}
+function toggleQuestLog(){
+  const el=$('#questLog');
+  if(el.classList.contains('show'))el.classList.remove('show');
+  else{updateQuestLog();el.classList.add('show');}
+}
+function updateQuestLog(){
+  const el=$('#qlBody');if(!el)return;
+  const cur=mqCurrent();
+  let h='<div class="qlk">— 主线 —</div>';
+  for(const[k]of MQ){
+    const done=G.locs[k]==='done';
+    h+='<div class="qli '+(done?'done':(cur&&cur[0]===k?'on':''))+'">'+(done?'✔ ':'▶ ')+MQN[k]+'</div>';
+  }
+  h+='<div class="qli '+(cur?'':'on')+'">'+(cur?'':'▶ ')+'长夜 · 终局之战</div>';
+  h+='<div class="qlk">— 支线 —</div>';
+  for(const q of QUESTS){
+    const st=G.quests[q.id];
+    if(!st)h+='<div class="qli"><span class="st">未接</span> '+q.name+'</div>';
+    else if(st.st==='active')h+='<div class="qli on">▶ '+q.name+'</div><div class="qld">'+q.desc+(q.type==='deliver'?'（'+(Math.min(G.bag[q.item]||0,q.cnt))+'/'+q.cnt+'）':'')+'</div>';
+    else h+='<div class="qli done">✔ '+q.name+'</div>';
+  }
+  el.innerHTML=h;
+}
+
+/* ================= Phase4：野怪生态 + 遭遇战 ================= */
+const MOBS=[];
+const MOBIMG={};
+function mobImg(k){
+  if(!MOBIMG[k]){const f=FOES[k];MOBIMG[k]=makeSprite(f.spr,f.pal).img;}
+  return MOBIMG[k];
+}
+const MOB_SPAWNS=[
+  ['wight',58,16],['wight',66,14],['spider',70,20],['wight',52,20],['spider',76,16],
+  ['wolf',16,44],['wolf',24,46],['spider',14,48],['wolf',28,42],['wolf',34,56],
+  ['wight',40,60],['spider',50,64],['wight',74,60],['spider',56,56],
+  ['spider',96,66],['wight',98,40],['spider',102,44],['wolf',44,70]
+];
+const TOWNS_C=[[62,35,10],[61,11,8],[87,72,10],[116,54,7]];
+function nearTown(tx,ty){return TOWNS_C.some(([cx,cy,r])=>Math.hypot(tx-cx,ty-cy)<r);}
+function spawnMob(k,tx,ty){
+  MOBS.push({k,x:tx*TS+8,y:ty*TS+8,hx:tx*TS+8,hy:ty*TS+8,t:rand(0,2000),dx:0,dy:0,chase:false,face:1});
+}
+function buildMobs(){
+  MOBS.length=0;
+  for(const[k,tx,ty]of MOB_SPAWNS)
+    if(!blockedAt(tx*TS+8,ty*TS+8)&&!nearTown(tx,ty))spawnMob(k,tx,ty);
+}
+let mobRespawnT=0;
+function updateMobs(dt){
+  const e=G.exp;
+  for(let i=MOBS.length-1;i>=0;i--){
+    const m=MOBS[i];
+    const d=Math.hypot(e.px-m.x,e.py-m.y)||1;
+    m.chase=d<6.5*TS;
+    if(m.chase){
+      const sp=62*dt/1000,vx=(e.px-m.x)/d,vy=(e.py-m.y)/d;
+      if(!blockedAt(m.x+vx*sp,m.y))m.x+=vx*sp;
+      if(!blockedAt(m.x,m.y+vy*sp))m.y+=vy*sp;
+      m.face=vx<0?-1:1;
+    }else{
+      m.t-=dt;
+      if(m.t<=0){
+        m.t=rand(1500,4200);
+        if(Math.random()<.45){m.dx=0;m.dy=0;}
+        else{const a=rand(0,6.28);m.dx=Math.cos(a)*20/1000;m.dy=Math.sin(a)*20/1000;}
+      }
+      const nx=m.x+m.dx*dt,ny=m.y+m.dy*dt;
+      if(Math.hypot(nx-m.hx,ny-m.hy)<3*TS&&!blockedAt(nx,ny)){m.x=nx;m.y=ny;if(m.dx)m.face=m.dx<0?-1:1;}
+      else{m.dx=0;m.dy=0;}
+    }
+    if(d<13){startEncounter(m);return;}
+  }
+  if(mobRespawnT>0){
+    mobRespawnT-=dt;
+    if(mobRespawnT<=0&&MOBS.length<MOB_SPAWNS.length){
+      const cands=MOB_SPAWNS.filter(([k,tx,ty])=>!nearTown(tx,ty)&&Math.hypot(tx*TS+8-e.px,ty*TS+8-e.py)>14*TS&&!blockedAt(tx*TS+8,ty*TS+8));
+      if(cands.length){const[k,tx,ty]=cands[irand(0,cands.length-1)];spawnMob(k,tx,ty);}
+      else mobRespawnT=8000;
+    }
+  }
+}
+async function startEncounter(m){
+  if(G.busy||DLG||G.scene!=='explore')return;
+  G.busy=true;
+  MOBS.splice(MOBS.indexOf(m),1);
+  mobRespawnT=25000+rand(0,15000);
+  screenFlash('rgba(200,60,60,.4)');SFX.hurt();shake(5);
+  ribbon('<b>遭遇战！</b> '+FOES[m.k].name+' 扑了过来',1600);
+  await sleep(700);
+  const foes=[{k:m.k,x:SLOTS[1].x,y:SLOTS[1].y}];
+  if(Math.random()<.4)foes.push({k:m.k,x:SLOTS[0].x,y:SLOTS[0].y});
+  const rg=G.exp.region&&G.exp.region.k;
+  const tone=rg==='wolfswood'?'forest':(G.exp.region&&G.exp.region.snow?'wall':'city');
+  G.tameKey=null;
+  const r=await runBattle([{banner:'遭遇 · '+FOES[m.k].name,sub:'野外遭遇 · 战胜或驯服它',foes}],{tone});
+  if(r==='win'&&G.tameKey){
+    G.beasts.push({key:G.tameKey,lv:1,exp:0,aff:0});
+    ribbon('<b>驯服成功！</b> '+FOES[G.tameKey].name+' 加入了队伍',2600);
+  }
+  G.busy=false;
+}
+function drawMobs(t,cx,cy){
+  for(const m of MOBS){
+    const sx=(m.x-cx)*SC,sy=(m.y-cy)*SC;
+    if(sx<-40||sy<-40||sx>1320||sy>760)continue;
+    ctx.fillStyle='rgba(0,0,0,.3)';
+    ctx.beginPath();ctx.ellipse(sx,sy+5,9,4,0,0,7);ctx.fill();
+    const im=mobImg(m.k),w=im.width*2,h=im.height*2;
+    ctx.save();
+    if(m.face>0){ctx.translate(sx,0);ctx.scale(-1,1);ctx.drawImage(im,0,0,im.width,im.height,-w/2,sy+6-h,w,h);}
+    else ctx.drawImage(im,0,0,im.width,im.height,sx-w/2,sy+6-h,w,h);
+    ctx.restore();
+    if(m.chase){
+      const my=sy-h+Math.sin(t/220)*2;
+      ctx.font='bold 15px "Noto Serif SC",serif';ctx.textAlign='center';
+      ctx.lineWidth=3;ctx.strokeStyle='rgba(8,12,24,.9)';
+      ctx.strokeText('!',sx,my);
+      ctx.fillStyle='#ff7b7b';ctx.fillText('!',sx,my);ctx.textAlign='left';
+    }
+  }
+}
+
+/* ---- 无头测试钩子 ---- */
+function skipStory(){
+  let guard=0;
+  while(DLG&&guard++<600){
+    if(DLG.typing)finishLine();
+    else if(DLG.choices)pickChoice(DLG.choices[0]);
+    else advanceDlg();
+  }
+}
+window.__T={
+  ready:()=>ASSET.ready,begin,skipStory,
+  state:()=>({scene:G.scene,x:G.exp&&G.exp.px,y:G.exp&&G.exp.py,region:G.exp&&G.exp.region&&G.exp.region.k}),
+  teleport:(tx,ty)=>{const e=G.exp;if(!e)return;e.px=tx*TS+8;e.py=ty*TS+8;
+    e.camX=clamp(e.px-VW/2,0,MW*TS-VW);e.camY=clamp(e.py-VH/2,0,MH*TS-VH);e.region=null;e.trail=null;
+    if(G.follow){G.follow.x=e.px;G.follow.y=e.py;}},
+  press:k=>KEYS.add(k),release:k=>KEYS.delete(k),
+  tileAt:(tx,ty)=>MAP[ty*MW+tx],blockedAt,
+  tick:(dt)=>{const t=performance.now();updateExplore(dt,t);drawExplore(t);},
+  banner:()=>$('#banner').classList.contains('show')
+};
+async function smokeRun(){
+  const el=document.createElement('pre');el.id='smokeLog';
+  el.style.cssText='position:absolute;left:10px;top:10px;z-index:999;background:rgba(0,0,0,.75);color:#9fe89f;font:13px monospace;padding:10px;white-space:pre-wrap;pointer-events:none';
+  document.body.appendChild(el);
+  const log=s=>{el.textContent+=s+'\n';document.title=String(s);};
+  try{
+    await loadAssets();
+    log('assets ready='+ASSET.ready);
+    begin();await sleep(700);
+    skipStory();await sleep(600);
+    log('scene='+G.scene+' region='+(G.exp.region&&G.exp.region.k)+' pos='+G.exp.px.toFixed(0)+','+G.exp.py.toFixed(0));
+    const x0=G.exp.py;
+    KEYS.add('ArrowDown');for(let i=0;i<80;i++)window.__T.tick(16);KEYS.delete('ArrowDown');
+    const dx1=+(G.exp.py-x0).toFixed(1);
+    log('walk down dy='+dx1+(dx1>40?' OK':' FAIL_LOW'));
+    log('solid: water(63,59)='+blockedAt(63*TS+8,59*TS+8)+' road(60,45)='+blockedAt(60*TS+8,45*TS+8));
+    window.__T.teleport(20,40);window.__T.tick(16);
+    const r1=G.exp.region&&G.exp.region.k;
+    log('teleport wolfswood region='+r1+(r1==='wolfswood'?' OK':' FAIL')+' banner='+window.__T.banner());
+    window.__T.teleport(88,72);window.__T.tick(16);
+    const r2=G.exp.region&&G.exp.region.k;
+    log('teleport kings region='+r2+(r2==='kings'?' OK':' FAIL'));
+    // Phase2：五地标可达+发现横幅
+    let poiOK=true;
+    for(const[sx,sy,nm]of[[60,34,'临冬城'],[60,10,'黑城堡'],[87,72,'君临'],[115,55,'龙石岛'],[19,38,'巨人巢穴']]){
+      if(blockedAt(sx*TS+8,sy*TS+8)){poiOK=false;log('POI blocked: '+nm);continue;}
+      window.__T.teleport(sx,sy);window.__T.tick(16);
+      if(!POIS.some(p=>p.seen&&p.n===nm)){poiOK=false;log('POI not discovered: '+nm);}
+    }
+    log('pois '+(poiOK?'OK':'FAIL'));
+    let pierOK=true;const pierBad=[];
+    for(let x=106;x<=113;x++)if(blockedAt(x*TS+8,52*TS+8)){pierOK=false;pierBad.push(x+':'+window.__T.tileAt(x,52));}
+    log('pier '+(pierOK?'OK':'FAIL '+pierBad.join(',')));
+    window.__T.teleport(50,44);window.__T.tick(16);
+    let gOK=false;
+    if(findInteract()&&findInteract().kind==='gather'){await tryInteract();gOK=(G.bag.herb||0)===1;}
+    log('gather '+(gOK?'OK':'FAIL'));
+    // ---- Phase3：NPC对话/支线/主线触发 ----
+    const pot0=G.items.find(i=>i.key==='potion').cnt,wine0=G.items.find(i=>i.key==='wine').cnt,atk0=G.players[0].atk;
+    const drive=async pick=>{let g=0;while(DLG&&g++<900){if(DLG.typing)advanceDlg();else if(DLG.choices)pickChoice(pick(DLG.choices));else advanceDlg();await sleep(10);}};
+    const first=c=>c[0],byAct=a=>c=>c.find(z=>z.act===a)||c[0];
+    const stand=id=>{const n2=NPCS.find(v=>v.id===id),e2=G.exp;e2.px=n2.x;e2.py=n2.y+12;
+      e2.camX=clamp(e2.px-VW/2,0,MW*TS-VW);e2.camY=clamp(e2.py-VH/2,0,MH*TS-VH);window.__T.tick(16);};
+    const talk=async(id,pick)=>{stand(id);const pr=tryInteract();await drive(pick||first);await pr;};
+    await talk('luwin',byAct('ok'));
+    log('q_herb accept '+(G.quests.q_herb&&G.quests.q_herb.st==='active'?'OK':'FAIL'));
+    window.__T.teleport(66,52);window.__T.tick(16);await tryInteract();
+    await talk('luwin');
+    const herbOK=G.quests.q_herb.st==='done'&&(G.bag.herb||0)===0&&G.items.find(i=>i.key==='potion').cnt===pot0+1;
+    log('q_herb done '+(herbOK?'OK':'FAIL'));
+    await talk('dorn',byAct('ok'));
+    window.__T.teleport(70,64);window.__T.tick(16);await tryInteract();
+    window.__T.teleport(50,70);window.__T.tick(16);await tryInteract();
+    await talk('dorn');
+    const berryOK=G.quests.q_berry.st==='done'&&G.items.find(i=>i.key==='wine').cnt===wine0+1;
+    log('q_berry done '+(berryOK?'OK':'FAIL'));
+    await talk('mikken',byAct('ok'));
+    window.__T.teleport(17,38);window.__T.tick(16);await tryInteract();
+    window.__T.teleport(22,38);window.__T.tick(16);await tryInteract();
+    await talk('mikken');
+    const oreOK=G.quests.q_ore.st==='done'&&G.players[0].atk===atk0+1;
+    log('q_ore done '+(oreOK?'OK':'FAIL'));
+    await talk('cap',byAct('ok'));
+    const killOK=!!(G.quests.q_kill&&G.quests.q_kill.st==='active');
+    log('q_kill accept '+(killOK?'OK':'FAIL'));
+    updateQuestLog();
+    const logOK=$('#qlBody').innerHTML.indexOf('学士的草药')>=0;
+    log('questlog '+(logOK?'OK':'FAIL'));
+    // ---- Phase4：野怪/遭遇/驯服 ----
+    const b0=G.beasts.length,meat0=G.items.find(i=>i.key==='meat').cnt;
+    MOBS.length=0;
+    window.__T.teleport(50,60);window.__T.tick(16);
+    let sx2=53,sy2=60;
+    outer:for(let r=0;r<6;r++)for(let oy=-r;oy<=r;oy++)for(let ox=-r;ox<=r;ox++)
+      if(!blockedAt((53+ox)*TS+8,(60+oy)*TS+8)){sx2=53+ox;sy2=60+oy;break outer;}
+    spawnMob('wolf',sx2,sy2);
+    let g4=0;while(G.scene==='explore'&&g4++<400){window.__T.tick(16);await sleep(16);}
+    const encOK=G.scene==='battle';
+    log('encounter '+(encOK?'OK':'FAIL'));
+    if(encOK){
+      G.enemies.forEach(u=>{u.hp=Math.round(u.maxhp*.2);});
+      const mr=Math.random;Math.random=()=>.01;
+      let g5=0;
+      while(G.scene==='battle'&&g5++<2000){
+        if(G.awaiting){
+          const en=alive(G.enemies)[0];
+          if(en&&en.hp/en.maxhp<.3)confirmAction({type:'tame',target:en});
+          else confirmAction({type:'atk',target:en});
+        }
+        await sleep(4);
+      }
+      Math.random=mr;
+    }
+    const tameOK=G.beasts.length===b0+1&&G.beasts[b0]&&G.beasts[b0].key==='wolf';
+    log('tame '+(tameOK?'OK':'FAIL'));
+    log('drop '+(G.items.find(i=>i.key==='meat').cnt>meat0?'OK':'FAIL'));
+    log('exp '+(G.players[0].exp>0?'OK':'FAIL'));
+    stand('oldbear');tryInteract();await drive(byAct('go'));await sleep(120);
+    const mqOK=G.scene==='battle';
+    log('mainline wall->battle '+(mqOK?'OK':'FAIL scene='+G.scene));
+    // ---- Phase5：成长/上阵/喂食/图鉴 ----
+    let g6=0;
+    while(G.scene==='battle'&&g6++<8000){
+      if(G.awaiting){confirmAction({type:'atk',target:alive(G.enemies)[0]});await sleep(4);}
+      else await sleep(60);
+    }
+    if(G.scene==='story'){skipStory();await sleep(200);}
+    const wallOK=G.scene==='explore';
+    log('wall battle cleared '+(wallOK?'OK':'FAIL scene='+G.scene));
+    const p0=G.players.find(p=>p.key==='jon');
+    const lv0=p0.lv,mh0=p0.maxhp,ak0=p0.atk;
+    gainExp(p0,expNeed(lv0));
+    const lvlOK=p0.lv===lv0+1&&p0.maxhp===mh0+p0.g.hp&&p0.atk===ak0+p0.g.atk;
+    log('levelup '+(lvlOK?'OK':'FAIL lv='+p0.lv+' maxhp='+p0.maxhp));
+    const seenOK=!!(G.seen&&G.seen.wolf);
+    log('dex seen '+(seenOK?'OK':'FAIL'));
+    let depOK=false,feedOK=false,bexpOK=false,bbOK=false;
+    if(G.beasts.length&&wallOK){
+      deployBeast(0);
+      const bu=G.players.find(p=>p.isBeast);
+      depOK=G.deploy===0&&G.players.length===5&&!!bu&&bu.key==='wolf'&&!!G.follow;
+      log('deploy '+(depOK?'OK':'FAIL'));
+      const meat=G.items.find(i=>i.key==='meat');if(meat.cnt<1)meat.cnt=1;
+      const m0=meat.cnt,aff0=G.beasts[0].aff;
+      feedBeast(0,'meat');
+      feedOK=G.beasts[0].aff===aff0+2&&meat.cnt===m0-1;
+      log('feed '+(feedOK?'OK':'FAIL'));
+      const bexp0=G.beasts[0].exp+G.beasts[0].lv*1000;
+      runBattle([{banner:'SMOKE4 · 伙伴出击',sub:'魔兽自动行动',foes:[{k:'wight',x:300,y:520}]}],{tone:'wall'});
+      let g7=0;while(!alive(G.enemies).length&&g7++<600)await sleep(20);
+      G.enemies.forEach(u=>{u.hp=1;});
+      let g8=0;
+      while(G.scene==='battle'&&g8++<4000){
+        if(G.awaiting){confirmAction({type:'atk',target:alive(G.enemies)[0]});await sleep(4);}
+        else await sleep(60);
+      }
+      bexpOK=G.beasts[0].exp+G.beasts[0].lv*1000>bexp0;
+      bbOK=G.scene==='explore';
+      log('beast battle '+(bbOK?'OK':'FAIL scene='+G.scene)+' beastexp '+(bexpOK?'OK':'FAIL'));
+    }
+    const bad=dx1<=40||r1!=='wolfswood'||r2!=='kings'||!poiOK||!pierOK||!gOK;
+    const bad2=!herbOK||!berryOK||!oreOK||!killOK||!logOK||!mqOK;
+    const bad3=!encOK||!tameOK||!(G.items.find(i=>i.key==='meat').cnt>meat0)||!(G.players[0].exp>0);
+    const bad4=!wallOK||!lvlOK||!seenOK||!depOK||!feedOK||!bexpOK||!bbOK;
+    log(bad?'SMOKE1 FAIL: assertion':'SMOKE1 PASS');
+    log(bad2?'SMOKE2 FAIL: assertion':'SMOKE2 PASS');
+    log(bad3?'SMOKE3 FAIL: assertion':'SMOKE3 PASS');
+    log(bad4?'SMOKE4 FAIL: assertion':'SMOKE4 PASS');
+  }catch(err){log('SMOKE1 FAIL: '+err.message);}
+}
+
+/* ---- 战役管理 ---- */
+function newCampaign(){
+  G.players=PLAYERS_DEF.map(d=>makeUnit(d,'player'));
+  G.items=ITEMS_DEF.map(i=>Object.assign({},i));
+  G.stats={dmg:0,kills:0};
+  G.flags={};G._lastAct=null;
+  G.bag={};
+  G.quests={};
+  G.beasts=[];
+  G.deploy=null;G.seen={};G.follow=null;
+  buildNpcs();
+  buildMobs();
+  G.locs={};LOCS_KEYS.forEach(k=>G.locs[k]='new');
+  G.exp={px:60*TS+8,py:36*TS+8,face:'down',moving:false,animT:0,region:null,
+    camX:clamp(60*TS+8-VW/2,0,MW*TS-VW),camY:clamp(36*TS+8-VH/2,0,MH*TS-VH)};
+  G.battleWaves=null;G.battleFinal=false;G.battleResult=null;G.dragonDone=false;
+  G.wave=0;G.round=0;G.guardRounds=0;G.enemies=[];G.worldSel=0;G.busy=false;
+}
+function resetGame(){
+  $('#end').classList.add('hidden');
+  $('#worldHud').classList.add('hidden');
+  $('#turnBadge').classList.add('hidden');
+  if(DLG)closeDlg();
+  setTone(null);
+  newCampaign();
+  $('#title').classList.remove('hidden');
+  $('#title').style.opacity=1;
+  G.scene='title';
+}
+
+/* ================= 输入 ================= */
+$('#dlg').addEventListener('click',()=>advanceDlg());
+cv.addEventListener('mousemove',e=>{
+  const r=stage.getBoundingClientRect(),sc=r.width/1280;
+  const mx=(e.clientX-r.left)/sc,my=(e.clientY-r.top)/sc;
+  if(G.scene==='world'){
+    G.worldHover=null;
+    for(const k of LOCS_KEYS){const L=LOCS[k];if(Math.hypot(mx-L.x,my-L.y)<26){G.worldHover=k;break;}}
+    cv.style.cursor=G.worldHover?'pointer':'default';
+    return;
+  }
+  if(G.targetMode!=='enemy')return;
+  G.hover=null;
+  for(const u of alive(G.enemies)){
+    const w=u.sw*u.scale,h=u.sh*u.scale;
+    if(mx>u.x-w/2-8&&mx<u.x+w/2+8&&my>u.y-h-24&&my<u.y+8){G.hover=u;break;}
+  }
+  cv.style.cursor=G.hover?'pointer':'default';
+});
+cv.addEventListener('click',()=>{
+  if(G.scene==='world'){if(G.worldHover)tryTravel(G.worldHover);return;}
+  if(G.targetMode==='enemy'&&G.hover){
+    if(G.pending&&G.pending.type==='tame'){
+      const u=G.hover;
+      if(!TAMEABLE.includes(u.key)){ribbon('<b>亡者</b> 无法被驯服……',1500);SFX.back();return;}
+      if(u.hp/u.maxhp>=.3){ribbon('它的战意仍然高昂 · 生命低于30%才能驯服',1800);SFX.back();return;}
+    }
+    const act=G.pending;SFX.ok();
+    confirmAction(Object.assign({},act,{target:G.hover}));
+  }
+});
+stage.addEventListener('contextmenu',e=>{
+  e.preventDefault();
+  if(G.phase==='target')leaveTarget();
+});
+addEventListener('keydown',e=>{
+  KEYS.add(e.key.length===1?e.key.toLowerCase():e.key);
+  if(e.key==='m'||e.key==='M'){toggleMute();return;}
+  if(G.scene==='title'&&(e.key==='Enter'||e.key===' ')){begin();return;}
+  if(G.scene==='story'){
+    if(DLG&&DLG.choices){
+      const n=DLG.choices.length;
+      if(e.key==='ArrowDown'||e.key==='s'){DLG.selIdx=(DLG.selIdx+1)%n;markChoice();SFX.menu();}
+      else if(e.key==='ArrowUp'||e.key==='w'){DLG.selIdx=(DLG.selIdx+n-1)%n;markChoice();SFX.menu();}
+      else if(e.key==='Enter'||e.key===' ')pickChoice(DLG.choices[DLG.selIdx]);
+    }else{
+      if(e.key==='Enter'||e.key===' ')advanceDlg();
+    }
+    return;
+  }
+  if(G.scene==='explore'){
+    if(e.key==='q'||e.key==='Q'){toggleQuestLog();return;}
+    if(e.key==='c'||e.key==='C'){toggleBeastPanel();return;}
+    if(e.key==='e'||e.key==='E'||e.key==='Enter'||e.key===' ')tryInteract();
+    return;
+  }
+  if(G.scene!=='battle')return;
+  if(G.phase==='cmd'){
+    if(e.key==='ArrowDown'||e.key==='s'){G.selIdx=(G.selIdx+1)%5;renderCmdList();SFX.menu();}
+    else if(e.key==='ArrowUp'||e.key==='w'){G.selIdx=(G.selIdx+4)%5;renderCmdList();SFX.menu();}
+    else if(e.key==='Enter'||e.key==='j'){pickCmd(['atk','skill','item','tame','def'][G.selIdx]);}
+    else if(e.key==='b'||e.key==='B'){const p=G.cur;if(G.boost<3&&p.bp-G.boost>0){G.boost++;renderBoost();SFX.menu();}}
+    else if(e.key>='1'&&e.key<='5'){G.selIdx=+e.key-1;pickCmd(['atk','skill','item','tame','def'][G.selIdx]);}
+  }else if(G.phase==='sub'){
+    const n=G.subRows.length;
+    if(e.key==='ArrowDown'||e.key==='s'){G.selIdx=(G.selIdx+1)%n;G.refreshSubSel();SFX.menu();}
+    else if(e.key==='ArrowUp'||e.key==='w'){G.selIdx=(G.selIdx+n-1)%n;G.refreshSubSel();SFX.menu();}
+    else if(e.key==='Enter'||e.key==='j')pickSub(G.subRows);
+    else if(e.key==='Escape'||e.key==='k'){SFX.back();G.phase='cmd';G.selIdx=0;renderCmdList();}
+    else if(e.key==='b'||e.key==='B'){const p=G.cur;if(G.boost<3&&p.bp-G.boost>0){G.boost++;renderBoost();SFX.menu();}}
+  }else if(G.phase==='target'){
+    if(e.key==='Escape')leaveTarget();
+  }
+});
+addEventListener('keyup',e=>{KEYS.delete(e.key.length===1?e.key.toLowerCase():e.key);});
+function toggleMute(){muted=!muted;$('#muteBtn').textContent=muted?'✕':'♪';$('#muteBtn').style.color=muted?'#667':'var(--gold)';}
+$('#muteBtn').addEventListener('click',()=>{initAudio();toggleMute();});
+
+/* ================= 开始 / 重开 ================= */
+async function begin(){
+  if(G.scene!=='title')return;
+  initAudio();SFX.ok();
+  $('#title').style.transition='opacity .8s';$('#title').style.opacity=0;
+  setTimeout(()=>$('#title').classList.add('hidden'),820);
+  if(!ASSET.ready)await loadAssets();
+  newCampaign();
+  await playStory('prologue');
+  enterExplore();
+}
+$('#title').addEventListener('click',begin);
+$('#titleGo').addEventListener('click',begin);
+$('#endBtn').addEventListener('click',()=>{resetGame();});
+
+/* ================= 主循环 ================= */
+let lastT=performance.now();
+function frame(t){
+  requestAnimationFrame(frame);
+  window.__fc=(window.__fc||0)+1;
+  ctx.clearRect(0,0,1280,720);
+  const overExplore=G.scene==='explore'||(G.scene==='story'&&G.prevScene==='explore');
+  if(overExplore){
+    updateExplore(Math.min(50,t-lastT),t);
+    drawExplore(t);
+  }else{
+    // 后层雪
+    ctx.fillStyle='rgba(230,240,255,.55)';
+    for(const s of SNOW){
+      s.y+=s.v*.7;s.x+=Math.sin(t/1400+s.ph)*.4+.2;
+      if(s.y>724){s.y=-6;s.x=rand(0,1280);}
+      if(s.s<2){ctx.globalAlpha=.4;ctx.fillRect(s.x,s.y,s.s,s.s);}
+    }
+    ctx.globalAlpha=1;
+    if(G.scene==='battle'||G.scene==='battleend'||G.scene==='end'){
+      // 单位（按 y 排序）
+      const units=[...G.enemies,...G.players].filter(u=>u.alive||u.dissolve);
+      units.sort((a,b)=>a.y-b.y);
+      for(const u of units){
+        const pos=drawSprite(u,t);
+        if(u.side==='enemy'&&u.alive)drawEnemyOverlay(u,pos,t);
+        if(u.side==='player')drawGuardIcon(u,pos,t);
+      }
+      // 斩击
+      for(let i=SLASH.length-1;i>=0;i--){
+        const s=SLASH[i],p=(t-s.t0)/240;
+        if(p>=1){SLASH.splice(i,1);continue;}
+        ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.ang);
+        ctx.strokeStyle=s.col;ctx.globalAlpha=1-p;ctx.lineWidth=3*s.w*(1-p*.5);
+        ctx.shadowColor=s.col;ctx.shadowBlur=10;
+        ctx.beginPath();ctx.moveTo(-46+p*20,8-p*16);ctx.lineTo(46-p*20,-8+p*16);ctx.stroke();
+        ctx.restore();
+      }
+      // 粒子
+      for(let i=FXP.length-1;i>=0;i--){
+        const f=FXP[i],p=(t-f.t0)/f.life;
+        if(p>=1){FXP.splice(i,1);continue;}
+        f.x+=f.vx;f.y+=f.vy;f.vy+=f.g;
+        ctx.globalAlpha=1-p;ctx.fillStyle=f.col;
+        if(f.glow){ctx.shadowColor=f.col;ctx.shadowBlur=6;}
+        ctx.fillRect(f.x,f.y,f.size,f.size);ctx.shadowBlur=0;
+      }
+      ctx.globalAlpha=1;
+    }
+    // 前层雪
+    for(const s of SNOW){
+      if(s.s>=2){ctx.globalAlpha=.8;ctx.fillStyle='#eef4ff';ctx.fillRect(s.x,s.y,s.s,s.s);}
+    }
+    ctx.globalAlpha=1;
+  }
+  drawFlyby(t);
+  // 震屏
+  if(world.shakeT){
+    const p=(t-world.shakeT)/300;
+    if(p<1){const m=world.shakeM*(1-p);world.style.transform=`translate(${rand(-m,m)}px,${rand(-m,m)}px)`;}
+    else{world.style.transform='';world.shakeT=0;world.shakeM=0;}
+  }
+  lastT=t;
+}
+requestAnimationFrame(frame);
+updateTiles();
+loadAssets();
+if(location.search.indexOf('smoke')>=0)smokeRun();
+</script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>models_debug</title>
+<style>html,body{margin:0;background:#1a2233}canvas{display:block;position:absolute;left:0;top:0}
+pre{position:absolute;left:8px;top:8px;color:#7fffd4;font:11px monospace;margin:0;z-index:9}</style>
+</head><body>
+<canvas id="cv3" width="1600" height="900"></canvas>
+<canvas id="cvL" width="1600" height="900"></canvas>
+<pre id="log">loading...</pre>
+<script src="assets3d/three.min.js"></script>
+<script src="assets3d/GLTFLoader.js"></script>
+<script src="assets3d/SkeletonUtils.js"></script>
+<script src="assets3d/models_chars.js"></script>
+<script src="assets3d/models_mobs.js"></script>
+<script src="assets3d/models_props.js"></script>
+<script>
+(function(){
+const W=1600,H=900;
+const CHARS=['jon','arya','dany','bri','npc1','npc2','king'];
+const MOBS=['wolf','giant','spider','wight','walker','dragon','dragonEvo'];
+const PROPS=Object.keys(MODELS3D).filter(k=>k.startsWith('p_')).sort();
+const L=[];const ok=(n,c,x)=>L.push(n+':'+(c?'OK':'FAIL')+(x?(' '+x):''));
+window.onerror=(m)=>{L.push('PAGEERR:FAIL '+m);document.getElementById('log').textContent=L.join('\n');};
+const cv=document.getElementById('cv3');
+const renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true});
+renderer.setSize(W,H,false);
+const scene=new THREE.Scene();scene.background=new THREE.Color(0x1a2233);
+scene.add(new THREE.AmbientLight(0xffffff,0.55));
+const hemi=new THREE.HemisphereLight(0xbdd3ff,0x3a4a2a,0.5);scene.add(hemi);
+const dl=new THREE.DirectionalLight(0xffffff,0.9);dl.position.set(6,12,8);scene.add(dl);
+const ground=new THREE.Mesh(new THREE.PlaneGeometry(40,30),new THREE.MeshStandardMaterial({color:0x2a3b2a}));
+ground.rotation.x=-Math.PI/2;ground.position.set(6.6,-0.01,6);scene.add(ground);
+const cam=new THREE.PerspectiveCamera(45,W/H,0.1,100);
+const FOCUS=(location.search.match(/focus=(\w+)/)||[])[1]||'all';
+if(FOCUS==='chars'){cam.position.set(6.6,2.6,9.8);cam.lookAt(6.6,0.9,0);}
+else if(FOCUS==='mobs'){cam.position.set(6.6,2.8,14.0);cam.lookAt(6.6,0.9,4.2);}
+else if(FOCUS==='props'){cam.position.set(8,7,21);cam.lookAt(8,0.3,9.8);}
+else{cam.position.set(6.6,10.5,18.5);cam.lookAt(6.6,0.6,4.5);}
+const mixers=[];const placed=[];
+const loader=new THREE.GLTFLoader();
+function bufFromB64(b64){const bin=atob(b64);const u=new Uint8Array(bin.length);
+ for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u.buffer;}
+function place(root,key,x,z,capH,capW){
+ const box=new THREE.Box3().setFromObject(root);
+ const sz=box.getSize(new THREE.Vector3());
+ const s=Math.min(capH/Math.max(sz.y,0.001),capW/Math.max(sz.x,sz.z,0.001));
+ root.scale.setScalar(s);
+ const box2=new THREE.Box3().setFromObject(root);
+ const c=box2.getCenter(new THREE.Vector3());
+ root.position.set(x-c.x, -box2.min.y, z-c.z);
+ scene.add(root);placed.push({key,x,z,h:box2.max.y-box2.min.y});
+}
+function load(key,x,z,capH,capW,done){
+ const b64=MODELS3D[key];
+ if(!b64){ok(key,false,'nob64');done();return;}
+ let buf;try{buf=bufFromB64(b64);}catch(e){ok(key,false,'atob');done();return;}
+ let fin=false;const to=setTimeout(()=>{if(fin)return;fin=true;ok(key,false,'stall');done();},8000);
+ const D=()=>{if(fin)return;fin=true;clearTimeout(to);done();};
+ loader.parse(buf,'',(g)=>{try{
+   const root=g.scene||g.scenes[0];
+   place(root,key,x,z,capH,capW);
+   const clips=g.animations||[];
+   if(clips.length){
+     const pick=clips.find(c=>/Walk|Flying/i.test(c.name))||clips.find(c=>/Idle/i.test(c.name))||clips[0];
+     const mx=new THREE.AnimationMixer(root);
+     mx.clipAction(pick).play();mixers.push(mx);
+     ok(key,true,'clips:'+clips.length+' '+pick.name.split('|').pop());
+   }else ok(key,true,'static');
+ }catch(e){ok(key,false,'throw:'+e.message);} D();
+ },(e)=>{ok(key,false,'parse:'+(e&&e.message));D();});
+}
+// ---- layout queue ----
+const jobs=[];
+if(FOCUS!=='mobs'&&FOCUS!=='props')CHARS.forEach((k,i)=>jobs.push({k,x:i*2.2,z:0,cap:1.7,w:1.4}));
+if(FOCUS!=='chars'&&FOCUS!=='props')MOBS.forEach((k,i)=>jobs.push({k,x:i*2.2,z:4.2,cap:1.7,w:2.1}));
+if(FOCUS!=='chars'&&FOCUS!=='mobs')PROPS.forEach((k,i)=>{const col=i%13,row=Math.floor(i/13);
+ jobs.push({k,x:col*1.4,z:7.6+row*1.6,cap:1.15,w:1.25});});
+let ji=0;
+function next(){
+ document.getElementById('log').textContent='loading '+ji+'/'+jobs.length+(ji?(' '+jobs[ji-1].k):'');
+ if(ji>=jobs.length){start();return;}
+ const j=jobs[ji++];load(j.k,j.x,j.z,j.cap,j.w,next); }
+let frames=0;
+function start(){
+ // labels overlay
+ const ctx=document.getElementById('cvL').getContext('2d');
+ ctx.font='12px monospace';ctx.textAlign='center';
+ for(const p of placed){
+   const v=new THREE.Vector3(p.x,0,p.z).project(cam);
+   const px=(v.x+1)/2*W,py=(1-v.y)/2*H;
+   ctx.fillStyle='rgba(255,255,255,0.85)';
+   ctx.fillText(p.key.replace(/^p_/,''),px,Math.min(py+16,H-4));
+ }
+ let last=performance.now();
+ const tick=()=>{
+   const now=performance.now();let dt=now-last;last=now;if(dt>50)dt=50;
+   for(const m of mixers)m.update(dt*0.001);
+   renderer.render(scene,cam);
+   if(++frames<120)setTimeout(tick,16);
+   else{
+     ok('drawcalls',renderer.info.render.calls<400,'calls:'+renderer.info.render.calls);
+     const bad=L.filter(l=>/:FAIL/.test(l));
+     document.getElementById('log').textContent='GALLERY '+(bad.length?'FAIL':'PASS')+' ('+L.length+' models)\n'+L.join('\n');
+     document.title='GALLERY_DONE';
+   }
+ };
+ tick();
+}
+next();
+})();
+</script>
+</body></html>

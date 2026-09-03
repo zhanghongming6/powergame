@@ -1,0 +1,7 @@
+# 开发期素材缓存（体积大，不进库；3D 模型可用 _dl3d.js 重新下载）
+_dl/
+_lpc/
+_tmp3d/
+_tmp_*
+_probe_out.html
+.claude/

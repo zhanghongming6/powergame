@@ -1,0 +1,51 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>probe3d</title></head>
+<body style="background:#111">
+<pre id="log" style="color:#7fffd4;font:14px monospace">probing...</pre>
+<script src="assets3d/three.min.js"></script>
+<script src="assets3d/GLTFLoader.js"></script>
+<script src="assets3d/models_chars.js"></script>
+<script src="assets3d/models_mobs.js"></script>
+<script src="assets3d/models_props.js"></script>
+<script>
+(function(){
+const KEYS=['p_wall','p_wallBlock','p_wallArch','p_wallDoor','p_wallWinShut','p_roofGable','p_pineTallA','p_oak','p_statue','p_rockTallA',
+  'jon','arya','wolf','spider','giant','wight','walker','npc1','npc2',
+  'bat','snake','slime','goblin','skeleton','zombie','orc','orcEnemy','demon','blueDemon',
+  'golemIce','golemEvo','shaman','dragonWhelp','direwolf','wraith','knightBlack','rogue'];
+const L=[];
+const loader=new THREE.GLTFLoader();
+function buf(b64){const s=atob(b64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u.buffer;}
+const r2=v=>Math.round(v*1000)/1000;
+let pend=KEYS.length;
+const done=()=>{if(--pend<=0){
+  document.getElementById('log').textContent='PROBE3D REPORT\n'+L.join('\n');
+  document.title='PROBE_DONE';
+}};
+for(const k of KEYS){
+  const b64=MODELS3D[k];
+  if(!b64){L.push(k+': MISSING');done();continue;}
+  loader.parse(buf(b64),'',(g)=>{try{
+    const root=g.scene||g.scenes[0];
+    const box=new THREE.Box3().setFromObject(root);
+    const sz=box.getSize(new THREE.Vector3());
+    const h=Math.max(sz.y,0.001),s=1/h;
+    // 复刻 adapter3d.loadModels 归一
+    root.scale.setScalar(s);
+    root.position.set(-(box.min.x+box.max.x)/2*s,-box.min.y*s,-(box.min.z+box.max.z)/2*s);
+    root.updateMatrixWorld(true);
+    const bb=new THREE.Box3();
+    root.traverse(m=>{if(m.isMesh){
+      const gg=m.geometry.clone();gg.applyMatrix4(m.matrixWorld);
+      if(gg.attributes.position)bb.union(new THREE.Box3().setFromBufferAttribute(gg.attributes.position));
+    }});
+    L.push(k+':'
+      +' raw[ x:'+r2(sz.x)+' y:'+r2(sz.y)+' z:'+r2(sz.z)+' minY:'+r2(box.min.y)+' ]'
+      +' baked[ min('+r2(bb.min.x)+','+r2(bb.min.y)+','+r2(bb.min.z)+')'
+      +' max('+r2(bb.max.x)+','+r2(bb.max.y)+','+r2(bb.max.z)+')'
+      +' size('+r2(bb.max.x-bb.min.x)+','+r2(bb.max.y-bb.min.y)+','+r2(bb.max.z-bb.min.z)+') ]');
+  }catch(e){L.push(k+': ERR '+e.message);}done();
+  },()=>{L.push(k+': PARSE_FAIL');done();});
+}
+})();
+</script>
+</body></html>
