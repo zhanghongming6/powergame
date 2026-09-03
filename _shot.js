@@ -38,8 +38,12 @@ async function battle(waves,wave,tone,opts){
   dbg('GL='+(window.A3D?A3D.dbg():'x'));
 }
 async function zoom3x(){
-  const cv=$('#cv'),ov=document.createElement('canvas');ov.width=1280;ov.height=720;
+  const cv=$('#cv'),c3=$('#cv3'),ov=document.createElement('canvas');ov.width=1280;ov.height=720;
   const x=ov.getContext('2d');x.imageSmoothingEnabled=false;
+  if(c3&&c3.style.display!=='none'&&window.__T){ // 同任务内强制渲染一帧，保证 WebGL 缓冲未清
+    if(G.scene==='battle')window.__T.brender();else window.__T.tick(16);
+    x.drawImage(c3,427,240,426,240,0,0,1280,720);
+  }
   x.drawImage(cv,427,240,426,240,0,0,1280,720);
   document.body.innerHTML='';document.body.appendChild(ov);
   await sleep(300);
@@ -180,6 +184,42 @@ async function run(){
     const pass=L.filter(l=>l.indexOf(':OK')>0).length;
     document.body.innerHTML='<pre style="font:19px monospace;color:#7fffd4;background:#0b1220;padding:16px 30px;line-height:1.4">'+L.join('\\n')+'\\n'+pass+'/'+L.length+' PASS</pre>';
     await sleep(300);
+  }
+  else if(M==='var'){ // E1：变种战斗截图——元素染色 + 阶级光环 + 体型倍率目检
+    await battle([{banner:'E1 · 变种',sub:'元素染色 · 阶级光环',foes:[
+      {k:'walker.frost.boss',x:SLOTS[1].x,y:SLOTS[1].y},
+      {k:'wolf.fire.elite',x:SLOTS[0].x,y:SLOTS[0].y},
+      {k:'spider.poison.champ',x:SLOTS[3].x,y:SLOTS[3].y}]}],0,'wall');
+  }
+  else if(M==='e1'){ // E1 数据断言：图鉴≥500 / 变种576 / 命名boss36 / vt 免章节档 / 驯服种级判定
+    const L=[];const ok=(n,c)=>L.push(n+':'+(c?'OK':'FAIL'));
+    const keys=Object.keys(FOES);
+    ok('total500',keys.length>=500);
+    const dots=keys.filter(k=>k.indexOf('.')>0);
+    ok('variants576',dots.length>=576);
+    ok('named36',BOSSNAMED.length>=36);
+    ok('named_in',BOSSNAMED.every(b=>FOES[b.id]&&FOES[b.id].vt&&FOES[b.id].tier==='boss'&&FOES[b.id].named&&FOES[b.id].drop));
+    const wb=FOES['walker.frost.boss'];
+    ok('wb_fields',!!wb&&wb.hp>4000&&wb.weak.indexOf('fire')>=0&&wb.tint>0&&wb.tscale>1.3);
+    ok('wight_unchanged',FOES.wight.hp===255&&!FOES.wight.vt);
+    const u1=makeUnit(FOES['wolf.fire.elite'],'enemy');
+    ok('vt_skip',u1.maxhp===FOES['wolf.fire.elite'].hp&&u1.tint>0);
+    const u2=makeUnit(FOES.wight,'enemy');
+    ok('base_tier',Math.abs(u2.maxhp-181)<=4);
+    ok('tame',tameSp('spider.poison.elite')&&tameSp('direwolf')&&!tameSp('wight.frost.normal')&&!tameSp('nk'));
+    let sprOK=true,sprErr='';
+    try{for(const k of keys)unitSprite(FOES[k]);}catch(e){sprOK=false;sprErr=e.message;}
+    ok('sprite_all',sprOK);if(!sprOK)L.push('  err:'+sprErr);
+    const pass=L.filter(l=>l.indexOf(':OK')>0).length;
+    document.body.innerHTML='<pre style="font:19px monospace;color:#7fffd4;background:#0b1220;padding:16px 30px;line-height:1.4">'+L.join('\\n')+'\\n'+pass+'/'+L.length+' PASS</pre>';
+    await sleep(300);
+  }
+  else if(M==='varz'){ // E1 变种近景（中心3倍放大）
+    await battle([{banner:'E1 · 变种',sub:'元素染色 · 阶级光环',foes:[
+      {k:'walker.frost.boss',x:SLOTS[1].x,y:SLOTS[1].y},
+      {k:'wolf.fire.elite',x:SLOTS[0].x,y:SLOTS[0].y},
+      {k:'spider.poison.champ',x:SLOTS[3].x,y:SLOTS[3].y}]}],0,'wall');
+    await zoom3x();
   }
   else if(M==='wolf'){
     begin();await sleep(800);window.skipStory();await waitExplore();await sleep(200);
@@ -537,5 +577,5 @@ function shoot(mode,file,budget){
   }
 }
 shoot('title',path.join(TMP,'title.html'),12000);
-for(const m of modes)shoot(m,path.join(TMP,'game.html'),(m==='a2'||m==='a4')?45000:(m==='a5')?600000:(m==='c1')?240000:(m==='c2'||m==='clix')?60000:(m==='title'||m==='tcont')?12000:16000);
+for(const m of modes)shoot(m,path.join(TMP,'game.html'),(m==='a2'||m==='a4')?45000:(m==='a5')?600000:(m==='c1')?240000:(m==='c2'||m==='clix')?60000:(m==='title'||m==='tcont'||m==='e1')?12000:16000);
 console.log('DONE');

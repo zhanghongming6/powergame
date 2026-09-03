@@ -839,8 +839,132 @@ const FOES={
  bandit:{key:'bandit',name:'逃兵',hp:240,atk:46,speed:50,shield:2,def:1,scale:2.2,lpc:'guard',exp:55,
    weak:['sword','dagger']}
 };
-const TAMEABLE=['spider','wolf','giant'];
+const TAMEABLE=['spider','wolf','giant','direwolf','bat','slime']; // 种级（元素变体同种性，tameSp 判定）
 function tameChance(e){return .55+(1-e.hp/e.maxhp)*.35+(e.anger?-.15:0);}
+/* ================= E1 · 图鉴扩充：种族 × 元素 × 阶级（seeded 确定化生成） ================= */
+const VARSPR=[ // 新种 2D 兜底模板（3D 走 models_mobs；2D 回退用）
+"....HHHH........",
+"...HHHHHH.......",
+"...HHEHEH.......",
+"...HHHHHH.......",
+"....HHHH........",
+"..BBBBBBBBBBB...",
+".BBBBBBBBBBBBB..",
+".BBBBBBBBBBBBB..",
+"..BB.BB.BB.BB...",
+"..BB.BB.BB.BB...",
+"..DD.DD.DD.DD..."];
+const VARPAL={H:'#8d9bb0',E:'#ffd25f',B:'#5d6b80',D:'#39424f'};
+const SPECIES={ // 旧6种数值在 FOES；新18种在此定义基底；nk 仅作 boss 基底
+ wight:{cn:'尸鬼',tame:0},walker:{cn:'异鬼',tame:0},wolf:{cn:'冰原狼',tame:1},
+ spider:{cn:'冰蜘蛛',tame:1},giant:{cn:'巨人',tame:1},bandit:{cn:'逃兵',tame:0},nk:{cn:'夜王',tame:0},
+ bat:{cn:'寒蝠',tame:1,hp:150,atk:38,spd:72,def:0,shield:2,exp:35,weak:['fire','dagger'],s2d:2.4},
+ snake:{cn:'冰蛇',tame:0,hp:180,atk:44,spd:64,def:0,shield:2,exp:38,weak:['fire','sword'],s2d:2.6},
+ slime:{cn:'软泥怪',tame:1,hp:340,atk:40,spd:36,def:3,shield:2,exp:42,weak:['fire','dragonglass'],s2d:2.8},
+ goblin:{cn:'哥布林',tame:0,hp:200,atk:42,spd:58,def:1,shield:2,exp:40,weak:['sword','dagger'],s2d:2.6},
+ skeleton:{cn:'骷髅兵',tame:0,hp:210,atk:46,spd:52,def:2,shield:3,exp:42,weak:['fire','dagger','dragonglass'],s2d:2.8},
+ zombie:{cn:'行尸',tame:0,hp:300,atk:42,spd:32,def:2,shield:3,exp:45,weak:['fire','dragonglass'],s2d:2.8},
+ orc:{cn:'兽人',tame:0,hp:380,atk:56,spd:48,def:3,shield:4,exp:60,weak:['sword','fire'],s2d:3},
+ orcEnemy:{cn:'巨魔',tame:0,hp:800,atk:76,spd:34,def:6,shield:6,exp:110,weak:['sword','fire'],s2d:3.4},
+ demon:{cn:'火元素',tame:0,hp:420,atk:62,spd:54,def:2,shield:4,exp:70,weak:['ice','valyrian'],s2d:3.2},
+ blueDemon:{cn:'冰魔',tame:0,hp:440,atk:60,spd:56,def:3,shield:4,exp:72,weak:['fire','valyrian'],s2d:3.2},
+ golemIce:{cn:'冰魔像',tame:0,hp:880,atk:58,spd:26,def:8,shield:6,exp:105,weak:['fire','sword'],s2d:3.4},
+ golemEvo:{cn:'熔岩魔像',tame:0,hp:760,atk:66,spd:30,def:7,shield:6,exp:100,weak:['valyrian','fire'],s2d:3.4},
+ shaman:{cn:'萨满',tame:0,hp:260,atk:58,spd:50,def:1,shield:3,exp:58,weak:['dagger','valyrian'],s2d:2.8},
+ dragonWhelp:{cn:'幼龙',tame:0,hp:520,atk:68,spd:58,def:3,shield:5,exp:85,weak:['valyrian','ice'],s2d:3.2},
+ direwolf:{cn:'恐狼',tame:1,hp:320,atk:52,spd:64,def:2,shield:4,exp:55,weak:['fire','sword','valyrian'],s2d:3},
+ wraith:{cn:'怨灵',tame:0,hp:280,atk:56,spd:60,def:2,shield:3,exp:62,weak:['fire','dragonglass','valyrian'],s2d:2.8},
+ knightBlack:{cn:'黑骑士',tame:0,hp:480,atk:64,spd:46,def:6,shield:5,exp:80,weak:['valyrian','fire'],s2d:3},
+ rogue:{cn:'盗贼',tame:0,hp:260,atk:52,spd:66,def:2,shield:3,exp:52,weak:['sword','dagger'],s2d:2.8}
+};
+for(const sp in SPECIES){ // 新种基底注册入 FOES（旧种已存在则跳过）
+  const S=SPECIES[sp];
+  if(FOES[sp]||sp==='nk')continue;
+  FOES[sp]={key:sp,name:S.cn,hp:S.hp,atk:S.atk,speed:S.spd,def:S.def,shield:S.shield,exp:S.exp,
+    scale:S.s2d,spr:VARSPR,pal:VARPAL,weak:S.weak.slice()};
+}
+FOES.bandit.spr=VARSPR;FOES.bandit.pal=VARPAL; // bandit 原仅 lpc；补程序化兜底，防 LPC 未加载时 makeSprite 崩溃
+const ELEMS={ // 元素：tint 用于 3D 染色；weak 为元素轮转弱点（限 ELE 六键）
+ none:{cn:'无',pre:'',tint:0,weak:null,hp:1,atk:1},
+ frost:{cn:'冰',pre:'霜',tint:0x7fd4ff,weak:'fire',hp:1.05,atk:1},
+ fire:{cn:'火',pre:'焰',tint:0xff7a45,weak:'ice',hp:1,atk:1.1},
+ poison:{cn:'毒',pre:'毒',tint:0x8fd45a,weak:'fire',hp:1.08,atk:1.02},
+ shadow:{cn:'影',pre:'影',tint:0x9a6cf0,weak:'valyrian',hp:1.1,atk:1.12},
+ holy:{cn:'圣',pre:'圣',tint:0xffe9a0,weak:'dagger',hp:1.15,atk:1.05}};
+const TIERS={ // 阶级：数值与体型倍率；dot-key 自带档位，makeUnit 不再叠加章节档
+ normal:{cn:'普通',suf:'',hp:1,atk:1,exp:1,sc:1},
+ elite:{cn:'精英',suf:'·精英',hp:2.2,atk:1.45,exp:2.5,sc:1.12},
+ champ:{cn:'首领',suf:'·首领',hp:4,atk:1.8,exp:5,sc:1.22},
+ boss:{cn:'霸主',suf:'·霸主',hp:8,atk:2.2,exp:12,sc:1.35}};
+function mkWeak(base,ew){return (ew?[ew]:[]).concat(base).filter((v,i,a)=>a.indexOf(v)===i).slice(0,3);}
+function varRng(seed){let s=seed>>>0;return function(){s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return ((t^t>>>14)>>>0)/4294967296;};}
+(function genVariants(){ // 24 种 × 6 元素 × 4 阶级 = 576 条；key=`sp.elem.tier`
+  const rr=varRng(20260903);
+  for(const sp in SPECIES){
+    if(sp==='nk')continue;
+    const B=FOES[sp];
+    for(const el in ELEMS)for(const tk in TIERS){
+      const E=ELEMS[el],T=TIERS[tk],jit=()=>1+(rr()*2-1)*.08;
+      const k=sp+'.'+el+'.'+tk;
+      FOES[k]={key:k,sp,elem:el,tier:tk,vt:true,name:E.pre+B.name+T.suf,
+        hp:Math.round(B.hp*E.hp*T.hp*jit()),atk:Math.round(B.atk*E.atk*T.atk*jit()),
+        speed:B.speed,shield:B.shield,def:B.def,exp:Math.round(B.exp*T.exp),
+        scale:+(B.scale*T.sc).toFixed(2),tscale:T.sc,tint:E.tint||0,weak:mkWeak(B.weak,E.weak),
+        lpc:B.lpc,mf:B.mf,mfh:B.mfh,spr:B.spr,pal:B.pal};
+    }
+  }
+})();
+const BOSSNAMED=[ // 命名 BOSS（gate=章节/地图守门；drop=橙装 key，E3 落地）
+ {id:'coldfang',name:'霜牙·白狼头领',sp:'wolf',elem:'frost',mods:{hp:1,atk:1},drop:'weirwoodbow',gate:{ch:1,map:'north'}},
+ {id:'gravewhisper',name:'尸语者·骨笛',sp:'skeleton',elem:'frost',mods:{hp:1,atk:1.05},drop:'maesterchain',gate:{ch:1,map:'winterfell'}},
+ {id:'castleshadow',name:'寒影·卡斯特',sp:'wight',elem:'frost',mods:{hp:1.05,atk:1},drop:'needle',gate:{ch:1,map:'wall'}},
+ {id:'coldwing',name:'夜翼·黑鸦王',sp:'bat',elem:'shadow',mods:{hp:1,atk:1.1},drop:'bearaxe',gate:{ch:2,map:'wall'}},
+ {id:'frostmaw',name:'冰后·狼林蛛母',sp:'spider',elem:'frost',mods:{hp:1.1,atk:1.05},drop:'needle',gate:{ch:2,map:'wolfswood'}},
+ {id:'wunwun',name:'温旺·裂颅者',sp:'giant',elem:'frost',mods:{hp:1,atk:1.1},drop:'longclaw',gate:{ch:2,map:'wolfswood'}},
+ {id:'greywind',name:'灰风·残狼',sp:'direwolf',elem:'frost',mods:{hp:1.05,atk:1.05},drop:'weirwoodbow',gate:{ch:2,map:'wolfswood'}},
+ {id:'winterfang',name:'冬牙·雪怪酋长',sp:'orc',elem:'frost',mods:{hp:1.05,atk:1},drop:'bearaxe',gate:{ch:3,map:'wolfswood'}},
+ {id:'bogking',name:'冰沼王·软泥',sp:'slime',elem:'poison',mods:{hp:1.2,atk:.95},drop:'dornishvenom',gate:{ch:3,map:'wolfswood'}},
+ {id:'bloodflag',name:'血旗·叛军头目',sp:'bandit',elem:'fire',mods:{hp:1.05,atk:1.05},drop:'oathkeeper',gate:{ch:3,map:'kingslanding'}},
+ {id:'fleaalley',name:'巷影·跳蚤窝之王',sp:'rogue',elem:'fire',mods:{hp:1,atk:1.15},drop:'dornishvenom',gate:{ch:3,map:'kingslanding'}},
+ {id:'duskvale',name:'暮谷亡将·黑骑士',sp:'knightBlack',elem:'shadow',mods:{hp:1.1,atk:1.1},drop:'oathkeeper',gate:{ch:4,map:'kingslanding'}},
+ {id:'falsefire',name:'伪光·红袍祭司',sp:'shaman',elem:'fire',mods:{hp:1,atk:1.15},drop:'lightbringer',gate:{ch:4,map:'kingslanding'}},
+ {id:'pitbutcher',name:'焦骨·斗坑屠夫',sp:'orc',elem:'fire',mods:{hp:1.15,atk:1.05},drop:'widowswail',gate:{ch:4,map:'kingslanding'}},
+ {id:'pyreking',name:'焚尸王·火葬场',sp:'zombie',elem:'fire',mods:{hp:1.2,atk:1},drop:'lightbringer',gate:{ch:4,map:'kingslanding'}},
+ {id:'greywing',name:'灰翼·幼龙',sp:'dragonWhelp',elem:'fire',mods:{hp:1.05,atk:1.1},drop:'dragonhammer',gate:{ch:5,map:'dragonstone'}},
+ {id:'emberfiend',name:'炎魔·龙石之焰',sp:'demon',elem:'fire',mods:{hp:1.1,atk:1.1},drop:'lightbringer',gate:{ch:5,map:'dragonstone'}},
+ {id:'tidewraith',name:'潮亡者·黑浪',sp:'blueDemon',elem:'shadow',mods:{hp:1.1,atk:1.05},drop:'ice',gate:{ch:5,map:'dragonstone'}},
+ {id:'saltghost',name:'海雾怨灵·沉船湾',sp:'wraith',elem:'shadow',mods:{hp:1.05,atk:1.1},drop:'nightcloak',gate:{ch:5,map:'dragonstone'}},
+ {id:'brimstone',name:'硫磺魔像·火山口',sp:'golemEvo',elem:'fire',mods:{hp:1.15,atk:1},drop:'dragonhammer',gate:{ch:5,map:'dragonstone'}},
+ {id:'coldking',name:'寒王·温菲拉',sp:'walker',elem:'frost',mods:{hp:1.25,atk:1.2},drop:'ice',gate:{ch:6,map:'wall'}},
+ {id:'nightsentinel',name:'长夜哨兵·冰魄巨像',sp:'golemIce',elem:'frost',mods:{hp:1.3,atk:1.05},drop:'ice',gate:{ch:6,map:'wall'}},
+ {id:'carrionlord',name:'尸堆领主·卡斯特堡',sp:'zombie',elem:'frost',mods:{hp:1.15,atk:1.1},drop:'nightcloak',gate:{ch:6,map:'north'}},
+ {id:'venomchief',name:'毒牙酋长·烂泥',sp:'goblin',elem:'poison',mods:{hp:1,atk:1.15},drop:'dornishvenom',gate:{ch:6,map:'north'}},
+ {id:'greensnake',name:'绿泽巨蟒·剧毒',sp:'snake',elem:'poison',mods:{hp:1.1,atk:1.15},drop:'widowswail',gate:{ch:6,map:'wolfswood'}},
+ {id:'shadowoath',name:'背誓者·暮暗',sp:'knightBlack',elem:'shadow',mods:{hp:1.15,atk:1.15},drop:'oathkeeper',gate:{ch:6,map:'north'}},
+ {id:'blacknest',name:'织影蛛后·黑巢',sp:'spider',elem:'shadow',mods:{hp:1.15,atk:1.1},drop:'needle',gate:{ch:6,map:'wolfswood'}},
+ {id:'shadowking',name:'影王·科尔德',sp:'walker',elem:'shadow',mods:{hp:1.3,atk:1.2},drop:'nightcloak',gate:{ch:7,map:'winterfell'}},
+ {id:'darkflame',name:'冥焰·黑炎元素',sp:'demon',elem:'shadow',mods:{hp:1.15,atk:1.2},drop:'lightbringer',gate:{ch:7,map:'winterfell'}},
+ {id:'soulfang',name:'噬魂·冥狼',sp:'wolf',elem:'shadow',mods:{hp:1.1,atk:1.2},drop:'longclaw',gate:{ch:7,map:'winterfell'}},
+ {id:'wunwundoom',name:'温旺·末日巨人',sp:'giant',elem:'shadow',mods:{hp:1.25,atk:1.15},drop:'bearaxe',gate:{ch:7,map:'winterfell'}},
+ {id:'deathpriest',name:'死灵祭司·黑翼',sp:'shaman',elem:'shadow',mods:{hp:1.05,atk:1.25},drop:'maesterchain',gate:{ch:7,map:'winterfell'}},
+ {id:'dreadwyrm',name:'冥龙·白霜之翼',sp:'dragonWhelp',elem:'frost',mods:{hp:1.2,atk:1.2},drop:'dragonhammer',gate:{ch:7,map:'winterfell'}},
+ {id:'dawnknight',name:'黎明骑士·拂晓',sp:'knightBlack',elem:'holy',mods:{hp:1.2,atk:1.2},drop:'lightbringer',gate:{ch:7,map:'winterfell'}},
+ {id:'oathsentinel',name:'圣冰巨像·誓约',sp:'golemIce',elem:'holy',mods:{hp:1.35,atk:1.05},drop:'ice',gate:{ch:7,map:'winterfell'}},
+ {id:'lastson',name:'极北之子·圣王',sp:'walker',elem:'holy',mods:{hp:1.35,atk:1.25},drop:'longclaw',gate:{ch:7,map:'winterfell'}}
+];
+(function genNamed(){ // 命名 boss 注册入 FOES（vt=true 免章节档；E2 按 gate 挂 POI）
+  const E1T=TIERS.boss;
+  for(const b of BOSSNAMED){
+    const B=FOES[b.sp],E=ELEMS[b.elem];
+    FOES[b.id]={key:b.id,sp:b.sp,elem:b.elem,tier:'boss',vt:true,named:true,name:b.name,
+      hp:Math.round(B.hp*E.hp*E1T.hp*b.mods.hp),atk:Math.round(B.atk*E.atk*E1T.atk*b.mods.atk),
+      speed:B.speed,shield:B.shield+2,def:B.def+2,exp:Math.round(B.exp*E1T.exp*1.5),
+      scale:+(B.scale*E1T.sc).toFixed(2),tscale:E1T.sc,tint:E.tint||0,weak:mkWeak(B.weak,E.weak),
+      lpc:B.lpc,mf:B.mf,mfh:B.mfh,spr:B.spr,pal:B.pal,drop:b.drop};
+  }
+})();
+function spOf(k){const i=String(k).indexOf('.');return i>0?k.slice(0,i):k;}
+function tameSp(k){return TAMEABLE.includes(spOf(k));}
 const SLOTS=[{x:160,y:628},{x:300,y:470},{x:455,y:612},{x:565,y:520}];
 const ITEMS_DEF=[
  {key:'potion',n:'学城秘药',cnt:5,desc:'恢复生命',heal:360},
@@ -1076,7 +1200,7 @@ function makeUnit(d,side){
     shield:d.shield||0,maxshield:d.shield||0,found:new Set(),broken:false,
     guardSelf:false,pat:0,phase:rand(0,6),img:s.img,fimg:s.flash,sw:s.w,sh:s.h,
     flashT:0,shakeT:0,lunge:null,dissolve:0,entryT:0,fear:0});
-  if(side==='enemy'){
+  if(side==='enemy'&&!d.vt){
     const T=foeTier(G.chapter||0);
     u.maxhp=u.hp=Math.round(u.hp*T[0]);
     u.atk=Math.round(u.atk*T[1]);
@@ -1419,7 +1543,7 @@ function initBattle(waves,opts={}){
 async function startWave(i){
   G.wave=i;G.waveRound0=G.round;const w=G.battleWaves[i];
   G.seen=G.seen||{};
-  for(const f of w.foes)G.seen[f.k]=true;
+  for(const f of w.foes){G.seen[f.k]=true;G.seen[spOf(f.k)]=true;}
   G.enemies=w.foes.map(f=>{const u=makeUnit(FOES[f.k],'enemy');u.x=f.x;u.y=f.y;return u;});
   await showBanner(w.banner,w.sub);
 }
@@ -1486,17 +1610,17 @@ function chooseEnemyMove(e){
     if(alive(G.enemies).length<3&&Math.random()<.55)return {kind:'summon',n:'亡者复苏'};
     return {kind:'atk',n:'冰之长枪',mult:1.25,t:'one',ele:'ice',cast:true};
   }
-  if(e.key==='walker'){
+  if(spOf(e.key)==='walker'){
     return Math.random()<.68
       ?{kind:'atk',n:'冰枪术',mult:1.2,t:'one',ele:'ice',cast:true}
       :{kind:'atk',n:'寒冰波动',mult:.8,t:'all',ele:'ice',cast:true};
   }
-  if(e.key==='spider'){
+  if(spOf(e.key)==='spider'){
     return Math.random()<.5
       ?{kind:'atk',n:'寒毒撕咬',mult:1.15,t:'one',spDrain:8}
       :{kind:'atk',n:'撕咬',mult:1,t:'one'};
   }
-  if(e.key==='giant'){
+  if(spOf(e.key)==='giant'){
     e.pat++;
     return e.pat%2===0
       ?{kind:'atk',n:'木棒横扫',mult:.9,t:'all'}
@@ -1524,7 +1648,7 @@ async function doPlayerAction(p,act){
     SFX.buff();
     burst(tgt.x,tgt.y-tgt.sh*tgt.scale*.6,{n:14,col:'#9fe89f',spd:1.6,life:650,up:true,g:-.02});
     await sleep(600);
-    if(!TAMEABLE.includes(tgt.key)||tgt.hp/tgt.maxhp>=.3||Math.random()>=tameChance(tgt)){
+    if(!tameSp(tgt.key)||tgt.hp/tgt.maxhp>=.3||Math.random()>=tameChance(tgt)){
       tgt.anger=true;
       ribbon(`<b>${tgt.name}</b> 挣脱了！它被激怒了`,1800);
       floaty(tgt.x,tgt.y-tgt.sh*tgt.scale-20,'挣脱','pdmg');
@@ -1700,7 +1824,7 @@ async function doEnemyAction(e,act){
     }else{
       const t=tgts[0];
       ribbon(`<b>${e.name}</b> 的 ${act.n}！`);
-      if(e.key==='giant'){SFX.stomp();shake(7);}
+      if(spOf(e.key)==='giant'){SFX.stomp();shake(7);}
       e.lunge={t0:performance.now(),dx:(t.x-e.x)*.32,dy:(t.y-e.y)*.32};
       await sleep(260);
       slashFX(t.x,t.y-t.sh*t.scale*.5,'#9fd0ff',1);
@@ -1833,7 +1957,7 @@ function beastStats(b){
 function beastUnit(b){
   const f=FOES[b.key],st=beastStats(b);
   const u=makeUnit({key:b.key,name:f.name,cls:'魔兽伙伴',hp:st.hp,sp:0,atk:st.atk,speed:st.speed,
-    lpc:f.lpc,mf:f.mf,mfh:f.mfh,spr:f.spr,pal:f.pal,scale:f.scale*.9,weap:b.key==='spider'?'dagger':'sword',lv:b.lv},'player');
+    lpc:f.lpc,mf:f.mf,mfh:f.mfh,spr:f.spr,pal:f.pal,scale:f.scale*.9,weap:spOf(b.key)==='spider'?'dagger':'sword',lv:b.lv},'player');
   u.isBeast=true;u.x=845;u.y=470;
   return u;
 }
@@ -3788,7 +3912,7 @@ function drawMobs(t,cx,cy){
       const pr=A3D.project3D(m.x/TS,0,m.y/TS);
       if(!pr)continue;
       sx=pr.x;sy=pr.y;
-      const md=A3D.MOB3D[m.k]||['npc2',1.0];
+      const md=A3D.mobModel(m.k);
       const prh=A3D.project3D(m.x/TS,md[1]+.3,m.y/TS);
       h=prh?sy-prh.y+6:42;
     }else{
@@ -4304,7 +4428,7 @@ $('#dlg').addEventListener('click',()=>advanceDlg());
 function tryConfirmEnemy(u){ // 敌方目标确认（鼠标点击与键盘 Enter 共用）
   if(!u||!G.pending)return;
   if(G.pending.type==='tame'){
-    if(!TAMEABLE.includes(u.key)){ribbon('<b>亡者</b> 无法被驯服……',1500);SFX.back();return;}
+    if(!tameSp(u.key)){ribbon('<b>亡者</b> 无法被驯服……',1500);SFX.back();return;}
     if(u.hp/u.maxhp>=.3){ribbon('它的战意仍然高昂 · 生命低于30%才能驯服',1800);SFX.back();return;}
   }
   const act=G.pending;SFX.ok();

@@ -306,7 +306,14 @@ function clearExplore(){
 const FACES={left:-Math.PI/2,right:Math.PI/2,up:Math.PI,down:0};
 let FWD=0; // 模型原生朝向修正；若截图发现背向，改为 Math.PI（±x 向则 ±Math.PI/2）
 const MOB3D={wolf:['wolf',.6],spider:['spider',.65],giant:['giant',2.2],
-  wight:['wight',1.1],walker:['walker',1.45],nk:['walker',1.6],bandit:['npc2',1.15]};
+  wight:['wight',1.1],walker:['walker',1.45],nk:['walker',1.6],bandit:['npc2',1.15],
+  bat:['bat',.55],snake:['snake',.7],slime:['slime',.8],goblin:['goblin',.9],
+  skeleton:['skeleton',1.1],zombie:['zombie',1.1],orc:['orc',1.4],orcEnemy:['orcEnemy',2.0],
+  demon:['demon',1.6],blueDemon:['blueDemon',1.5],golemIce:['golemIce',2.0],golemEvo:['golemEvo',1.8],
+  shaman:['shaman',1.05],dragonWhelp:['dragonWhelp',1.6],direwolf:['direwolf',.9],
+  wraith:['wraith',1.2],knightBlack:['knightBlack',1.25],rogue:['rogue',1.15]};
+function spOf(k){const i=String(k).indexOf('.');return i>0?k.slice(0,i):k;} // 变种 key `sp.elem.tier` → 基础种
+function mobModel(k){return MOB3D[k]||MOB3D[spOf(k)]||['npc2',1.0];}
 const BS=2.4; // 战斗单位全局倍率：归一模型(高1单位≈43px)→ 人形约125px，贴近2D比例并露出队伍栏上方可点
 function entFor(slot,model){ // slot=场上占位键（唯一），model=模板键（可复用）
   let e=ents.get(slot);
@@ -365,7 +372,7 @@ function renderExplore(dt,t,view){
     if(e){place(e,n.x,n.y,1.12,npcYaw(n),dt,t);used.add(slot);}
   }
   if(view.mobs)for(const m of view.mobs){
-    const md=MOB3D[m.k]||['npc2',1.0];
+    const md=mobModel(m.k);
     const slot='m'+m.id;
     const e=entFor(slot,md[0]);
     if(!e)continue;
@@ -376,7 +383,7 @@ function renderExplore(dt,t,view){
     used.add(slot);
   }
   if(view.follower){
-    const md=MOB3D[view.follower.k]||['wolf',.85];
+    const md=MOB3D[spOf(view.follower.k)]||['wolf',.85];
     const slot='fol';
     const e=entFor(slot,md[0]);
     if(e){place(e,view.follower.x,view.follower.y,md[1]*.92,
@@ -406,6 +413,7 @@ let btGroup=null,btTheme=null,bCam=null;
 const btUnits=new Map();            // 单位对象 -> {g,mats,baseEm,mixer,bob,ph,h}
 const btGeos=[],btMats=[];
 const BLOBGEO=new THREE.CircleGeometry(1,20);
+const RINGGEO=new THREE.RingGeometry(.5,.62,36);
 const clampB=(v,a,b)=>v<a?a:v>b?b:v;
 const BHW=640/70,BHH=360/70;        // 正交半宽/半高（相机单位）
 const BPHI=Math.asin(55/70);        // 俯仰：地面纵深 1 单位 = 55px
@@ -461,7 +469,7 @@ function buildBattle(theme){
   }
 }
 function bModel(u){
-  const md=MOB3D[u.key];
+  const md=MOB3D[u.key]||MOB3D[u.sp]||MOB3D[spOf(u.key)];
   if(md)return md;
   if(TPL[u.key])return [u.key,1.2];
   return ['npc2',1.1];
@@ -475,13 +483,20 @@ function bEnsure(u){
     const nm=m.material.clone();nm.transparent=true;m.material=nm;mats.push(nm);
     baseEm.push({m:nm,e:nm.emissive?nm.emissive.getHex():0,i:nm.emissiveIntensity||1});
   }});
-  const g=new THREE.Group();g.add(root);g.scale.setScalar(md[1]*BS);btGroup.add(g);
+  if(u.tint){const tc=new THREE.Color(u.tint);for(const m of mats)if(m.color)m.color.multiply(tc);}
+  const sc=md[1]*BS*(u.tscale||1);
+  const g=new THREE.Group();g.add(root);g.scale.setScalar(sc);btGroup.add(g);
   const shm=new THREE.MeshBasicMaterial({color:0x000000,transparent:true,opacity:.22,depthWrite:false});
   const sh=new THREE.Mesh(BLOBGEO,shm);sh.rotation.x=-Math.PI/2;sh.position.y=.02;sh.scale.setScalar(.36);
-  g.add(sh);mats.push(shm);for(const m of mats)btMats.push(m);
+  g.add(sh);mats.push(shm);
+  if(u.tier==='boss'||u.tier==='champ'){
+    const rm=new THREE.MeshBasicMaterial({color:u.tint||0xffd700,transparent:true,opacity:u.tier==='boss'?.5:.32,depthWrite:false});
+    const ring=new THREE.Mesh(RINGGEO,rm);ring.rotation.x=-Math.PI/2;ring.position.y=.04;g.add(ring);mats.push(rm);
+  }
+  for(const m of mats)btMats.push(m);
   let mixer=null;const clip=pickClip(T.clips);
   if(clip){mixer=new THREE.AnimationMixer(root);mixer.clipAction(clip).play();}
-  e={g,mats,baseEm,mixer,bob:!clip,ph:Math.random()*6.283,h:md[1]*BS};
+  e={g,mats,baseEm,mixer,bob:!clip,ph:Math.random()*6.283,h:sc};
   btUnits.set(u,e);return e;
 }
 function renderBattle(dt,t,view){
@@ -509,8 +524,8 @@ function renderBattle(dt,t,view){
     let flash=0;
     if(u.flashT){const p=clampB((t-u.flashT)/200,0,1);if(p<1)flash=1-p;else u.flashT=0;}
     for(const m of e.mats)m.opacity=op;
-    if(flash>0)for(const m of e.mats){m.emissive.setHex(0xffffff);m.emissiveIntensity=flash*1.2;}
-    else for(const b of e.baseEm){b.m.emissive.setHex(b.e);b.m.emissiveIntensity=b.i;}
+    if(flash>0)for(const m of e.mats){if(m.emissive){m.emissive.setHex(0xffffff);m.emissiveIntensity=flash*1.2;}}
+    else for(const b of e.baseEm){if(b.m.emissive){b.m.emissive.setHex(b.e);b.m.emissiveIntensity=b.i;}}
     e.g.visible=op>0.02;
     if(e.mixer)e.mixer.update(dt/1000);
     else e.g.position.y+=Math.abs(Math.sin(t/170+e.ph))*.03;
@@ -542,7 +557,7 @@ function project3D(xTile,yUp,zTile){
   return {x:px,y:py};
 }
 
-return {boot,loadModels,whenReady,enterExplore,renderExplore,renderBattle,projectUnit,project3D,MOB3D,
+return {boot,loadModels,whenReady,enterExplore,renderExplore,renderBattle,projectUnit,project3D,MOB3D,mobModel,
   dbg:()=>JSON.stringify({ok,bt:btGroup?btGroup.children.length:-1,un:btUnits.size,th:btTheme,tpl:Object.keys(TPL).length}),
   isReady:()=>ready,isOk:()=>ok,
   info:()=>renderer?renderer.info.render.calls:0};

@@ -159,3 +159,10 @@ w_lsword_f/b、w_dagger_f/b、w_spear_f/b（各 _walk/_idle；武器仅 _walk）
 - 计划内无 CC0 动画源：bear / mammoth / troll（poly.pizza 全库搜无）→ 名单按「按包可得性微调」条款改为 18 新种：orcEnemy 顶巨魔、demon 顶火元素、direwolf=Husky、wraith=Ghost
 - 下载 24.48MB 全 OK（_dl3d.js，>500B skip-if-exists）；bake 后 models_mobs.js 14.4MB（本地 file:// 游戏，质量优先预算内）
 - KEEP_ANIM=/Walk$|Idle$|Death|Slash|Attack|Flying/i：knightBlack 3.57MB→1.86MB，多数新怪 200-600K
+
+## E1 图鉴 schema 要点（2026-09-03 · 619 FOES key）
+- 变种 key=`sp.elem.tier`（576）+ 命名 boss id（36）+ 基种 7；vt:true=免章节档（makeUnit 仅 enemy&&!vt 叠 FOE_TIERS），命名 boss 无点也 vt
+- genVariants seed=20260903（mulberry32 系 varRng）确定化；数值抖动 ±8%；weak=元素弱+种弱去重取前3（限 ELE 六键+武器键混排）
+- 3D：bModel 认 u.sp/dot key → MOB3D；bEnsure tint 乘材质色（白模乘火橙=棕橙，符合预期）；tscale 体型；RingGeometry 光环仅 boss(.5)/champ(.32)，色=元素 tint
+- 2D 兜底 VARSPR/VARPAL 通用模板（新 18 种无 LPC/MF）；TAMEABLE 种级+tameSp(spOf(k))
+- harness：_shot.js e1（10 断言 dom）/var/varz（截图）；budget e1=12000

@@ -31,7 +31,7 @@
 - 流程：_dl3d.js 下载 GLB → _tmp3d/ → _bake3d.js（Walk/Idle/Attack 裁剪保留）→ models_mobs.js（2.6→14.4MB）
 - 验证：probe3d 37 key 全绿（无 PARSE_FAIL，baked minY=0）；尺寸表入 findings；models_debug 目检随 E1 展示层一并复查
 
-## Phase E1：数据 schema 与图鉴生成（主文件）
+## Phase E1：数据 schema 与图鉴生成（主文件）✅ 2026-09-03 完成
 - SPECIES(24)：{sp, cn, model, base{hp,atk,spd,def,shield}, weak[], tame?, size}
   - 旧 7 种全部并入（wight/walker/wolf/spider/giant/bandit/nk→species 'nk' 仅作 boss 基底）
 - ELEMS(6)：{id:'',frost,fire,poison,shadow,holy · cn 无/冰/火/毒/影/圣 · tint(0x…) · weak 轮转表 · statMod{hp,atk}}
@@ -41,6 +41,8 @@
 - 引擎兼容：makeUnit/foeTier 不动——剧情波次仍用旧基 key（FOE_TIERS 照旧）；变种 key 自带档位，makeUnit 内识别 `.` key 跳过 FOE_TIERS 防双重缩放
 - 3D 表现（adapter）：bModel 改按 key 前缀查 SPECIES.model；bEnsure 增 elemTint（材质 color 乘 tint，复用 clone 材质通路）+ tier 光环（boss/champ 脚底 RingGeometry 发光）+ scale×tier
 - 验证：harness 断言 Object.keys(FOES).length≥500、named boss≥36；新 shot 模式 var：元素染色+光环截图目检
+- 实测：FOES 619 key（基7+变种576+命名36）；e1 10/10 PASS；var/varz 目检过；回归 SMOKE/c1/c2/clix/camp 全绿
+- 实现细节偏差（优于计划处）：dot-key 免章节档用 vt 标志（命名 boss 无点也免档）；2D 兜底 VARSPR 模板；boss/champ 光环=RingGeometry（色=元素tint）
 
 ## Phase E2：遇敌与 boss 接入
 - MAPS.mobs → 池化：{sp[],weights,elemBias(北境frost/君临fire/狼林poison/龙石岛shadow),tierRoll(elite12%/champ4%)}；startEncounter 改抽池；区域章节门槛

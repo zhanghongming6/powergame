@@ -280,3 +280,14 @@
 - [x] 文件改名：冰火旅人.html→**powergame.html**、备份→powergame_v3_backup.html、说明→MANUAL.md、攻略→WALKTHROUGH.md、截图/→screenshots/；_shot.js L5 与 MANUAL 内引用同步
 - [x] GitHub 首次入库：.gitignore 排 _dl(210M)/_lpc(444M)/_tmp3d/_tmp_*/.claude；git init+commit+merge 远端占位 README+push → https://github.com/zhanghongming6/powergame.git @ 977c422（715 文件，含 assets 16M/assets3d 24M）
 - [ ] 明日第一件事：**E1** 数据 schema（SPECIES 25/ELEMS 6/TIERS 4/BOSSNAMED 36+，seeded 生成 ≥500 图鉴条目，makeUnit 认 `.` key 跳过 FOE_TIERS），详见 task_plan.md
+
+## 2026-09-03 会话⑱ · E1 数据 schema 与图鉴生成（完成；实现于上轮终端遗留工作区，本会话验证收口+入库）
+- [x] 数据 schema（powergame.html L844–967）：SPECIES 25（旧 7 并入+新 18，nk 仅 boss 基底）/ELEMS 6（none/frost/fire/poison/shadow/holy，tint+weak 轮转+statMod）/TIERS 4（normal/elite/champ/boss，hp×1→8、sc×1→1.35）
+- [x] genVariants（seed=20260903 mulberry 系）：key=`sp.elem.tier` → 576 变种入 FOES（数值=base×elem×tier×(1±.08) 抖动；weak=元素弱点+种弱点去重前3；vt:true 免章节档）；FOES 总 619 key（7 基+576+36 命名）
+- [x] BOSSNAMED 36（ch1–ch7 按章守门，drop 橙装 key 预挂 E3）→ genNamed 注册 FOES（tier:'boss'+named:true+shield/def+2+exp×1.5）
+- [x] 引擎兼容：makeUnit 仅 `side==='enemy'&&!d.vt` 叠章节档（旧基种照旧，尸鬼序章仍 181）；TAMEABLE 升种级+tameSp(spOf)；spOf 工具函数
+- [x] 2D 兜底：VARSPR/VARPAL 模板（新 18 种无 LPC/MF 时 makeSprite 不崩）；bandit 补兜底
+- [x] 3D（adapter3d.js）：MOB3D 25 种全映射；bModel 认 dot key（u.sp→spOf）；bEnsure：elem tint 乘材质色 + tscale 体型 + boss/champ 脚底 RingGeometry 光环（boss .5/champ .32，色=元素 tint）
+- [x] harness：_shot e1 模式 10 断言（total500/variants576/named36/named_in/wb_fields/wight_unchanged/vt_skip/base_tier/tame/sprite_all 全 key unitSprite 无异常）10/10 PASS；var/varz 截图目检：霜霸主异鬼蓝环+大体、毒首领蜘蛛绿环、火精英狼染色 ✅
+- [x] 回归全绿：SMOKE1-4 PASS；c1 19/19；c2 11/11；clix 13/13；camp(a5) 13/13 WIN
+- [ ] 下一步：**E2** 遇敌池化（MAPS.mobs→sp[]+elemBias+tierRoll）+ 世界 boss POI（interact→BOSSNAMED 按章取未灭者，胜→flag+橙装+图鉴），详见 task_plan.md
