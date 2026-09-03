@@ -53,16 +53,14 @@
 - 回归全绿：SMOKE1-4+E2 链、c1 19/19、c2 11/11、clix 13/13、camp ×3 = 3/3 WIN（100%≥60%）
 - 实现细节偏差：①池抽取放在 spawn（buildMobs/respawn）而非 startEncounter——遇敌直接拿现成 mob key，respawn 也走同一池；②boss 败北不走 defeat()（会进 end 场景），改就地复活 50%+回城，状态契约对齐 enterExplore（partyBar/worldHud/scene/cam）
 
-## Phase E3：武器装备系统
-- 槽位：p.eq={wpn,arm,acc}；effAtk/effDef/effMaxhp 汇总函数，接入 physicalAttack(L1626 用 effAtk)、hitPlayer(def)、入队/升级时重算 maxhp
-- EQUIP_DEF(70+)：{key,n,slot,rar(白/蓝/紫/橙),atk,def,hp,crit,spd,fx?,desc}
-  - 橙装 12（原著命名）：长爪/缝衣针/寒冰/守誓者/寡妇之嚎/光明使者/龙克锤/夜王碎片披风/学士链/鱼梁木弓/熊岛战斧/多恩毒刃
-  - fx 池：lifesteal/weakBonus/critUp/expUp/tameUp/guardRetaliate/shieldOnEntry/spdUp
-- 掉落引擎（victory 改）：每敌 roll——材料(保留)+装备概率按 tier(8/25/60/100%)；rar 权重随 tier；boss 必掉命名橙；ribbon+SFX 播报
-- 锻造：铁匠(porther/mikken) 对话扩展：强化 +1..+5（耗 ore×阶，失败不掉级）；橙装不可强化
-- 面板 #equipPanel（Kenney 9-slice，键 I）：左队伍列表 → 右 3 槽+属性对比；背包装备网格 rar 色框；点击装备/卸下
-- 存档：save 增 eq/bagEq；版本字段 v:2，旧档迁移缺省空槽
-- 验证：新 harness e3 模式：注入掉落→装备→effAtk 生效→存档读档保持；c2 增 rest_eq 断言
+## Phase E3：武器装备系统 ✅ 2026-09-03 完成
+- 槽位 p.eq={wpn,arm,acc}；effAtk/effDef/effMaxhp/effCrit/hasFx 接入伤害/受击/暴击/经验/吸血；basemaxhp 不变量（maxhp=basemaxhp+eqHp）
+- EQUIP_DEF 72（20 模板×3 rar + 橙 12 原著命名）；fx 池收为 3（critUp+6%/expUp×1.25/lifesteal 吸血，优于计划的 8 种空挂）
+- 掉落：equipDropRoll 按 tier 8/25/60/100%（rar 权重随 tier，boss 池无白无橙）；命名 boss 必掉 e.drop；击杀点入 battleDrops→victory 收 bagEq+ribbon 播报
+- 锻造：forgeUp +1..+5（+10%/级，成功率 1/.9/.75/.6/.45，耗 ore=lv+1，失败不掉级，橙装拒绝）；forgeOrange（bossDrops 材料 1+ore 2→橙装入包）；铁匠 mikken/porther 对话入口
+- #equipPanel（I 键，队伍 chips+3 槽+属性对比+背包 rar 色框）/#forgeOv 全 Kenney；RARCOL 白蓝紫橙
+- 存档 v:2（bagEq/up/players.eq/basemaxhp），旧档迁移（basemaxhp=maxhp、eq 缺省空槽）
+- harness：e3 20/20 PASS + eqp/fgv 目检 ✅；c2 增 rest_eq → 12/12；回归 SMOKE1-4+E2 全绿、c1 19/19、clix 13/13、camp ×3=3/3 WIN
 
 ## Phase E4：UI 美化 + 头像 3D（吸收 D4）
 - 裸 CSS Kenney 化：banner/turnBadge/recruitOv/loadOv/partyBar 背景/muteBtn（border-image assets/ui/*）

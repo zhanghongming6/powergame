@@ -300,3 +300,14 @@
 - [x] 目检：bpoi 裁切=骨柱+红带+浮空「守门者」标签 ✅；wmob=雪原 3D 池化狼 ✅（教训：zoom3x 在 explore 场景挂死 Chrome ETIMEDOUT → 改 crop.ps1 本地裁切）
 - [x] 回归全绿：SMOKE1-4 PASS + E2 13/13；c1 19/19；c2 11/11；clix 13/13；camp ×3 = 3/3 WIN（通关率 100% ≥60%）
 - [ ] 下一步：**E3** 武器装备系统（槽位/EQUIP_DEF 70+/掉落引擎/锻造/equipPanel/存档 v:2），详见 task_plan.md
+
+## 2026-09-03 会话⑳ · E3 武器装备系统（完成）
+- [x] 槽位与属性汇总（powergame.html L1018–1145）：p.eq={wpn,arm,acc}；eqStats 带锻造倍率；effAtk/effDef/effMaxhp/effCrit/hasFx；basemaxhp 不变量（maxhp=basemaxhp+eqHp，装备/升级/入队全走 effMaxhp）
+- [x] EQUIP_DEF 72：20 模板茎（8 武器/6 护甲/6 饰品）×3 rar 确定化生成 + 橙装 12 手书原著命名；key=茎_rar 运行时拼接；fx 收为 3：critUp(+6%)/expUp(×1.25)/lifesteal(吸血)
+- [x] 掉落引擎：equipDropRoll(tier) 8/25/60/100%，rar 权重随 tier，boss 池仅蓝紫；命名 boss 击杀必掉 e.drop；击杀点 push battleDrops(L1964)→victory(L2089) 入 bagEq + ribbon/SFX 播报；材料掉落保留
+- [x] 锻造：forgeUp +1..+5（+10%/级，成功率 1/.9/.75/.6/.45，ore 耗=lv+1，失败不掉级，橙装拒绝）；forgeOrange（bossDrops 材料×1+ore×2→命名橙入 bagEq）；铁匠 mikken/porther 对话加锻造入口
+- [x] UI：#equipPanel（I 键，队伍 chips/3 槽/属性对比/背包 rar 色框 点击装脱）+#forgeOv 全 Kenney；eqp/fgv 截图目检 ✅
+- [x] 存档 v:2：payload 增 bagEq/up/players.eq/basemaxhp；旧档迁移 basemaxhp=maxhp、eq 缺省空槽、maxhp 重算
+- [x] harness：e3 20 断言 20/20 PASS（表合法/roll×200 合法/穿戴/卸下/fx 三件/锻造四例/橙铸/命名 boss 必掉/victory 入包/存档 v2 字段）；c2 增 rest_eq → 12/12
+- [x] 回归全绿：SMOKE1-4 PASS + E2 13/13；c1 19/19；c2 12/12；clix 13/13；camp ×3 = 3/3 WIN（100% ≥60%）
+- [ ] 下一步：**E4** UI 美化+头像 3D+图鉴面板（裸 CSS Kenney 化、renderPortrait 离屏头像、#dexPanel 键 B），详见 task_plan.md

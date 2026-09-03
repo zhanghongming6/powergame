@@ -59,7 +59,7 @@ canvas#cv3{position:absolute;inset:0}
 
 /* ---------- 通用 UI ---------- */
 .hidden{display:none!important}
-body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,body.cine #partyBar,body.cine #banner{display:none!important}
+body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,body.cine #equipPanel,body.cine #forgeOv,body.cine #partyBar,body.cine #banner{display:none!important}
 .ribbon{position:absolute;left:50%;top:86px;transform:translateX(-50%);padding:8px 40px;
   background:linear-gradient(90deg,transparent,rgba(6,10,22,.92) 16%,rgba(6,10,22,.92) 84%,transparent);
   color:#e8ecf5;font-size:19px;letter-spacing:2px;text-shadow:0 1px 4px #000;opacity:0;transition:opacity .35s;
@@ -300,6 +300,38 @@ body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,
 #beastPanel h4{font-size:12px;letter-spacing:2px;color:#8fa3bd;margin:10px 0 4px;border-top:1px solid rgba(201,165,90,.2);padding-top:8px}
 #beastPanel .bdex{font-size:12px;color:#cfd9ea;margin:2px 0}
 #beastPanel .bdex.un{color:#5d6b82}
+/* ---- E3：装备面板 / 锻造炉 ---- */
+#equipPanel,#forgeOv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:46;width:640px;max-height:560px;overflow:auto;
+  border:10px solid transparent;border-image:url(assets/ui/panel_blue.png) 10 fill;padding:14px 16px;display:none;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+#forgeOv{width:560px;z-index:47}
+#equipPanel.show,#forgeOv.show{display:block}
+#equipPanel h3,#forgeOv h3{font-size:14px;letter-spacing:3px;color:var(--gold-hi);margin-bottom:8px;border-bottom:1px solid rgba(201,165,90,.25);padding-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+.epx{cursor:pointer;color:#8fa3bd;font-size:13px;letter-spacing:0}
+.epx:hover{color:#f0d491}
+.epchips{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
+.epchip{cursor:pointer;font-size:12px;letter-spacing:1px;color:#cfd9ea;border:5px solid transparent;border-image:url(assets/ui/buttonLong_grey.png) 10 fill;padding:3px 10px}
+.epchip.on{border-image:url(assets/ui/buttonLong_blue.png) 10 fill;color:#f4f8ff}
+.eprow{display:flex;gap:14px}
+.epleft{flex:0 0 236px}
+.epslot{cursor:pointer;margin:4px 0;padding:7px 10px;border:1px solid rgba(201,165,90,.25);background:rgba(20,28,46,.6);font-size:12px;color:#cfd9ea}
+.epslot:hover{background:rgba(40,52,80,.7)}
+.epslot .lb{color:#8fa3bd;font-size:11px;margin-right:6px}
+.epstat{font-size:12px;color:#cfd9ea;line-height:1.9;margin-top:8px;border-top:1px solid rgba(201,165,90,.2);padding-top:6px}
+.epstat b{color:var(--gold)}
+.epstat .up{color:#7fd07f}
+.epbag{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:6px;align-content:start}
+.epit{cursor:pointer;padding:6px 7px;font-size:11px;line-height:1.5;border:1px solid #9fb2c8;background:rgba(20,28,46,.6)}
+.epit:hover{filter:brightness(1.35)}
+.epit .cnt{color:#8fa3bd}
+.epit.rb{border-color:#6fb3ff}.epit.rp{border-color:#c583f0}
+.epit.ro{border-color:#f0a848;box-shadow:inset 0 0 10px rgba(240,168,72,.22)}
+.epempty{font-size:12px;color:#8fa3bd;grid-column:1/-1;line-height:1.8}
+#equipPanel h4,#forgeOv h4{font-size:12px;letter-spacing:2px;color:#8fa3bd;margin:10px 0 4px;border-top:1px solid rgba(201,165,90,.2);padding-top:8px}
+.fgrow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:6px 0;padding:8px 10px;border:1px solid rgba(201,165,90,.25);background:rgba(20,28,46,.6);font-size:12px;color:#cfd9ea}
+.fgrow .inf{color:#8fa3bd;font-size:11px;margin-left:6px}
+.fgbtn{cursor:pointer;flex:0 0 auto;font-size:11px;letter-spacing:1px;color:var(--gold-hi);border:1px solid var(--gold-dim);padding:4px 10px;background:rgba(201,165,90,.12)}
+.fgbtn:hover{background:rgba(201,165,90,.3)}
+.fgbtn.dis{opacity:.4;cursor:default}
 #tone{position:absolute;inset:0;pointer-events:none;transition:background .8s}
 </style>
 </head>
@@ -429,6 +461,16 @@ body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,
   <div id="beastPanel">
     <h3>魔 物 伙 伴 · 图 鉴</h3>
     <div id="bpList"></div>
+  </div>
+
+  <div id="equipPanel">
+    <h3>装 备 · 行 囊 <span class="epx" onclick="toggleEquipPanel()">✕ 关闭（I）</span></h3>
+    <div id="epBody"></div>
+  </div>
+
+  <div id="forgeOv">
+    <h3>铁 匠 铺 · 锻 造 炉 <span class="epx" onclick="closeForge()">✕ 离开</span></h3>
+    <div id="fgBody"></div>
   </div>
 
   <div id="title">
@@ -973,6 +1015,135 @@ const ITEMS_DEF=[
  {key:'meat',n:'鲜肉',cnt:0,desc:'喂食魔物提升好感'}
 ];
 
+/* ================= E3 装备系统 ================= */
+/* 槽位 wpn/arm/acc；rar 白/蓝/紫/橙；属性 atk/def/hp/crit/spd；fx=critUp/expUp/lifesteal
+   白蓝紫由模板×阶级确定化生成，橙装 12 件原著命名手书（key 与 BOSSNAMED.drop 对账） */
+const EQUIP_DEF=(function(){
+  const RARM={white:1,blue:1.5,purple:2.2};
+  const PRE={white:'',blue:'精制',purple:'远古'};
+  const RN={white:'普通',blue:'精良',purple:'史诗',orange:'传说'};
+  const T=[
+   ['sword','长剑','wpn',{atk:18}],
+   ['axe','战斧','wpn',{atk:23,spd:-2}],
+   ['bow','长弓','wpn',{atk:15,crit:.04}],
+   ['dagger','短匕','wpn',{atk:12,crit:.09,spd:4}],
+   ['hammer','战锤','wpn',{atk:26,spd:-4}],
+   ['spear','长枪','wpn',{atk:20}],
+   ['gsword','巨剑','wpn',{atk:28,spd:-5}],
+   ['club','棍棒','wpn',{atk:16}],
+   ['leather','皮甲','arm',{def:8,hp:40}],
+   ['chainmail','锁甲','arm',{def:13,hp:70}],
+   ['plate','板甲','arm',{def:19,hp:110,spd:-3}],
+   ['cloak','斗篷','arm',{def:6,hp:30,spd:3}],
+   ['shield','圆盾','arm',{def:11,hp:55}],
+   ['furs','裘皮袍','arm',{def:9,hp:60}],
+   ['ring','戒指','acc',{crit:.05,atk:6}],
+   ['amulet','护符','acc',{hp:60,def:5}],
+   ['charm','坠饰','acc',{spd:4,hp:30}],
+   ['band','臂环','acc',{atk:8,def:4}],
+   ['talisman','符牌','acc',{hp:45,crit:.03}],
+   ['pendant','圣徽','acc',{def:6,hp:50}]
+  ];
+  const out=[];
+  for(const [stem,cn,slot,base] of T){
+    for(const rar of ['white','blue','purple']){
+      const m=RARM[rar];
+      const it={key:stem+'_'+rar,n:PRE[rar]+cn,slot,rar,rarn:RN[rar],desc:''};
+      for(const s in base){
+        const v=base[s]*m;
+        it[s]=Math.abs(v)<1?+v.toFixed(2):Math.round(v);
+      }
+      if(rar==='purple'&&(stem==='gsword'||stem==='ring'||stem==='plate'))it.fx='critUp';
+      out.push(it);
+    }
+  }
+  const O=[
+   {key:'longclaw',n:'长爪',slot:'wpn',rar:'orange',atk:40,crit:.10,fx:'lifesteal',desc:'熊岛莫尔蒙家的祖传瓦雷利亚钢剑'},
+   {key:'needle',n:'缝衣针',slot:'wpn',rar:'orange',atk:28,spd:8,crit:.12,desc:'艾莉亚的细剑，快如穿针'},
+   {key:'ice',n:'寒冰',slot:'wpn',rar:'orange',atk:50,spd:-3,desc:'史塔克家巨剑，后铸为两柄'},
+   {key:'oathkeeper',n:'守誓者',slot:'wpn',rar:'orange',atk:44,hp:40,desc:'由寒冰所铸，誓约之剑'},
+   {key:'widowswail',n:'寡妇之嚎',slot:'wpn',rar:'orange',atk:42,crit:.08,desc:'寒冰的另一半，乔弗里的佩剑'},
+   {key:'lightbringer',n:'光明使者',slot:'wpn',rar:'orange',atk:48,crit:.06,fx:'critUp',desc:'燃烧的英雄之剑'},
+   {key:'dragonhammer',n:'龙克锤',slot:'wpn',rar:'orange',atk:55,spd:-6,desc:'专为破龙而铸的重锤'},
+   {key:'weirwoodbow',n:'鱼梁木弓',slot:'wpn',rar:'orange',atk:38,crit:.15,desc:'神木所制，北境猎弓'},
+   {key:'bearaxe',n:'熊岛战斧',slot:'wpn',rar:'orange',atk:46,desc:'熊岛女战士的传家斧'},
+   {key:'dornishvenom',n:'多恩毒刃',slot:'wpn',rar:'orange',atk:32,crit:.18,fx:'lifesteal',desc:'淬了蛇毒的弯刃'},
+   {key:'nightcloak',n:'夜王碎片披风',slot:'arm',rar:'orange',def:22,hp:120,desc:'缀着异鬼寒晶的披风'},
+   {key:'maesterchain',n:'学士链',slot:'acc',rar:'orange',hp:80,fx:'expUp',desc:'学城的知识之链，增长阅历'}
+  ];
+  for(const o of O){o.rarn=RN.orange;o.desc=o.desc||'';}
+  return out.concat(O);
+})();
+const EQUIP_BY_KEY={};for(const it of EQUIP_DEF)EQUIP_BY_KEY[it.key]=it;
+function eqStats(p){
+  const s={atk:0,def:0,hp:0,crit:0,spd:0};
+  const eq=p&&p.eq;if(!eq)return s;
+  for(const sl of ['wpn','arm','acc']){
+    const k=eq[sl];if(!k)continue;
+    const it=EQUIP_BY_KEY[k];if(!it)continue;
+    let mult=1;const u=(G.up&&G.up[k])||0; // 锻造强化 +10%/级（橙装不强化）
+    if(u&&it.rar!=='orange')mult=1+.1*u;
+    for(const f in s)if(it[f])s[f]+=it[f]*mult;
+  }
+  return s;
+}
+function effAtk(p){return Math.round(p.atk+eqStats(p).atk);}
+function effDef(p){return Math.round(eqStats(p).def);}
+function eqHp(p){return Math.round(eqStats(p).hp);}
+function effMaxhp(p){return Math.round((p.basemaxhp!=null?p.basemaxhp:p.maxhp)+eqHp(p));}
+function effCrit(p){let c=eqStats(p).crit;const eq=p&&p.eq||{};for(const sl in eq){const it=EQUIP_BY_KEY[eq[sl]];if(it&&it.fx==='critUp')c+=.06;}return c;}
+function hasFx(p,fx){const eq=p&&p.eq||{};for(const sl in eq){const it=EQUIP_BY_KEY[eq[sl]];if(it&&it.fx===fx)return true;}return false;}
+function syncMaxhp(p){p.maxhp=effMaxhp(p);if(p.hp>p.maxhp)p.hp=p.maxhp;}
+function equipItem(p,key){
+  const it=EQUIP_BY_KEY[key];if(!it)return false;
+  if(!(G.bagEq&&G.bagEq[key]>0))return false;
+  const old=p.eq[it.slot];
+  p.eq[it.slot]=key;G.bagEq[key]--;
+  if(old)G.bagEq[old]=(G.bagEq[old]||0)+1;
+  syncMaxhp(p);updateTiles();
+  ribbon(`<b>${p.name}</b> 装备了 <b>${it.n}</b>`,1800);SFX.ok();
+  return true;
+}
+function unequipItem(p,slot){
+  const k=p.eq[slot];if(!k)return false;
+  p.eq[slot]=null;G.bagEq[k]=(G.bagEq[k]||0)+1;
+  syncMaxhp(p);updateTiles();SFX.back();
+  return true;
+}
+/* ---- E3b：掉落引擎 + 锻造 ---- */
+function equipDropRoll(tier){ // 按阶级概率掉装；rar 权重随阶级上浮
+  const prob={normal:.08,elite:.25,champ:.6,boss:1}[tier];
+  if(prob==null||Math.random()>prob)return null;
+  const P={normal:[['white',85],['blue',14],['purple',1]],
+           elite:[['white',50],['blue',40],['purple',10]],
+           champ:[['white',15],['blue',55],['purple',30]],
+           boss:[['blue',30],['purple',70]]}[tier];
+  let tw=0;for(const [,w] of P)tw+=w;
+  let r=Math.random()*tw,rar=P[0][0];
+  for(const [k,w] of P){r-=w;if(r<=0){rar=k;break;}}
+  const pool=EQUIP_DEF.filter(i=>i.rar===rar);
+  return pool[Math.floor(Math.random()*pool.length)].key;
+}
+function upLv(k){return (G.up&&G.up[k])||0;}
+function forgeUp(k){ // 强化 +1..+5：耗矿石×阶，失败不掉级；橙装不可
+  const it=EQUIP_BY_KEY[k];if(!it||it.rar==='orange')return 'no';
+  const lv=upLv(k);if(lv>=5)return 'max';
+  const need=lv+1;
+  if(!G.bag||!G.bag.ore||G.bag.ore<need)return 'ore';
+  G.bag.ore-=need;G.up=G.up||{};
+  if(Math.random()<[1,.9,.75,.6,.45][lv]){G.up[k]=lv+1;return 'ok';}
+  return 'fail';
+}
+function forgeOrange(k){ // 铁匠处：消耗 boss 锻造材料×1 + 矿石×2 → 命名橙装
+  const it=EQUIP_BY_KEY[k];if(!it||it.rar!=='orange')return 'no';
+  const drops=G.bossDrops||[],i=drops.indexOf(k);
+  if(i<0)return 'mat';
+  if(!G.bag||!G.bag.ore||G.bag.ore<2)return 'ore';
+  drops.splice(i,1);G.bag.ore-=2;
+  G.bagEq=G.bagEq||{};G.bagEq[k]=(G.bagEq[k]||0)+1;
+  return 'ok';
+}
+
 /* ================= 大地图数据 ================= */
 const LOCS={
  winterfell:{key:'winterfell',n:'临冬城',x:560,y:255,desc:'史塔克家族祖城 · 远征营地'},
@@ -1196,8 +1367,9 @@ const FOE_TIERS=[[.71,.79,1.2],[.9,.86,1.1],[1,1,1],[1,1,1],[1.15,1.1,.95],[1.18
 function foeTier(ch){return FOE_TIERS[Math.max(0,Math.min(ch||0,FOE_TIERS.length-1))];}
 function makeUnit(d,side){
   const s=unitSprite(d);
-  const u=Object.assign({},d,{side,alive:true,maxhp:d.hp,maxsp:d.sp||0,sp:d.sp||0,bp:side==='player'?1:0,
+  const u=Object.assign({},d,{side,alive:true,maxhp:d.hp,basemaxhp:d.hp,maxsp:d.sp||0,sp:d.sp||0,bp:side==='player'?1:0,
     shield:d.shield||0,maxshield:d.shield||0,found:new Set(),broken:false,
+    eq:side==='player'?{wpn:null,arm:null,acc:null}:null,
     guardSelf:false,pat:0,phase:rand(0,6),img:s.img,fimg:s.flash,sw:s.w,sh:s.h,
     flashT:0,shakeT:0,lunge:null,dissolve:0,entryT:0,fear:0});
   if(side==='enemy'&&!d.vt){
@@ -1534,7 +1706,8 @@ function initBattle(waves,opts={}){
   G.scene='battle';G.wave=0;G.round=0;G.guardRounds=0;
   $('#world').classList.remove('expmode');
   G.battleWaves=waves;G.battleFinal=!!opts.final;G.battleResult=null;G.dragonDone=false;
-  G.battleExp=0;G.tameKey=null;
+  G.battleExp=0;G.tameKey=null;G.battleDrops=[];
+  $('#equipPanel').classList.remove('show');$('#forgeOv').classList.remove('show');
   for(const p of G.players){p.lunge=null;p.flashT=0;p.shakeT=0;p.dissolve=0;p.guardSelf=false;p._act=null;}
   setTone(opts.tone||null);G.bTheme=opts.tone||'wall';
   buildPartyBar();
@@ -1723,7 +1896,7 @@ async function doPlayerAction(p,act){
         await sleep(s.t==='all'?160:0);
         burst(t.x,t.y-t.sh*t.scale*.55,{n:26,col:'#ff9a4d',spd:3.4,life:750,g:-.01});
         burst(t.x,t.y-t.sh*t.scale*.55,{n:14,col:'#ffd28f',spd:2,life:550,g:-.03});
-        await hitEnemy(p,t,Math.round(p.atk*fmult*rand(.9,1.1)),'fire',{});
+        await hitEnemy(p,t,Math.round(effAtk(p)*fmult*rand(.9,1.1)),'fire',{});
       }
       await sleep(400);return;
     }
@@ -1747,7 +1920,7 @@ async function physicalAttack(p,targets,s,boost=0){
     for(let h=0;h<hits;h++){
       const col=s.ele==='valyrian'?'#ff6b6b':(s.ele==='dagger'?'#c8f7a0':'#e8f0ff');
       slashFX(t.x+rand(-14,14),t.y-t.sh*t.scale*rand(.35,.7),col,s.mult>1.8?1.5:1);
-      await hitEnemy(p,t,Math.round(p.atk*perHit*rand(.9,1.1)),s.ele,{crit:s.crit});
+      await hitEnemy(p,t,Math.round(effAtk(p)*perHit*rand(.9,1.1)),s.ele,{crit:s.crit});
       await sleep(hits>1?150:0);
     }
   }
@@ -1770,9 +1943,14 @@ async function hitEnemy(p,e,dmg,ele,o={}){
   }
   let final=Math.round(dmg*(e.broken?1.4:1));
   final=Math.max(1,final-(e.broken?0:e.def));
-  let crit=Math.random()<(o.crit||.08);
+  let crit=Math.random()<((o.crit||.08)+effCrit(p));
   if(crit)final=Math.round(final*1.5);
   e.hp-=final;G.stats.dmg+=final;
+  if(hasFx(p,'lifesteal')&&final>0){
+    const hl=Math.max(1,Math.round(final*.18));
+    p.hp=Math.min(p.maxhp,p.hp+hl);
+    floaty(p.x+rand(-12,12),p.y-p.sh*p.scale-30,'+'+hl,'heal');
+  }
   e.flashT=performance.now();e.shakeT=performance.now();
   SFX.hit();shake(crit?6:3);
   burst(e.x,e.y-e.sh*e.scale*.5,{n:8,col:weak?'#f0d491':'#dfe8f5',spd:2.4,life:450});
@@ -1782,6 +1960,8 @@ async function hitEnemy(p,e,dmg,ele,o={}){
   if(e.hp<=0){
     e.alive=false;e.dissolve=performance.now();G.stats.kills++;
     G.battleExp=(G.battleExp||0)+(e.exp||0);
+    const dk=(e.named&&e.drop)?e.drop:equipDropRoll(e.tier||'normal'); // E3：boss 必掉命名橙
+    if(dk)(G.battleDrops=G.battleDrops||[]).push(dk);
     SFX.die();
     burst(e.x,e.y-e.sh*e.scale*.5,{n:30,col:'#b8d4ea',spd:2.6,life:900,g:-.02});
     ribbon(`<b>${e.name}</b> 化作了飞雪`);
@@ -1844,7 +2024,7 @@ async function hitPlayer(p,dmg,o={}){
   let reduced=false;
   if(G.guardRounds>0){dmg*=.5;reduced=true;}
   if(p.guardSelf){dmg*=.5;reduced=true;}
-  dmg=Math.max(1,Math.round(dmg));
+  dmg=Math.max(1,Math.round(dmg)-effDef(p));
   p.hp-=dmg;
   p.flashT=performance.now();p.shakeT=performance.now();
   SFX.hurt();shake(4);
@@ -1906,6 +2086,12 @@ async function victory(){
     if(G.deploy!=null&&G.beasts[G.deploy])beastGainExp(G.beasts[G.deploy],exp);
   }
   addItem('meat',1);
+  if(G.battleDrops&&G.battleDrops.length){ // E3：缴获装备入背包
+    const names=G.battleDrops.map(k=>{G.bagEq[k]=(G.bagEq[k]||0)+1;
+      const it=EQUIP_BY_KEY[k];if(!it)return k;
+      return it.rar==='orange'?`<b style="color:#f0a848">${it.n}</b>`:`<b>${it.n}</b>`;});
+    ribbon('⚔ 缴获装备：'+names.join(' · '),3200);SFX.ok();
+  }
   updateTiles();
   G.scene='battleend';
 }
@@ -1939,10 +2125,12 @@ function addItem(key,n){
 function expNeed(lv){return 300+(lv-1)*170;}
 function gainExp(p,amt){
   if(p.isBeast)return;
+  if(hasFx(p,'expUp'))amt=Math.round(amt*1.25);
   p.exp=(p.exp||0)+amt;
   while(p.exp>=expNeed(p.lv)){
     p.exp-=expNeed(p.lv);p.lv++;
-    p.maxhp+=p.g.hp;p.hp=Math.min(p.maxhp,p.hp+p.g.hp);
+    p.basemaxhp=(p.basemaxhp!=null?p.basemaxhp:p.maxhp)+p.g.hp;
+    p.maxhp=p.basemaxhp+eqHp(p);p.hp=Math.min(p.maxhp,p.hp+p.g.hp);
     p.atk+=p.g.atk;p.maxsp+=p.g.sp;p.sp=Math.min(p.maxsp,p.sp+p.g.sp);
     ribbon(`<b>${p.name}</b> 升至 Lv.${p.lv}！生命/攻击/精力成长`,2000);
     SFX.win();
@@ -2040,6 +2228,94 @@ function renderBeastPanel(){
     else if(a==='recall')recallBeast();
     else if(a==='meat')feedBeast(i,'meat');
     else if(a==='berry')feedBeast(i,'berry');
+  }));
+}
+/* ================= E3：装备面板 / 锻造 ================= */
+const RARCLS={white:'',blue:'rb',purple:'rp',orange:'ro'};
+const RARCOL={white:'#cfd9ea',blue:'#6fb3ff',purple:'#c583f0',orange:'#f0a848'};
+const SLN={wpn:'武器',arm:'护甲',acc:'饰品'};
+let epSel=0;
+function toggleEquipPanel(){
+  const p=$('#equipPanel');
+  if(p.classList.contains('show')){p.classList.remove('show');return;}
+  renderEquipPanel();p.classList.add('show');
+}
+function ownedEqKeys(){ // 背包 + 全队已装备（去重）——锻造对象
+  const s={};const b=G.bagEq||{};
+  for(const k in b)if(b[k]>0)s[k]=1;
+  for(const p of G.players)if(p.eq)for(const sl in p.eq)if(p.eq[sl])s[p.eq[sl]]=1;
+  return Object.keys(s);
+}
+function renderEquipPanel(){
+  const box=$('#epBody');if(!box)return;
+  const hum=G.players.filter(p=>!p.isBeast);
+  if(!hum.length)return;
+  if(epSel>=hum.length)epSel=0;
+  const p=hum[epSel];
+  let h='<div class="epchips">';
+  hum.forEach((u,i)=>{h+=`<span class="epchip${i===epSel?' on':''}" data-i="${i}">${u.name}</span>`;});
+  h+='</div><div class="eprow"><div class="epleft">';
+  for(const sl of ['wpn','arm','acc']){
+    const k=p.eq&&p.eq[sl],it=k&&EQUIP_BY_KEY[k],u=k?upLv(k):0;
+    h+=`<div class="epslot" data-slot="${sl}"><span class="lb">${SLN[sl]}</span>${it?`<b style="color:${RARCOL[it.rar]}">${it.n}${u?' +'+u:''}</b> <span style="color:#8fa3bd;font-size:11px">（点击卸下）</span>`:'— 空 —'}</div>`;
+  }
+  h+=`<div class="epstat">攻击 <b>${p.atk}</b> → <b class="up">${effAtk(p)}</b><br>防御 <b class="up">${effDef(p)}</b> · 生命 <b>${p.basemaxhp!=null?p.basemaxhp:p.maxhp}</b> → <b class="up">${effMaxhp(p)}</b><br>暴击 <b>${Math.round(((p.crit||.08)+effCrit(p))*100)}%</b> · 精力 <b>${p.maxsp}</b></div>`;
+  h+='</div><div class="epbag">';
+  const bag=G.bagEq||{},keys=Object.keys(bag).filter(k=>bag[k]>0&&EQUIP_BY_KEY[k]);
+  if(!keys.length)h+='<div class="epempty">行囊空空——战斗胜利可缴获装备，击败守门者可获传说锻造材料。</div>';
+  for(const k of keys){
+    const it=EQUIP_BY_KEY[k],u=upLv(k);
+    const st=[];if(it.atk)st.push('攻+'+it.atk);if(it.def)st.push('防+'+it.def);if(it.hp)st.push('命+'+it.hp);if(it.crit)st.push('暴+'+Math.round(it.crit*100)+'%');if(it.spd)st.push((it.spd>0?'速+':'速')+it.spd);
+    h+=`<div class="epit ${RARCLS[it.rar]}" data-key="${k}" title="${it.desc||''}"><b style="color:${RARCOL[it.rar]}">${it.n}${u?' +'+u:''}</b><br><span class="cnt">${it.rarn}·${SLN[it.slot]} ×${bag[k]}</span><br><span class="cnt">${st.join(' ')}</span></div>`;
+  }
+  h+='</div></div>';
+  box.innerHTML=h;
+  box.querySelectorAll('.epchip').forEach(el=>el.addEventListener('click',()=>{epSel=+el.dataset.i;renderEquipPanel();}));
+  box.querySelectorAll('.epslot').forEach(el=>el.addEventListener('click',()=>{
+    if(p.eq[el.dataset.slot]){unequipItem(p,el.dataset.slot);renderEquipPanel();}
+  }));
+  box.querySelectorAll('.epit').forEach(el=>el.addEventListener('click',()=>{
+    if(equipItem(p,el.dataset.key))renderEquipPanel();
+  }));
+}
+function openForge(){renderForge();$('#forgeOv').classList.add('show');}
+function closeForge(){$('#forgeOv').classList.remove('show');}
+function renderForge(){
+  const box=$('#fgBody');if(!box)return;
+  const ore=(G.bag&&G.bag.ore)||0;
+  let h=`<div class="epstat" style="margin:0 0 4px;border:none;padding:0">矿石 ×<b>${ore}</b> · 强化耗矿石×阶，失败不掉级 · 橙装不可强化</div>`;
+  const keys=ownedEqKeys().filter(k=>EQUIP_BY_KEY[k]&&EQUIP_BY_KEY[k].rar!=='orange');
+  h+='<h4>强 化（+1～+5 · 属性 +10%/级）</h4>';
+  if(!keys.length)h+='<div class="epempty">没有可强化的装备</div>';
+  for(const k of keys){
+    const it=EQUIP_BY_KEY[k],lv=upLv(k),max=lv>=5,need=lv+1,rate=[100,90,75,60,45][lv]||0;
+    h+=`<div class="fgrow"><span><b style="color:${RARCOL[it.rar]}">${it.n}</b><span class="inf">+${lv}${max?'（已满）':' → +'+(lv+1)+' · 矿石×'+need+' · 成功率'+rate+'%'}</span></span>
+      <span class="fgbtn${max||ore<need?' dis':''}" data-up="${k}">强 化</span></div>`;
+  }
+  const dc={};for(const d of (G.bossDrops||[]))dc[d]=(dc[d]||0)+1;
+  const dk=Object.keys(dc).filter(k=>EQUIP_BY_KEY[k]);
+  h+='<h4>铸 造 传 说（讨伐守门者所得材料）</h4>';
+  if(!dk.length)h+='<div class="epempty">尚无首领材料——挑战各地的守门者吧。</div>';
+  for(const k of dk){
+    const it=EQUIP_BY_KEY[k];
+    h+=`<div class="fgrow"><span><b style="color:${RARCOL.orange}">${it.n}</b><span class="inf">材料×${dc[k]} · 矿石×2</span></span>
+      <span class="fgbtn${ore<2?' dis':''}" data-fg="${k}">铸 造</span></div>`;
+  }
+  box.innerHTML=h;
+  box.querySelectorAll('[data-up]').forEach(el=>el.addEventListener('click',()=>{
+    if(el.classList.contains('dis'))return;
+    const k=el.dataset.up,it=EQUIP_BY_KEY[k],r=forgeUp(k);
+    if(r==='ok'){ribbon(`<b>${it.n}</b> 强化至 <b>+${upLv(k)}</b>！`,2000);SFX.win();}
+    else if(r==='fail'){ribbon('强化失败……矿石耗去了，装备完好无损',2000);SFX.lose();}
+    else if(r==='ore'){ribbon('矿石不足',1500);SFX.back();}
+    updateWorldHud();renderForge();
+  }));
+  box.querySelectorAll('[data-fg]').forEach(el=>el.addEventListener('click',()=>{
+    if(el.classList.contains('dis'))return;
+    const k=el.dataset.fg,it=EQUIP_BY_KEY[k],r=forgeOrange(k);
+    if(r==='ok'){ribbon(`炉火轰鸣——<b style="color:#f0a848">${it.n}</b> 铸成了！`,2600);SFX.win();}
+    else if(r==='ore'){ribbon('矿石不足（需×2）',1500);SFX.back();}
+    updateWorldHud();renderForge();
   }));
 }
 function beastAutoAct(p){return {type:'atk',target:pickEnemyTarget()};}
@@ -3805,6 +4081,10 @@ async function talkNpc(n){
     if(q)await questTalk(n,q);
     else await runDlg([{sp:n.name,txt:n.idle}]);
   }
+  if(n.id==='mikken'||n.id==='porther'){ // E3：铁匠锻造入口
+    const a=await runDlg([{sp:n.name,txt:'炉火正旺，想打造点什么？',choices:[{t:'强化 / 铸造',act:'forge'},{t:'不用了',act:'no',end:true}]}]);
+    if(a==='forge')openForge();
+  }
   G.busy=false;
 }
 async function questTalk(n,q){
@@ -4237,7 +4517,7 @@ async function recruit(key,lv){
   if(!d)return;
   const target=Math.max(lv||RECRUIT_LV[key]||1,1);
   const u=makeUnit(d,'player');
-  while(u.lv<target){u.lv++;u.maxhp+=u.g.hp;u.hp=u.maxhp;u.atk+=u.g.atk;u.maxsp+=u.g.sp;u.sp=u.maxsp;}
+  while(u.lv<target){u.lv++;u.basemaxhp+=u.g.hp;u.maxhp=u.basemaxhp+eqHp(u);u.hp=u.maxhp;u.atk+=u.g.atk;u.maxsp+=u.g.sp;u.sp=u.maxsp;}
   G.players.push(u);
   G.flags[key+'_joined']=1;
   await showRecruitCard(u);
@@ -4436,6 +4716,8 @@ function newCampaign(){
   G.stats={dmg:0,kills:0};
   G.flags={};G._lastAct=null;
   G.bag={};
+  G.bagEq={};
+  G.up={};
   G.bossDrops=[];
   G.quests={};
   G.beasts=[];
@@ -4473,9 +4755,9 @@ function saveGame(){
     for(let i=0;i<a.length;i+=8192)s+=String.fromCharCode.apply(null,a.subarray(i,i+8192));
     fog[k]=btoa(s);
   }
-  const humans=G.players.filter(p=>!p.isBeast).map(p=>({key:p.key,lv:p.lv,exp:p.exp,hp:p.hp,maxhp:p.maxhp,sp:p.sp,maxsp:p.maxsp,atk:p.atk}));
+  const humans=G.players.filter(p=>!p.isBeast).map(p=>({key:p.key,lv:p.lv,exp:p.exp,hp:p.hp,maxhp:p.maxhp,basemaxhp:p.basemaxhp,sp:p.sp,maxsp:p.maxsp,atk:p.atk,eq:p.eq}));
   try{
-    localStorage.setItem(SAVE_KEY,JSON.stringify({v:1,chapter:G.chapter,mapId:G.mapId,flags:G.flags,bag:G.bag,quests:G.quests,
+    localStorage.setItem(SAVE_KEY,JSON.stringify({v:2,chapter:G.chapter,mapId:G.mapId,flags:G.flags,bag:G.bag,bagEq:G.bagEq||{},up:G.up||{},quests:G.quests,
       stats:G.stats,seen:G.seen,beasts:G.beasts,deploy:G.deploy,locs:G.locs,dragonDone:G.dragonDone,_chK:G._chK||0,bossDrops:G.bossDrops||[],
       px:G.exp.px,py:G.exp.py,players:humans,fog}));
   }catch(e){}
@@ -4491,6 +4773,7 @@ async function loadGame(){
   G.chapter=s.chapter;G.flags=s.flags||{};G.bag=s.bag||{};G.quests=s.quests||{};G.stats=s.stats||{dmg:0,kills:0};
   G.seen=s.seen||{};G.beasts=s.beasts||[];G.deploy=s.deploy==null?null:s.deploy;G.locs=s.locs||G.locs;
   G.bossDrops=s.bossDrops||[];
+  G.bagEq=s.bagEq||{};G.up=s.up||{};
   G.dragonDone=!!s.dragonDone;G._chK=s._chK||0;
   G.fog={};
   for(const k in (s.fog||{})){
@@ -4500,7 +4783,11 @@ async function loadGame(){
   }
   G.players=(s.players||[]).map(ps=>{
     const d=PLAYERS_DEF.find(p=>p.key===ps.key);if(!d)return null;
-    const u=makeUnit(d,'player');Object.assign(u,ps);return u;
+    const u=makeUnit(d,'player');Object.assign(u,ps);
+    if(ps.basemaxhp==null)u.basemaxhp=ps.maxhp; // v1 旧档迁移：无装备，基础=面板
+    if(!u.eq)u.eq={wpn:null,arm:null,acc:null};
+    u.maxhp=effMaxhp(u);if(u.hp>u.maxhp)u.hp=u.maxhp;
+    return u;
   }).filter(Boolean);
   if(!G.players.length)G.players=[makeUnit(PLAYERS_DEF[0],'player')];
   genMap(s.mapId||'north');
@@ -4585,6 +4872,7 @@ addEventListener('keydown',e=>{
   if(G.scene==='explore'){
     if(e.key==='q'||e.key==='Q'){toggleQuestLog();return;}
     if(e.key==='c'||e.key==='C'){toggleBeastPanel();return;}
+    if(e.key==='i'||e.key==='I'){toggleEquipPanel();return;}
     if(e.key==='e'||e.key==='E'||e.key==='Enter'||e.key===' ')tryInteract();
     return;
   }

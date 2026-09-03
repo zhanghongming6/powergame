@@ -178,3 +178,11 @@ w_lsword_f/b、w_dagger_f/b、w_spear_f/b（各 _walk/_idle；武器仅 _walk）
 - 视觉：drawDynProp 骨柱(灰白 fillRect)+红带 #8e1f2c+脉冲红弧+描边「守门者」标签；3D 层地面红椭圆脉冲+project3D 浮空标签（bob）
 - 持久化：newCampaign G.bossDrops=[]；save/load 带 bossDrops（E3 锻造消耗）
 - harness：_shot.js e2（13 断言，budget 120000）/bpoi（totem 目检，勿加 zoom3x）/wmob（池化野外 mob 目检：+4 格传送避遭遇→10 tick→G.busy 冻结）；_smoke.js 已串 E2 链
+
+## E3 武器装备系统（2026-09-03）
+- 键名=茎_rar 运行时拼接（源码 grep 不到 'sword_blue' 字面量）；茎 20：wpn sword/axe/bow/dagger/hammer/spear/gsword/club，arm leather/chainmail/plate/cloak/shield/furs，acc ring/amulet/charm/band/talisman/pendant；RARM 倍率 白1/蓝1.5/紫2.2
+- 属性契约：basemaxhp 恒定，p.maxhp=effMaxhp（装备只加不加底）；eqStats 内锻造倍率 mult=1+.1×upLv（橙装跳过）；effCrit=装备 crit 和 + critUp 每件 .06；lifesteal=hitEnemy 内按最终伤害吸血；expUp=victory exp ×1.25
+- 掉落分双通道：命名 boss 走 e.named&&e.drop 必掉；杂兵走 equipDropRoll（tier 概率 .08/.25/.6/1；boss rar 池 [蓝30/紫70] 无白无橙）；battleDrops 在 victory 统一入 bagEq（多波次累积一次播报）
+- 橙装双通道：①命名 boss 战斗直掉（e.named&&e.drop，e3 death_drop=weirwoodbow）；②E2 evBossPoi 胜战给材料→forgeOrange 铸造（材料×1+ore×2）。杂兵 rar 池无橙，白蓝紫全靠 equipDropRoll
+- 存档 v:2：SAVE_KEY 不变 'bhl_save_v1'，payload.v=2 区分；迁移对 v1 无 v 字段档生效（basemaxhp 回退=maxhp，eq 缺省）
+- harness：e3（20 断言，budget 120000，含真实 initBattle+hitEnemy+victory+saveGame 全链）；c2 rest_eq（注入 ring_blue 装+cloak_white 存，读档断言槽位与 bag 保持）；eqp/fgv 截图模式（面板目检）

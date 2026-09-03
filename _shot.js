@@ -290,6 +290,85 @@ async function run(){
     document.body.innerHTML='<pre style="font:19px monospace;color:#7fffd4;background:#0b1220;padding:16px 30px;line-height:1.4">'+L.join('\\n')+'\\n'+pass+'/'+L.length+' PASS</pre>';
     await sleep(300);
   }
+  else if(M==='e3'){ // E3 断言：装备表/掉落合法性/穿戴属性/锻造/胜利掉落/存档 v2
+    await cleanStart();
+    const L=[];const ok=(n,c)=>L.push(n+':'+(c?'OK':'FAIL'));
+    // A) 数据表：70+ 条目 / 12 橙 / 橙 key 与 BOSSNAMED.drop 对账 / 槽位合法
+    ok('def70',EQUIP_DEF.length>=70);
+    ok('orange12',EQUIP_DEF.filter(i=>i.rar==='orange').length>=12);
+    ok('drop_align',BOSSNAMED.every(b=>EQUIP_BY_KEY[b.drop]&&EQUIP_BY_KEY[b.drop].rar==='orange'));
+    ok('slots',EQUIP_DEF.every(i=>i.slot==='wpn'||i.slot==='arm'||i.slot==='acc'));
+    // B) 掉落 roll ×200：normal 必不出橙；boss 必掉且蓝/紫
+    let bOK=true,anyDrop=false,bossOK=true;
+    for(let i=0;i<200;i++){
+      const k=equipDropRoll('normal');
+      if(k){anyDrop=true;if(!EQUIP_BY_KEY[k]||EQUIP_BY_KEY[k].rar==='orange')bOK=false;}
+      const k2=equipDropRoll('boss');
+      if(!k2||!EQUIP_BY_KEY[k2]||EQUIP_BY_KEY[k2].rar==='orange'||EQUIP_BY_KEY[k2].rar==='white')bossOK=false;
+    }
+    ok('roll_normal',bOK&&anyDrop);
+    ok('roll_boss',bossOK);
+    // C) 穿戴：攻/生命生效 + basemaxhp 不变 + 卸下还原 + fx 三件
+    const p=G.players[0];
+    G.bagEq['sword_blue']=1;G.bagEq['amulet_purple']=1;
+    const atk0=effAtk(p),mhp0=p.maxhp,base0=p.basemaxhp;
+    ok('equip_wpn',equipItem(p,'sword_blue')&&p.eq.wpn==='sword_blue'&&effAtk(p)>atk0);
+    ok('equip_hp',equipItem(p,'amulet_purple')&&p.basemaxhp===base0&&p.maxhp>mhp0);
+    unequipItem(p,'wpn');
+    ok('unequip',!p.eq.wpn&&G.bagEq['sword_blue']===1&&effAtk(p)===atk0);
+    G.bagEq['longclaw']=1;equipItem(p,'longclaw');
+    ok('fx_lifesteal',hasFx(p,'lifesteal'));
+    G.bagEq['lightbringer']=1;equipItem(p,'lightbringer');
+    ok('fx_crit',Math.abs(effCrit(p)-.12)<.001);
+    G.bagEq['maesterchain']=1;equipItem(p,'maesterchain');
+    ok('fx_exp',hasFx(p,'expUp'));
+    // D) 强化：+1 必成且属性上浮；橙装拒绝；缺矿拒绝
+    equipItem(p,'sword_blue');
+    const fa=effAtk(p);
+    G.bag=G.bag||{};G.bag.ore=9;
+    ok('forge_up1',forgeUp('sword_blue')==='ok'&&upLv('sword_blue')===1&&effAtk(p)>fa);
+    ok('forge_no_orange',forgeUp('longclaw')==='no');
+    G.bag.ore=0;
+    ok('forge_ore',forgeUp('sword_blue')==='ore');
+    // E) 橙装铸造：材料+矿 → 入背包
+    G.bossDrops=['needle'];G.bag.ore=2;
+    ok('forge_orange',forgeOrange('needle')==='ok'&&(G.bagEq['needle']||0)===1&&G.bossDrops.length===0&&G.bag.ore===0);
+    // F) 胜利掉落：命名 boss 必掉命名橙 → victory 入 bagEq
+    for(const u of G.players){u.hp=u.maxhp=9999;u.sp=u.maxsp=999;u.atk=999;}
+    initBattle([{banner:'E3',sub:'drop',foes:[{k:'coldfang',x:SLOTS[1].x,y:SLOTS[1].y}]}],{});
+    await startWave(0);
+    const en=alive(G.enemies)[0];
+    await hitEnemy(G.players[0],en,99999,null,{});
+    ok('death_drop',(G.battleDrops||[]).indexOf('weirwoodbow')>=0);
+    await victory();
+    ok('victory_bag',(G.bagEq['weirwoodbow']||0)>=1&&G.scene==='battleend');
+    // G) 存档 v2 字段
+    G.scene='explore';
+    saveGame();
+    let s=null;try{s=JSON.parse(localStorage.getItem('bhl_save_v1'));}catch(e){}
+    ok('save_v2',!!s&&s.v===2&&!!s.bagEq&&s.up&&s.up.sword_blue===1);
+    const sj=s&&(s.players||[]).find(x=>x.key==='jon');
+    ok('save_eq',!!sj&&sj.eq&&sj.eq.wpn==='sword_blue'&&sj.basemaxhp>0);
+    const pass=L.filter(l=>l.indexOf(':OK')>0).length;
+    document.body.innerHTML='<pre style="font:19px monospace;color:#7fffd4;background:#0b1220;padding:16px 30px;line-height:1.4">'+L.join('\\n')+'\\n'+pass+'/'+L.length+' PASS</pre>';
+    await sleep(300);
+  }
+  else if(M==='eqp'){ // E3 装备面板目检（I 键）
+    await cleanStart();
+    for(const k of ['arya','bri']){const d=PLAYERS_DEF.find(q=>q.key===k);G.players.push(makeUnit(d,'player'));}
+    G.bagEq['plate_purple']=2;G.bagEq['ring_blue']=1;G.bagEq['maesterchain']=1;G.bagEq['cloak_white']=1;G.bagEq['weirwoodbow']=1;
+    G.bagEq['longclaw']=1;equipItem(G.players[0],'longclaw');G.up['plate_purple']=2;
+    toggleEquipPanel();
+    for(let i=0;i<12;i++)window.__T.tick(16);
+  }
+  else if(M==='fgv'){ // E3 锻造炉目检（铁匠）
+    await cleanStart();
+    G.bag=G.bag||{};G.bag.ore=12;G.bossDrops=['needle','ice'];
+    G.bagEq['sword_blue']=1;G.bagEq['chainmail_white']=1;
+    G.players[0].eq.wpn='sword_blue';G.up['sword_blue']=2;
+    openForge();
+    for(let i=0;i<12;i++)window.__T.tick(16);
+  }
   else if(M==='bpoi'){ // E2 守门者 POI 目检（北境 100,40 图腾；crop.ps1 局部放大）
     await cleanStart();
     window.__T.teleport(100,41);
@@ -586,6 +665,7 @@ async function run(){
     // 注入进度并存档
     G.quests.q_herb={st:'active',base:0};G.bag.herb=1;G.players[0].hp=Math.max(1,G.players[0].hp-10);
     G.beasts.push({key:'wolf',lv:2,exp:0,aff:2});deployBeast(0);
+    G.bagEq['ring_blue']=1;G.bagEq['cloak_white']=1;equipItem(G.players[0],'ring_blue');
     const snap={ch:G.chapter,map:G.mapId,hp:G.players[0].hp,lv:G.players[0].lv,px:Math.round(G.exp.px)};
     saveGame();
     ok('saved',!!localStorage.getItem('bhl_save_v1'));
@@ -601,6 +681,7 @@ async function run(){
     ok('rest_pos',Math.abs(Math.round(G.exp.px)-snap.px)<4);
     ok('rest_obj',!!G.objective&&/墓窖/.test(G.objective.txt||'')&&typeof G.objective.check==='function');
     ok('rest_fog',!!(G.fog.north&&G.fog.north.some&&G.fog.north.some(v=>v)));
+    ok('rest_eq',!!jon&&!jon.eq.wpn&&jon.eq.acc==='ring_blue'&&(G.bagEq['cloak_white']||0)===1);
     const pass=L.filter(l=>l.indexOf(':OK')>0).length;
     document.body.innerHTML='<pre style="font:17px monospace;color:#7fffd4;background:#0b1220;padding:16px 30px;line-height:1.35">'+L.join('\\n')+'\\n'+pass+'/'+L.length+' PASS</pre>';
     await sleep(300);
@@ -661,5 +742,5 @@ function shoot(mode,file,budget){
   }
 }
 shoot('title',path.join(TMP,'title.html'),12000);
-for(const m of modes)shoot(m,path.join(TMP,'game.html'),(m==='a2'||m==='a4')?45000:(m==='a5')?600000:(m==='c1')?240000:(m==='e2')?120000:(m==='c2'||m==='clix')?60000:(m==='title'||m==='tcont'||m==='e1')?12000:16000);
+for(const m of modes)shoot(m,path.join(TMP,'game.html'),(m==='a2'||m==='a4')?45000:(m==='a5')?600000:(m==='c1')?240000:(m==='e2'||m==='e3')?120000:(m==='c2'||m==='clix')?60000:(m==='title'||m==='tcont'||m==='e1')?12000:16000);
 console.log('DONE');
