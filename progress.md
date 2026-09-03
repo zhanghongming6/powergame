@@ -272,3 +272,11 @@
 | clix 点击流 13 断言 | 13/13 PASS |
 | c1 支线 / c2 存档 | 19/19、11/11 ×2 |
 | SMOKE1-4 | PASS |
+
+## 2026-09-03 会话⑰ · E0 资产扩充收口 + 改名上 GitHub（完成）
+- [x] 新怪 18 种全链路：poly.pizza 同源 API（无 key：/api/search/<kw>?Limit&Type=models；previewUrl uuid==GLB uuid → static.poly.pizza/<uuid>.glb）→ _dl3d.js 下载 24.48MB 全 OK → _bake3d.js 裁剪烘焙 → models_mobs.js 2.6MB→14.4MB
+- [x] 名单微调（bear/mammoth/troll 无 CC0 动画源）：orcEnemy 顶巨魔 / demon 顶火元素 / direwolf=Husky / wraith=Ghost；新增人形怪 knightBlack/rogue（KayKit Adventurers CC0，GitHub branch main）
+- [x] probe3d 验证全绿：37 key 无 PARSE_FAIL，baked min.y 全=0；尺寸表入 findings；教训：bash 拼中文路径 file:// URL 失败（ERR_FILE_NOT_FOUND 看似空输出）→ 改 node execFileSync（_probe_run.js）
+- [x] 文件改名：冰火旅人.html→**powergame.html**、备份→powergame_v3_backup.html、说明→MANUAL.md、攻略→WALKTHROUGH.md、截图/→screenshots/；_shot.js L5 与 MANUAL 内引用同步
+- [x] GitHub 首次入库：.gitignore 排 _dl(210M)/_lpc(444M)/_tmp3d/_tmp_*/.claude；git init+commit+merge 远端占位 README+push → https://github.com/zhanghongming6/powergame.git @ 977c422（715 文件，含 assets 16M/assets3d 24M）
+- [ ] 明日第一件事：**E1** 数据 schema（SPECIES 25/ELEMS 6/TIERS 4/BOSSNAMED 36+，seeded 生成 ≥500 图鉴条目，makeUnit 认 `.` key 跳过 FOE_TIERS），详见 task_plan.md

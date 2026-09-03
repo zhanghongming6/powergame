@@ -26,11 +26,10 @@
 
 ---
 
-## Phase E0：基础模型扩充（资产）
-目标：mobs 7→24。新增 17 个 CC0 GLB（Quaternius/KayKit/Kenney，优先同风格低模）：
-候选清单（按包可得性微调）：bat 蝙蝠 · snake 蛇 · slime 史莱姆 · goblin 地精 · skeleton 骷髅兵 · bear 熊 · boar 野猪 · mammoth 猛犸 · golemIce 冰魔像 · elemFire 火元素 · wraith 怨灵 · troll 巨魔 · knightBlack 黑骑士 · archer 弓手(人形) · shaman 萨满(人形) · direwolf 冰原狼 · dragonWhelp 幼龙
-- 流程：下载 GLB → _tmp3d/ → _bake3d.js（Walk/Idle/Attack 裁剪保留）→ 追加写 models_mobs.js（或新 models_mobs2.js + html 增 script 标签）
-- 验证：models_debug.html 陈列目检 + probe3d 扩 KEYS：每新 key baked minY≈0 且尺寸入 findings 尺寸表
+## Phase E0：基础模型扩充（资产）✅ 2026-09-03 完成
+目标：mobs 7→25。实际新增 18 个 CC0 GLB（Quaternius 16 + KayKit 2）：bat/snake/slime/goblin/skeleton/zombie/orc/orcEnemy(巨魔)/demon(火元素)/blueDemon/golemIce/golemEvo/shaman/dragonWhelp/direwolf(Husky)/wraith(Ghost)/knightBlack/rogue（bear/mammoth/troll 无 CC0 动画源，弃）
+- 流程：_dl3d.js 下载 GLB → _tmp3d/ → _bake3d.js（Walk/Idle/Attack 裁剪保留）→ models_mobs.js（2.6→14.4MB）
+- 验证：probe3d 37 key 全绿（无 PARSE_FAIL，baked minY=0）；尺寸表入 findings；models_debug 目检随 E1 展示层一并复查
 
 ## Phase E1：数据 schema 与图鉴生成（主文件）
 - SPECIES(24)：{sp, cn, model, base{hp,atk,spd,def,shield}, weak[], tame?, size}
