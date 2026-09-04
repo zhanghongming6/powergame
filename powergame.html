@@ -59,19 +59,21 @@ canvas#cv3{position:absolute;inset:0}
 
 /* ---------- 通用 UI ---------- */
 .hidden{display:none!important}
-body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,body.cine #equipPanel,body.cine #forgeOv,body.cine #partyBar,body.cine #banner{display:none!important}
+body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,body.cine #equipPanel,body.cine #dexPanel,body.cine #forgeOv,body.cine #partyBar,body.cine #banner{display:none!important}
 .ribbon{position:absolute;left:50%;top:86px;transform:translateX(-50%);padding:8px 40px;
   background:linear-gradient(90deg,transparent,rgba(6,10,22,.92) 16%,rgba(6,10,22,.92) 84%,transparent);
   color:#e8ecf5;font-size:19px;letter-spacing:2px;text-shadow:0 1px 4px #000;opacity:0;transition:opacity .35s;
   white-space:nowrap;pointer-events:none;z-index:30}
 .ribbon.show{opacity:1}
 .ribbon b{color:var(--gold-hi);font-weight:700}
-#turnBadge{position:absolute;left:26px;top:22px;z-index:30;pointer-events:none;
-  font-family:var(--disp);letter-spacing:3px;color:var(--gold);font-size:15px;text-shadow:0 1px 4px #000}
+#turnBadge{position:absolute;left:20px;top:16px;z-index:30;pointer-events:none;
+  font-family:var(--disp);letter-spacing:3px;color:var(--gold-hi);font-size:15px;text-shadow:0 1px 4px #000;
+  padding:8px 18px;border:8px solid transparent;border-image:url(assets/ui/panel_blue.png) 8 fill}
 #turnBadge .cn{font-family:var(--body);color:#cfd9ea;font-size:13px;letter-spacing:2px;margin-left:10px}
-#muteBtn{position:absolute;right:24px;top:20px;z-index:60;width:38px;height:38px;border:1px solid var(--gold-dim);
-  background:rgba(8,12,24,.7);color:var(--gold);font-size:17px;cursor:pointer;border-radius:3px}
-#muteBtn:hover{border-color:var(--gold);color:var(--gold-hi)}
+#muteBtn{position:absolute;right:22px;top:16px;z-index:60;width:46px;height:46px;border:none;
+  background:url(assets/ui/buttonSquare_brown.png) center/100% 100% no-repeat;color:#f2e6c8;font-size:17px;cursor:pointer;text-shadow:0 1px 3px #000}
+#muteBtn:hover{filter:brightness(1.18)}
+#muteBtn.mut{background-image:url(assets/ui/buttonSquare_brown_pressed.png);color:#9aa2b4}
 
 /* ---------- 章节横幅 ---------- */
 #banner{position:absolute;inset:0;z-index:40;display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -79,8 +81,10 @@ body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,
   opacity:0;pointer-events:none;transition:opacity .6s}
 #banner.show{opacity:1}
 #banner .bn-top,#banner .bn-bot{width:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);transition:width 1s ease}
-#banner.show .bn-top,#banner.show .bn-bot{width:640px}
-#banner h1{font-family:var(--body);font-weight:900;font-size:52px;letter-spacing:16px;color:#f2e6c8;margin:22px 0 14px;
+#banner.show .bn-top,#banner.show .bn-bot{width:720px}
+#banner .bn-plate{margin:16px 0;padding:30px 70px 26px;text-align:center;border:10px solid transparent;
+  border-image:url(assets/ui/panel_blue.png) 10 fill;box-shadow:0 14px 44px rgba(0,0,0,.6)}
+#banner h1{font-family:var(--body);font-weight:900;font-size:52px;letter-spacing:16px;color:#f2e6c8;margin:0 0 14px;
   text-shadow:0 0 24px rgba(201,165,90,.35),0 2px 6px #000}
 #banner p{color:#9fb0c8;letter-spacing:5px;font-size:15px}
 
@@ -89,8 +93,8 @@ body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,
   background:rgba(4,8,16,.66);opacity:0;pointer-events:none;transition:opacity .4s}
 #recruitOv.show{opacity:1;pointer-events:auto}
 #recruitOv .ro-card{position:relative;width:260px;padding:34px 30px 22px;text-align:center;
-  background:linear-gradient(180deg,#141a2c,#0a0e1c);border:2px solid var(--gold);
-  box-shadow:0 0 42px rgba(201,165,90,.28),0 12px 30px rgba(0,0,0,.6)}
+  border:10px solid transparent;border-image:url(assets/ui/panel_blue.png) 10 fill;
+  box-shadow:0 12px 30px rgba(0,0,0,.6)}
 #recruitOv .ro-ribbon{position:absolute;top:-14px;left:50%;transform:translateX(-50%);white-space:nowrap;
   padding:4px 18px;font-size:13px;letter-spacing:6px;color:#0a0e1c;background:var(--gold);font-weight:700}
 #recruitOv .ro-name{margin-top:10px;font-size:24px;font-weight:900;color:#f2e6c8;letter-spacing:3px}
@@ -103,15 +107,24 @@ body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,
 #loadOv h1{font-family:var(--body);font-weight:900;font-size:46px;letter-spacing:14px;text-indent:14px;color:var(--gold);
   text-shadow:0 0 22px rgba(201,165,90,.3),0 2px 6px #000}
 #loadOv p{color:#93a0b8;letter-spacing:4px;font-size:14px}
-#loadOv .ld-bar{width:240px;height:3px;background:#141e30;margin-top:20px;position:relative;overflow:hidden}
-#loadOv .ld-bar i{position:absolute;top:0;bottom:0;width:40%;background:var(--gold);animation:ldmv 1.1s linear infinite}
+#loadOv .ld-bar{width:260px;height:20px;margin-top:20px;position:relative;overflow:hidden;filter:brightness(1.9);
+  background:url(assets/ui/barBack_horizontalLeft.png) left/9px 100% no-repeat,
+    url(assets/ui/barBack_horizontalRight.png) right/9px 100% no-repeat,
+    url(assets/ui/barBack_horizontalMid.png) 0 0/18px 100% repeat-x}
+#loadOv .ld-bar i{position:absolute;top:2px;bottom:2px;width:40%;
+  background:url(assets/ui/barYellow_horizontalLeft.png) left/9px 100% no-repeat,
+    url(assets/ui/barYellow_horizontalRight.png) right/9px 100% no-repeat,
+    url(assets/ui/barYellow_horizontalMid.png) 0 0/18px 100% repeat-x;
+  animation:ldmv 1.1s linear infinite}
 @keyframes ldmv{from{left:-40%}to{left:100%}}
 
 /* ---------- 底部角色栏 ---------- */
 #partyBar{position:absolute;left:0;right:0;bottom:0;height:122px;z-index:35;display:flex;justify-content:center;gap:14px;align-items:flex-end;padding-bottom:12px;
-  background:linear-gradient(180deg,rgba(5,8,18,0),rgba(6,9,18,.88) 26%,rgba(4,6,14,.96));
-  border-top:1px solid rgba(201,165,90,.28)}
-#partyBar::before{content:"";position:absolute;left:6%;right:6%;top:7px;height:1px;background:linear-gradient(90deg,transparent,rgba(201,165,90,.5),transparent)}
+  background:linear-gradient(180deg,rgba(5,8,18,0),rgba(6,9,18,.88) 26%,rgba(4,6,14,.96))}
+#partyBar::before{content:"";position:absolute;left:5%;right:5%;top:6px;height:14px;opacity:.5;
+  background:url(assets/ui/barBack_horizontalLeft.png) left/9px 100% no-repeat,
+    url(assets/ui/barBack_horizontalRight.png) right/9px 100% no-repeat,
+    url(assets/ui/barBack_horizontalMid.png) 0 0/18px 100% repeat-x}
 .ptile{position:relative;width:258px;height:98px;padding:6px 10px;cursor:default;display:flex;gap:9px;align-items:center;
   border:8px solid transparent;border-image:url(assets/ui/panel_blue.png) 8 fill;transition:filter .3s}
 .ptile .face{width:60px;height:60px;flex:none;image-rendering:pixelated;
@@ -311,6 +324,7 @@ body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,
 .epchips{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
 .epchip{cursor:pointer;font-size:12px;letter-spacing:1px;color:#cfd9ea;border:5px solid transparent;border-image:url(assets/ui/buttonLong_grey.png) 10 fill;padding:3px 10px}
 .epchip.on{border-image:url(assets/ui/buttonLong_blue.png) 10 fill;color:#f4f8ff}
+.epchip .epface{width:22px;height:22px;vertical-align:-6px;margin-right:5px;border-radius:3px;background:rgba(8,12,24,.5)}
 .eprow{display:flex;gap:14px}
 .epleft{flex:0 0 236px}
 .epslot{cursor:pointer;margin:4px 0;padding:7px 10px;border:1px solid rgba(201,165,90,.25);background:rgba(20,28,46,.6);font-size:12px;color:#cfd9ea}
@@ -332,6 +346,36 @@ body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,
 .fgbtn{cursor:pointer;flex:0 0 auto;font-size:11px;letter-spacing:1px;color:var(--gold-hi);border:1px solid var(--gold-dim);padding:4px 10px;background:rgba(201,165,90,.12)}
 .fgbtn:hover{background:rgba(201,165,90,.3)}
 .fgbtn.dis{opacity:.4;cursor:default}
+/* ---- E4：魔物图鉴 ---- */
+#dexPanel{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:47;width:920px;height:580px;display:none;flex-direction:column;
+  border:10px solid transparent;border-image:url(assets/ui/panel_blue.png) 10 fill;padding:14px 16px;box-shadow:0 10px 30px rgba(0,0,0,.6)}
+#dexPanel.show{display:flex}
+#dexPanel h3{font-size:14px;letter-spacing:3px;color:var(--gold-hi);margin-bottom:8px;border-bottom:1px solid rgba(201,165,90,.25);padding-bottom:6px;display:flex;justify-content:space-between;align-items:center}
+#dxTop{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-bottom:8px;font-size:12px;color:#8fa3bd}
+#dxTop .dxcnt{margin-left:auto;color:var(--gold-hi);letter-spacing:1px}
+.dxchip{cursor:pointer;font-size:11px;letter-spacing:1px;color:#39435c;border:5px solid transparent;border-image:url(assets/ui/buttonLong_grey.png) 10 fill;padding:2px 9px}
+.dxchip:hover{filter:brightness(1.25)}
+.dxchip.on{border-image:url(assets/ui/buttonLong_blue.png) 10 fill;color:#f4f8ff}
+.dxrow{display:flex;gap:12px;flex:1;min-height:0}
+#dxGrid{flex:1;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(86px,1fr));gap:6px;align-content:start;padding-right:4px}
+.dxcard{cursor:pointer;position:relative;text-align:center;padding:5px 3px 4px;border:1px solid #3c4a63;background:rgba(16,22,38,.62)}
+.dxcard:hover{filter:brightness(1.3)}
+.dxcard.on{border-color:var(--gold-hi);background:rgba(60,52,28,.55)}
+.dxcard.nb{border-color:#f0a848}
+.dxcard.un canvas{filter:brightness(.28) grayscale(1)}
+.dxcard canvas{width:44px;height:44px;image-rendering:pixelated;background:rgba(8,12,24,.45);border-radius:3px}
+.dxcard .dxnm{font-size:10px;line-height:1.3;color:#cfd9ea;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dxcard.un .dxnm{color:#5d6b82}
+.dxcard .dxstar{font-size:9px;color:var(--gold);letter-spacing:-1px}
+.dxcard .dxdot{position:absolute;right:4px;top:4px;width:8px;height:8px;border-radius:50%;box-shadow:0 0 4px rgba(0,0,0,.7)}
+#dxDe{flex:0 0 264px;overflow-y:auto;font-size:12px;color:#cfd9ea;line-height:1.8;border-left:1px solid rgba(201,165,90,.2);padding-left:12px}
+#dxDe .dxpt{width:96px;height:96px;display:block;margin:0 auto 6px;image-rendering:pixelated;background:rgba(8,12,24,.5);border:1px solid #3c4a63;border-radius:4px}
+#dxDe h4{font-size:13px;color:var(--gold-hi);letter-spacing:2px;margin:4px 0 2px;text-align:center}
+#dxDe .dxsub{text-align:center;color:#8fa3bd;font-size:11px;margin-bottom:4px}
+#dxDe .dxline{border-top:1px solid rgba(201,165,90,.16);padding-top:4px;margin-top:4px}
+#dxDe b{color:var(--gold)}
+#dxDe .wk{color:#ff9c54}
+#dxDe .un{color:#5d6b82}
 #tone{position:absolute;inset:0;pointer-events:none;transition:background .8s}
 </style>
 </head>
@@ -398,8 +442,7 @@ body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,
 
   <div id="banner">
     <div class="bn-top"></div>
-    <h1 id="bnTitle"></h1>
-    <p id="bnSub"></p>
+    <div class="bn-plate"><h1 id="bnTitle"></h1><p id="bnSub"></p></div>
     <div class="bn-bot"></div>
   </div>
 
@@ -442,7 +485,7 @@ body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,
 
   <div id="worldHud" class="hidden">
     <div class="wh-title">维斯特洛 · 远征队</div>
-    <div class="wh-hint">WASD/方向键移动 · E 互动 · Q 任务日志 · C 魔物面板</div>
+    <div class="wh-hint">WASD/方向键移动 · E 互动 · Q 任务日志 · C 魔物面板 · B 图鉴</div>
     <div id="whParty"></div>
     <div id="whProg"></div>
   </div>
@@ -471,6 +514,15 @@ body.cine #worldHud,body.cine #objHud,body.cine #questLog,body.cine #beastPanel,
   <div id="forgeOv">
     <h3>铁 匠 铺 · 锻 造 炉 <span class="epx" onclick="closeForge()">✕ 离开</span></h3>
     <div id="fgBody"></div>
+  </div>
+
+  <div id="dexPanel">
+    <h3>魔 物 图 鉴 <span class="epx" onclick="toggleDex()">✕ 关闭（B）</span></h3>
+    <div id="dxTop"></div>
+    <div class="dxrow">
+      <div id="dxGrid"></div>
+      <div id="dxDe"></div>
+    </div>
   </div>
 
   <div id="title">
@@ -1707,7 +1759,7 @@ function initBattle(waves,opts={}){
   $('#world').classList.remove('expmode');
   G.battleWaves=waves;G.battleFinal=!!opts.final;G.battleResult=null;G.dragonDone=false;
   G.battleExp=0;G.tameKey=null;G.battleDrops=[];
-  $('#equipPanel').classList.remove('show');$('#forgeOv').classList.remove('show');
+  $('#equipPanel').classList.remove('show');$('#forgeOv').classList.remove('show');dexTok++;$('#dexPanel').classList.remove('show');
   for(const p of G.players){p.lunge=null;p.flashT=0;p.shakeT=0;p.dissolve=0;p.guardSelf=false;p._act=null;}
   setTone(opts.tone||null);G.bTheme=opts.tone||'wall';
   buildPartyBar();
@@ -1715,8 +1767,7 @@ function initBattle(waves,opts={}){
 }
 async function startWave(i){
   G.wave=i;G.waveRound0=G.round;const w=G.battleWaves[i];
-  G.seen=G.seen||{};
-  for(const f of w.foes){G.seen[f.k]=true;G.seen[spOf(f.k)]=true;}
+  for(const f of w.foes)dexSee(f.k);
   G.enemies=w.foes.map(f=>{const u=makeUnit(FOES[f.k],'enemy');u.x=f.x;u.y=f.y;return u;});
   await showBanner(w.banner,w.sub);
 }
@@ -1959,6 +2010,7 @@ async function hitEnemy(p,e,dmg,ele,o={}){
   updateTiles();
   if(e.hp<=0){
     e.alive=false;e.dissolve=performance.now();G.stats.kills++;
+    if(G.dex&&e.key)G.dex.kill[e.key]=(G.dex.kill[e.key]||0)+1;
     G.battleExp=(G.battleExp||0)+(e.exp||0);
     const dk=(e.named&&e.drop)?e.drop:equipDropRoll(e.tier||'normal'); // E3：boss 必掉命名橙
     if(dk)(G.battleDrops=G.battleDrops||[]).push(dk);
@@ -2253,7 +2305,7 @@ function renderEquipPanel(){
   if(epSel>=hum.length)epSel=0;
   const p=hum[epSel];
   let h='<div class="epchips">';
-  hum.forEach((u,i)=>{h+=`<span class="epchip${i===epSel?' on':''}" data-i="${i}">${u.name}</span>`;});
+  hum.forEach((u,i)=>{h+=`<span class="epchip${i===epSel?' on':''}" data-i="${i}"><canvas class="epface" width="22" height="22" data-key="${u.key||u.lpc||''}"></canvas>${u.name}</span>`;});
   h+='</div><div class="eprow"><div class="epleft">';
   for(const sl of ['wpn','arm','acc']){
     const k=p.eq&&p.eq[sl],it=k&&EQUIP_BY_KEY[k],u=k?upLv(k):0;
@@ -2270,6 +2322,7 @@ function renderEquipPanel(){
   }
   h+='</div></div>';
   box.innerHTML=h;
+  box.querySelectorAll('.epface').forEach(c=>paintFace(c,c.dataset.key));
   box.querySelectorAll('.epchip').forEach(el=>el.addEventListener('click',()=>{epSel=+el.dataset.i;renderEquipPanel();}));
   box.querySelectorAll('.epslot').forEach(el=>el.addEventListener('click',()=>{
     if(p.eq[el.dataset.slot]){unequipItem(p,el.dataset.slot);renderEquipPanel();}
@@ -2317,6 +2370,116 @@ function renderForge(){
     else if(r==='ore'){ribbon('矿石不足（需×2）',1500);SFX.back();}
     updateWorldHud();renderForge();
   }));
+}
+/* ================= E4：魔物图鉴（键 B） ================= */
+function dexSee(k){ // 遭遇/击败登记：旧 G.seen 契约不变 + 图鉴双写（整键+种键）
+  G.seen=G.seen||{};G.dex=G.dex||{seen:{},kill:{},tame:{}};
+  G.seen[k]=1;G.dex.seen[k]=1;
+  const s=spOf(k);if(s!==k){G.seen[s]=1;G.dex.seen[s]=1;}
+  const sp=FOES[k]&&FOES[k].sp; // 命名 boss 整键无点，种登记走 f.sp
+  if(sp&&sp!==s){G.seen[sp]=1;G.dex.seen[sp]=1;}
+}
+const DXEO=['none','frost','fire','poison','shadow','holy'];
+const DXTO=['normal','elite','champ','boss'];
+const DXSTAR={normal:'★',elite:'★★',champ:'★★★',boss:'★★★★'};
+let dxF={elem:'all',tier:'all',tame:'0',boss:'0'};
+let dexSel=null,dexTok=0;
+function dexSp(k){const f=FOES[k];return SPECIES[spOf(k)]||SPECIES[f.sp]||{};} // 命名 boss 整键无点，回退 f.sp
+function dexKeys(){ // 按种分组 → 元素 → 阶级 → 命名殿后
+  const bySp={};
+  for(const k in FOES){const s=spOf(k);(bySp[s]=bySp[s]||[]).push(k);}
+  const out=[];
+  for(const g of Object.keys(SPECIES).concat(BOSSNAMED.map(b=>b.id))){
+    const ks=bySp[g];if(!ks)continue;
+    ks.sort((a,b)=>{
+      const A=FOES[a],B=FOES[b];
+      return (DXEO.indexOf(A.elem||'none')-DXEO.indexOf(B.elem||'none'))
+        ||(DXTO.indexOf(A.tier||'normal')-DXTO.indexOf(B.tier||'normal'))
+        ||((A.named?1:0)-(B.named?1:0));
+    });
+    out.push(...ks);
+  }
+  return out;
+}
+function dexPass(k){
+  const f=FOES[k],sp=dexSp(k);
+  if(!f||!sp.cn)return false;
+  if(dxF.elem!=='all'&&(f.elem||'none')!==dxF.elem)return false;
+  if(dxF.tier!=='all'&&(f.tier||'normal')!==dxF.tier)return false;
+  if(dxF.tame==='1'&&!sp.tame)return false;
+  if(dxF.boss==='1'&&!f.named)return false;
+  return true;
+}
+function toggleDex(){
+  const p=$('#dexPanel');
+  if(p.classList.contains('show')){p.classList.remove('show');dexTok++;return;}
+  renderDex();p.classList.add('show');
+}
+function dxChip(g,v,lb){return `<span class="dxchip${dxF[g]===v?' on':''}" data-g="${g}" data-v="${v}">${lb}</span>`;}
+function renderDex(){
+  const top=$('#dxTop'),grid=$('#dxGrid');if(!top||!grid)return;
+  const all=Object.keys(FOES);
+  const seenN=all.filter(k=>G.dex&&G.dex.seen[k]).length;
+  const killN=G.dex?Object.values(G.dex.kill).reduce((a,b)=>a+b,0):0;
+  const tameN=G.dex?Object.values(G.dex.tame).reduce((a,b)=>a+b,0):0;
+  let h='<span>元素</span>'+dxChip('elem','all','全部');
+  for(const e of DXEO)if(e!=='none')h+=dxChip('elem',e,ELEMS[e].cn);
+  h+=dxChip('elem','none','无');
+  h+='<span style="margin-left:6px">阶级</span>'+dxChip('tier','all','全部');
+  for(const t of DXTO)h+=dxChip('tier',t,TIERS[t].cn);
+  h+=dxChip('tame','1','可驯')+dxChip('boss','1','命名BOSS');
+  h+=`<span class="dxcnt">图鉴 ${seenN}/${all.length} · 击杀 ${killN} · 驯服 ${tameN}</span>`;
+  top.innerHTML=h;
+  top.querySelectorAll('.dxchip').forEach(el=>el.addEventListener('click',()=>{
+    const g=el.dataset.g,v=el.dataset.v;
+    dxF[g]=((g==='tame'||g==='boss')&&dxF[g]===v)?'0':v; // 开关类再点即关
+    renderDex();
+  }));
+  const keys=all.filter(dexPass);
+  let gh='';
+  for(const k of keys){
+    const f=FOES[k],seen=G.dex&&G.dex.seen[k];
+    const tin=ELEMS[f.elem||'none'].tint;
+    gh+=`<div class="dxcard${seen?'':' un'}${f.named?' nb':''}${dexSel===k?' on':''}" data-key="${k}">
+      <canvas width="44" height="44"></canvas>
+      ${tin?'<span class="dxdot" style="background:#'+tin.toString(16).padStart(6,'0')+'"></span>':''}
+      <div class="dxnm">${seen?f.name:'？？？'}</div>
+      <div class="dxstar">${DXSTAR[f.tier||'normal']}</div></div>`;
+  }
+  grid.innerHTML=gh||'<div class="epempty">没有符合筛选条件的条目</div>';
+  grid.querySelectorAll('.dxcard').forEach(el=>el.addEventListener('click',()=>{
+    grid.querySelectorAll('.dxcard.on').forEach(o=>o.classList.remove('on'));
+    el.classList.add('on');dexSel=el.dataset.key;renderDxDe(dexSel);
+  }));
+  const cards=[...grid.querySelectorAll('.dxcard')],tok=++dexTok;let i=0;
+  (function fill(){ // 头像分帧填充（24/帧），防一次 600+ 张卡顿
+    if(tok!==dexTok)return;
+    for(let n=0;n<24&&i<cards.length;n++,i++){
+      const c=cards[i];if(!c.classList.contains('un'))paintFace(c.querySelector('canvas'),c.dataset.key);
+    }
+    if(i<cards.length)requestAnimationFrame(fill);
+  })();
+  renderDxDe(dexSel&&dexPass(dexSel)?dexSel:null);
+}
+function renderDxDe(k){
+  const box=$('#dxDe');if(!box)return;
+  if(!k){box.innerHTML='<div class="un" style="margin-top:40px;text-align:center">点击左侧卡片查看图鉴详情</div>';return;}
+  const f=FOES[k],seen=G.dex&&G.dex.seen[k];
+  let h='<canvas class="dxpt" width="96" height="96"></canvas>';
+  if(!seen){box.innerHTML=h+'<h4>？？？</h4><div class="dxsub">尚未遭遇——遭遇或击败后解锁</div>';return;}
+  const el=ELEMS[f.elem||'none'],ti=TIERS[f.tier||'normal'],sp=dexSp(k);
+  h+=`<h4>${f.name}</h4><div class="dxsub">${sp.cn} · ${el.cn}属性 · ${ti.cn}${f.named?' · <span style="color:#f0a848">命名强敌</span>':''}</div>`;
+  h+=`<div class="dxline">生命 <b>${f.hp}</b> · 攻击 <b>${f.atk}</b> · 防御 <b>${f.def}</b><br>护盾 <b>${f.shield}</b> · 速度 <b>${f.speed}</b> · 经验 <b>${f.exp}</b></div>`;
+  h+=`<div class="dxline">弱点：${(f.weak||[]).map(w=>`<span class="wk">${(ELE[w]||{n:w}).n}</span>`).join(' ')||'无'}</div>`;
+  const hab=[];
+  if(f.named){const b=BOSSNAMED.find(x=>x.id===k);if(b)hab.push((MAPS[b.gate.map]||{name:b.gate.map}).name.replace(/\s/g,'')+' · 第'+b.gate.ch+'章守门');}
+  else{for(const m in MAPS){const P=MAPS[m].pool;if(P&&P.sp.some(x=>x[0]===spOf(k)))hab.push(MAPS[m].name.replace(/\s/g,''));}}
+  if(hab.length)h+=`<div class="dxline">出没：${hab.join('、')}</div>`;
+  if(f.named&&f.drop){const it=EQUIP_BY_KEY[f.drop];h+=`<div class="dxline">掉落：<b style="color:#f0a848">${it?it.n:f.drop}</b>（传说橙装）</div>`;}
+  const kc=(G.dex.kill&&G.dex.kill[k])||0,tc=(G.dex.tame&&G.dex.tame[spOf(k)])||0;
+  h+=`<div class="dxline">击杀 <b>${kc}</b>${sp.tame?` · 驯服 <b>${tc}</b> · <span style="color:#7fd07f">可驯服</span>`:' · 不可驯服'}</div>`;
+  box.innerHTML=h;
+  const cv=box.querySelector('.dxpt');if(cv)paintFace(cv,k);
 }
 function beastAutoAct(p){return {type:'atk',target:pickEnemyTarget()};}
 function allLocsDone(){return ['wall','wolfswood','kingslanding','dragonstone'].every(k=>G.locs[k]==='done');}
@@ -2619,9 +2782,22 @@ function runFx(fx){
   else if(fx==='dragon'){SFX.roar();shake(9);screenFlash('rgba(16,10,28,.4)');dragonFlyby(230,false);}
   else if(fx==='descent'){dragonDescent();}
 }
+function face3d(key,size,full){ // E4：3D 头像（离屏渲染缓存）；2D 模式/无模型时返回 null 走 LPC 回退
+  if(!RM3D()||!window.A3D||!A3D.renderPortrait)return null;
+  let model=null,tint=0;
+  if(key==='jon'||key==='dany'||key==='arya'||key==='bri'||key==='npc1'||key==='npc2'||key==='king')model=key;
+  else{
+    const f=FOES[key];
+    if(!f)return null;
+    model=A3D.mobModel(key,f.sp)[0];tint=f.tint||0;
+  }
+  try{return A3D.renderPortrait(model,tint,size,full);}catch(e){return null;}
+}
 function paintFace(cnv,key){
   const x=cnv.getContext('2d');x.imageSmoothingEnabled=false;
   x.clearRect(0,0,cnv.width,cnv.height);
+  const p3=face3d(key,cnv.width); // E4：3D 头像优先
+  if(p3){x.drawImage(p3,0,0,cnv.width,cnv.height);return;}
   const L=LPC[{jon:'jon',dany:'dany',arya:'arya',bri:'bri'}[key]];
   if(L){x.drawImage(L.face,0,0,cnv.width,cnv.height);return;}
   const f=FOES[key]; // 魔物头像兜底：战斗立绘缩入框内
@@ -3624,7 +3800,7 @@ function enterExplore(){
   $('#world').classList.add('expmode');
   $('#partyBar').classList.add('hidden');
   $('#worldHud').classList.remove('hidden');
-  const hint=$('#worldHud .wh-hint');if(hint)hint.textContent='WASD/方向键移动 · E 互动 · Q 任务日志 · C 魔物面板';
+  const hint=$('#worldHud .wh-hint');if(hint)hint.textContent='WASD/方向键移动 · E 互动 · Q 任务日志 · C 魔物面板 · B 图鉴';
   updateWorldHud();
 }
 function updateExplore(dt,t){
@@ -4236,6 +4412,7 @@ async function startEncounter(m){
   const r=await runBattle([{banner:'遭遇 · '+FOES[m.k].name,sub:'野外遭遇 · 战胜或驯服它',foes}],{tone});
   if(r==='win'&&G.tameKey){
     G.beasts.push({key:G.tameKey,lv:1,exp:0,aff:0});
+    if(G.dex)G.dex.tame[spOf(G.tameKey)]=(G.dex.tame[spOf(G.tameKey)]||0)+1;
     ribbon('<b>驯服成功！</b> '+FOES[G.tameKey].name+' 加入了队伍',2600);
   }
   G.busy=false;
@@ -4264,7 +4441,7 @@ async function evBossPoi(){
     if(r==='win'){
       G.flags['boss_'+b.id]=1;
       (G.bossDrops=G.bossDrops||[]).push(b.drop);
-      G.seen[b.id]=1;G.seen[b.sp]=1;
+      dexSee(b.id);
       ribbon('<b>击败了 '+FOES[b.id].name+'！</b> 获得锻造材料「'+b.drop+'」（铁匠处可用）',3200);
     }else{
       $('#end').classList.add('hidden');
@@ -4532,6 +4709,9 @@ function showRecruitCard(u){
     $('#roCls').textContent=u.cls+' · Lv.'+u.lv;
     const cv=$('#roCv'),x=cv.getContext('2d');
     x.imageSmoothingEnabled=false;x.clearRect(0,0,cv.width,cv.height);
+    const p3=face3d(u.key,170,true); // E4：3D 全身立绘优先
+    if(p3){x.drawImage(p3,(cv.width-170)/2,0,170,170);}
+    else{
     const L=LPC[u.lpc];
     if(L){
       const sc=Math.min(150/L.bbox[3],2.6);
@@ -4539,7 +4719,7 @@ function showRecruitCard(u){
     }else if(u.img){
       const sc=Math.min(150/u.sh,2.2);
       x.drawImage(u.img,0,0,u.sw,u.sh,(cv.width-u.sw*sc)/2,cv.height-u.sh*sc,u.sw*sc,u.sh*sc);
-    }
+    }}
     ov.classList.add('show');ov.classList.remove('hidden');
     SFX.win();
     const finish=()=>{
@@ -4721,7 +4901,7 @@ function newCampaign(){
   G.bossDrops=[];
   G.quests={};
   G.beasts=[];
-  G.deploy=null;G.seen={};G.follow=null;
+  G.deploy=null;G.seen={};G.follow=null;G.dex={seen:{},kill:{},tame:{}};
   G.fog={};genMap('north');
   G.objective=null;G._chK=0;renderObj();
   buildNpcs();
@@ -4758,7 +4938,7 @@ function saveGame(){
   const humans=G.players.filter(p=>!p.isBeast).map(p=>({key:p.key,lv:p.lv,exp:p.exp,hp:p.hp,maxhp:p.maxhp,basemaxhp:p.basemaxhp,sp:p.sp,maxsp:p.maxsp,atk:p.atk,eq:p.eq}));
   try{
     localStorage.setItem(SAVE_KEY,JSON.stringify({v:2,chapter:G.chapter,mapId:G.mapId,flags:G.flags,bag:G.bag,bagEq:G.bagEq||{},up:G.up||{},quests:G.quests,
-      stats:G.stats,seen:G.seen,beasts:G.beasts,deploy:G.deploy,locs:G.locs,dragonDone:G.dragonDone,_chK:G._chK||0,bossDrops:G.bossDrops||[],
+      stats:G.stats,seen:G.seen,dex:G.dex||{seen:G.seen||{},kill:{},tame:{}},beasts:G.beasts,deploy:G.deploy,locs:G.locs,dragonDone:G.dragonDone,_chK:G._chK||0,bossDrops:G.bossDrops||[],
       px:G.exp.px,py:G.exp.py,players:humans,fog}));
   }catch(e){}
 }
@@ -4771,7 +4951,7 @@ async function loadGame(){
   if(!ASSET.ready)await loadAssets();
   newCampaign();
   G.chapter=s.chapter;G.flags=s.flags||{};G.bag=s.bag||{};G.quests=s.quests||{};G.stats=s.stats||{dmg:0,kills:0};
-  G.seen=s.seen||{};G.beasts=s.beasts||[];G.deploy=s.deploy==null?null:s.deploy;G.locs=s.locs||G.locs;
+  G.seen=s.seen||{};G.dex=s.dex||{seen:s.seen||{},kill:{},tame:{}};G.beasts=s.beasts||[];G.deploy=s.deploy==null?null:s.deploy;G.locs=s.locs||G.locs;
   G.bossDrops=s.bossDrops||[];
   G.bagEq=s.bagEq||{};G.up=s.up||{};
   G.dragonDone=!!s.dragonDone;G._chK=s._chK||0;
@@ -4873,6 +5053,7 @@ addEventListener('keydown',e=>{
     if(e.key==='q'||e.key==='Q'){toggleQuestLog();return;}
     if(e.key==='c'||e.key==='C'){toggleBeastPanel();return;}
     if(e.key==='i'||e.key==='I'){toggleEquipPanel();return;}
+    if(e.key==='b'||e.key==='B'){toggleDex();return;}
     if(e.key==='e'||e.key==='E'||e.key==='Enter'||e.key===' ')tryInteract();
     return;
   }
@@ -4905,7 +5086,7 @@ addEventListener('keydown',e=>{
   }
 });
 addEventListener('keyup',e=>{KEYS.delete(e.key.length===1?e.key.toLowerCase():e.key);});
-function toggleMute(){muted=!muted;$('#muteBtn').textContent=muted?'✕':'♪';$('#muteBtn').style.color=muted?'#667':'var(--gold)';}
+function toggleMute(){muted=!muted;const b=$('#muteBtn');b.textContent=muted?'✕':'♪';b.classList.toggle('mut',muted);}
 $('#muteBtn').addEventListener('click',()=>{initAudio();toggleMute();});
 
 /* ================= 开始 / 重开 ================= */

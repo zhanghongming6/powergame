@@ -62,11 +62,12 @@
 - 存档 v:2（bagEq/up/players.eq/basemaxhp），旧档迁移（basemaxhp=maxhp、eq 缺省空槽）
 - harness：e3 20/20 PASS + eqp/fgv 目检 ✅；c2 增 rest_eq → 12/12；回归 SMOKE1-4+E2 全绿、c1 19/19、clix 13/13、camp ×3=3/3 WIN
 
-## Phase E4：UI 美化 + 头像 3D（吸收 D4）
+## Phase E4：UI 美化 + 头像 3D（吸收 D4）✅ 会话㉑
 - 裸 CSS Kenney 化：banner/turnBadge/recruitOv/loadOv/partyBar 背景/muteBtn（border-image assets/ui/*）
 - 头像：A3D.renderPortrait(model) 离屏 64×64（头部 bbox 特写正交、透明底）缓存；partyBar/dlg/recruitOv/equipPanel 统一用；!A3D 回退 LPC 裁切
 - 图鉴 #dexPanel（键 B）：种卡网格（元素色点+阶级星+名/???）；筛选（元素/阶级/可驯/boss）；详情（数值/弱点/掉落/出没地）；计数 seen/killed/tamed
 - 验证：截图 title/dlg/equip/dex/b4_ui 目检；clix 回归不回归（partyBar 指针透传逻辑不破）
+- 收口：e4 17/17；dex/bn/rov/lov/pt 目检 ✅；回归 SMOKE1-4+E2、c1 19/19、c2 12/12、clix 13/13、camp ×3 WIN（progress 会话㉑）
 
 ## Phase E5：比例审计 + 回归 + 文档 + 清理（吸收 D5）
 - 比例约定表入 findings：人=1.2u；建筑 sy 含义（墙 2.9≈2.4×人）；树/塔/门逐级；审计 place() capH 与 instCells sy，修离群

@@ -311,3 +311,13 @@
 - [x] harness：e3 20 断言 20/20 PASS（表合法/roll×200 合法/穿戴/卸下/fx 三件/锻造四例/橙铸/命名 boss 必掉/victory 入包/存档 v2 字段）；c2 增 rest_eq → 12/12
 - [x] 回归全绿：SMOKE1-4 PASS + E2 13/13；c1 19/19；c2 12/12；clix 13/13；camp ×3 = 3/3 WIN（100% ≥60%）
 - [ ] 下一步：**E4** UI 美化+头像 3D+图鉴面板（裸 CSS Kenney 化、renderPortrait 离屏头像、#dexPanel 键 B），详见 task_plan.md
+
+## 2026-09-04 会话㉑ · E4 UI 美化 + 3D 头像 + 魔物图鉴（完成）
+- [x] E4-1 裸 CSS Kenney 化：banner/turnBadge/recruitOv/loadOv/partyBar/muteBtn 全 border-image 九切（panel_blue/buttonLong 系）；bn/rov/lov 截图目检 ✅
+- [x] E4-2 A3D.renderPortrait 离屏 64×64 头部 bbox 特写正交透明底+缓存；partyBar/dlg/recruitOv/equipPanel 统一 face3d/paintFace；!A3D 回退 LPC 裁切；pt 头像条（4 角色+染色怪+命名 boss+全身）目检 ✅
+- [x] E4-3 #dexPanel（B 键）：637 卡网格（元素色点/阶级星/名或？？？/未见暗化）；筛选 元素/阶级/可驯/命名BOSS（chip 再点即关）；详情（数值/弱点/掉落/出没/击杀·驯服计数）；顶栏计数 图鉴/击杀/驯服（后两者=个次求和）；头像 rAF 分帧 24/帧 填充防卡
+- [x] 登记 dexSee 整键+种键双写（兼容旧 G.seen），挂载 startWave/击杀/驯服/boss 胜战；存档 v2 带 dex；旧档迁移 seen 重建
+- [x] 目检修复二处：命名 boss 头像显人脸 → adapter3d mobModel(k,sp) 增 f.sp 回退（spOf 无点 key 不分段，见 findings）；chip 浅字浅底不可读 → 深字 #39435c
+- [x] harness e4 17 断言 17/17（最终代码复跑同）；dex 截图裁切目检：霜牙详情=冰狼头、chip 可读、??? 暗化 ✅
+- [x] 回归全绿：SMOKE1-4 PASS + E2 13/13；c1 19/19；c2 12/12；clix 13/13；camp ×3 = 3/3 WIN（第 3 跑 dom 空输出 flake，重跑 13/13；100% ≥60%）
+- [ ] 下一步：**E5** 比例审计 + 文档同步（MANUAL/WALKTHROUGH 装备/图鉴/boss 章）+ 清理，详见 task_plan.md

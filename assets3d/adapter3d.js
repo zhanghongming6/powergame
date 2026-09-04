@@ -313,7 +313,7 @@ const MOB3D={wolf:['wolf',.6],spider:['spider',.65],giant:['giant',2.2],
   shaman:['shaman',1.05],dragonWhelp:['dragonWhelp',1.6],direwolf:['direwolf',.9],
   wraith:['wraith',1.2],knightBlack:['knightBlack',1.25],rogue:['rogue',1.15]};
 function spOf(k){const i=String(k).indexOf('.');return i>0?k.slice(0,i):k;} // 变种 key `sp.elem.tier` → 基础种
-function mobModel(k){return MOB3D[k]||MOB3D[spOf(k)]||['npc2',1.0];}
+function mobModel(k,sp){return MOB3D[k]||MOB3D[spOf(k)]||(sp&&MOB3D[sp])||['npc2',1.0];}
 const BS=2.4; // 战斗单位全局倍率：归一模型(高1单位≈43px)→ 人形约125px，贴近2D比例并露出队伍栏上方可点
 function entFor(slot,model){ // slot=场上占位键（唯一），model=模板键（可复用）
   let e=ents.get(slot);
@@ -547,6 +547,87 @@ function clearBattle(){
   if(btGroup){scene.remove(btGroup);btGroup=null;btTheme=null;btUnits.clear();}
 }
 
+/* ---------- E4 头像：离屏 RT 渲染 → canvas 缓存（头部特写 / 全身两种取景） ---------- */
+let pScene=null,pCam=null,pRT=null;
+const PCACHE={};
+const PSZ=128;
+const PBUF=new Uint8Array(PSZ*PSZ*4);
+const GAMMA=new Uint8Array(256); // RT 输出为线性 → 回读提升 γ2.2，与主画布 sRGB 观感一致
+for(let i=0;i<256;i++)GAMMA[i]=Math.round(Math.pow(i/255,1/2.2)*255);
+function pInit(){
+  if(pRT)return;
+  pScene=new THREE.Scene();
+  pScene.add(new THREE.AmbientLight(0xffffff,.5));
+  pScene.add(new THREE.HemisphereLight(0xffffff,0x404858,.6));
+  const key=new THREE.DirectionalLight(0xfff2dd,.95);key.position.set(1.6,2.4,2.6);pScene.add(key);
+  const fill=new THREE.DirectionalLight(0x9fc4ff,.35);fill.position.set(-2,1.2,-1.6);pScene.add(fill);
+  pCam=new THREE.OrthographicCamera(-1,1,1,-1,.01,20);
+  pRT=new THREE.WebGLRenderTarget(PSZ,PSZ,{format:THREE.RGBAFormat});
+}
+function renderPortrait(model,tint,size,full){
+  if(!ok||!ready)return null;
+  const T=TPL[model];if(!T)return null;
+  size=size||64;
+  const ck=model+'|'+(tint||0)+'|'+(full?1:0)+'|'+size;
+  if(PCACHE[ck])return PCACHE[ck];
+  pInit();
+  const root=(THREE.SkeletonUtils&&THREE.SkeletonUtils.clone)?THREE.SkeletonUtils.clone(T.root):T.root.clone();
+  const cm=[]; // 克隆材质（染色调色用，结束后释放）
+  if(tint){
+    const tc=new THREE.Color(tint);
+    root.traverse(m=>{if(m.isMesh&&m.material){const nm=m.material.clone();if(nm.color)nm.color.multiply(tc);m.material=nm;cm.push(nm);}});
+  }
+  const clip=T.clips.find(c=>/Idle/i.test(c.name))||T.clips[0]||null;
+  if(clip){const mx=new THREE.AnimationMixer(root);mx.clipAction(clip).play();mx.update(.4);} // 推进到自然姿态帧
+  pScene.add(root);
+  root.updateMatrixWorld(true);
+  const box=new THREE.Box3().setFromObject(root);
+  const sz=box.getSize(new THREE.Vector3());
+  let cx=(box.min.x+box.max.x)/2,cz=(box.min.z+box.max.z)/2;
+  let vh,cy;
+  if(full){vh=Math.max(sz.x,sz.y,sz.z)*1.06;cy=(box.min.y+box.max.y)/2;}
+  else{
+    // 头部特写：优先锚定 head 骨骼（四足头在前侧、人形在上侧）；无骨骼回退顶部 bbox
+    let hb=null;
+    const pick=re=>{if(hb)return;root.traverse(o=>{if(!hb&&o.isBone&&re.test(o.name||''))hb=o;});};
+    pick(/^head$/i);pick(/^head(?!_end)/i);pick(/^neck(?!_end)/i);
+    if(hb){
+      const hp=hb.getWorldPosition(new THREE.Vector3());
+      const quad=sz.z>sz.y*.8;
+      cx=hp.x;cy=hp.y+sz.y*(quad?.06:.10);cz=quad?hp.z+sz.z*.10:hp.z;
+      vh=sz.y*(quad?.55:.40);
+    }else{vh=sz.y*.44;cy=box.max.y-sz.y*.24;}
+  }
+  if(vh<.05)vh=.05;
+  pCam.left=-vh/2;pCam.right=vh/2;pCam.top=vh/2;pCam.bottom=-vh/2;
+  pCam.position.set(cx,cy,cz+4);pCam.lookAt(cx,cy,cz);pCam.updateProjectionMatrix();
+  renderer.setRenderTarget(pRT);
+  renderer.clear();
+  renderer.render(pScene,pCam);
+  renderer.readRenderTargetPixels(pRT,0,0,PSZ,PSZ,PBUF);
+  renderer.setRenderTarget(null);
+  pScene.remove(root);
+  for(const m of cm)m.dispose&&m.dispose();
+  const tmp=document.createElement('canvas');tmp.width=tmp.height=PSZ;
+  const tc=tmp.getContext('2d');
+  const img=tc.createImageData(PSZ,PSZ);
+  const d=img.data;
+  for(let y=0;y<PSZ;y++){
+    const s0=(PSZ-1-y)*PSZ*4,t0=y*PSZ*4; // Y 翻转
+    for(let x=0;x<PSZ*4;x+=4){
+      d[t0+x]=GAMMA[PBUF[s0+x]];
+      d[t0+x+1]=GAMMA[PBUF[s0+x+1]];
+      d[t0+x+2]=GAMMA[PBUF[s0+x+2]];
+      d[t0+x+3]=PBUF[s0+x+3];
+    }
+  }
+  tc.putImageData(img,0,0);
+  const cv=document.createElement('canvas');cv.width=cv.height=size;
+  cv.getContext('2d').drawImage(tmp,0,0,size,size);
+  PCACHE[ck]=cv;
+  return cv;
+}
+
 /* ---------- 投影：世界格坐标 → 屏幕像素 ---------- */
 function project3D(xTile,yUp,zTile){
   if(!ok)return null;
@@ -557,7 +638,7 @@ function project3D(xTile,yUp,zTile){
   return {x:px,y:py};
 }
 
-return {boot,loadModels,whenReady,enterExplore,renderExplore,renderBattle,projectUnit,project3D,MOB3D,mobModel,
+return {boot,loadModels,whenReady,enterExplore,renderExplore,renderBattle,projectUnit,project3D,MOB3D,mobModel,renderPortrait,
   dbg:()=>JSON.stringify({ok,bt:btGroup?btGroup.children.length:-1,un:btUnits.size,th:btTheme,tpl:Object.keys(TPL).length}),
   isReady:()=>ready,isOk:()=>ok,
   info:()=>renderer?renderer.info.render.calls:0};

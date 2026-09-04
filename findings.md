@@ -186,3 +186,12 @@ w_lsword_f/b、w_dagger_f/b、w_spear_f/b（各 _walk/_idle；武器仅 _walk）
 - 橙装双通道：①命名 boss 战斗直掉（e.named&&e.drop，e3 death_drop=weirwoodbow）；②E2 evBossPoi 胜战给材料→forgeOrange 铸造（材料×1+ore×2）。杂兵 rar 池无橙，白蓝紫全靠 equipDropRoll
 - 存档 v:2：SAVE_KEY 不变 'bhl_save_v1'，payload.v=2 区分；迁移对 v1 无 v 字段档生效（basemaxhp 回退=maxhp，eq 缺省）
 - harness：e3（20 断言，budget 120000，含真实 initBattle+hitEnemy+victory+saveGame 全链）；c2 rest_eq（注入 ring_blue 装+cloak_white 存，读档断言槽位与 bag 保持）；eqp/fgv 截图模式（面板目检）
+
+## E4 UI 美化 + 头像 + 魔物图鉴（2026-09-04）
+- **命名 boss 无点 key 的 spOf 陷阱**：spOf(k) 对无点 key 原样返回 → MOB3D[整键] 不命中落 npc2 人脸（图鉴详情冷牙曾显强盗脸）；且图鉴按 SPECIES 键分组会漏掉全部 36 命名 boss（grid 里 nb.click() undefined 崩 e4）。对策：adapter3d mobModel(k,sp) 增 `(sp&&MOB3D[sp])` 回退（face3d 传 f.sp，战斗 bModel 本就用 u.sp）；图鉴分组序=`Object.keys(SPECIES).concat(BOSSNAMED.map(b=>b.id))`+dexSp() 详情回退 f.sp
+- 图鉴登记 dexSee：整键+种键双写且兼容旧 G.seen 契约；命名 boss 种登记走 FOES[k].sp（无点不分段）；挂载点=startWave 波次遍历/击杀点/boss 胜战；驯服按种计数
+- 计数口径：顶栏 击杀/驯服 均=values 求和（个次数），勿混用 keys 数（种数）
+- 头像分帧填充：637 卡一次离屏渲染会卡，renderDex 内 rAF 链每帧 24 张+dexTok 作废令牌（重渲即弃旧链）；harness 虚拟时间下 rAF 需 __T.tick(16) 泵（e4 等 70 tick 后 alpha 扫描断言非空）
+- 未见卡：canvas 不画+CSS filter brightness(.28) grayscale(1) 暗化，名显 ？？？；详情未见仅显大头像框+提示
+- 断言模式读法：`node _shot.js MODE dom` 才把页内 <pre> 结果打到 stdout；不带 dom 结果只在截图里（e4 首跑曾误以为无输出）
+- harness：e4（17 断言，budget 120000：登记双写/B 键开关/637 网格/三筛选/计数/命名详情/未见详情/双头像像素/波次 seen/击杀计数/存档迁移）；dex 截图模式（铺 seen+选中 coldfang 目检）

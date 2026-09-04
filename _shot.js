@@ -32,6 +32,7 @@ const TP={explore:[60,34],explore2:[20,40],explore3:[87,72],explore4:[115,54],gt
 async function battle(waves,wave,tone,opts){
   begin();await sleep(800);window.skipStory();await waitExplore();await sleep(100);
   initBattle(waves,Object.assign({tone:tone},opts||{}));await startWave(wave);
+  $('#partyBar').classList.remove('hidden');buildPartyBar(); // runBattle 才显示队伍栏，harness 直调需补
   $('#turnBadge').innerHTML='ROUND 1<span class="cn">'+G.battleWaves[G.wave].banner+'</span>';
   window.skipStory();await sleep(2800);window.skipStory();await sleep(400);
   for(let i=0;i<25;i++){if(window.__T)window.__T.brender();await sleep(40);}
@@ -405,6 +406,123 @@ async function run(){
     for(let i=0;i<75;i++){window.__T.tick(16);await sleep(16);}
     window.__T.release('d');
     for(let i=0;i<5;i++)window.__T.tick(16);
+  }else if(M==='pt'){ // E4 头像条：头部特写（角色4+元素染色怪+命名boss）+ 全身 2 张
+    if(!ASSET.ready)await loadAssets();
+    const KS=[['jon',0,0],['dany',0,0],['arya',0,0],['bri',0,0],
+      ['wolf.frost.normal',0,0],['demon.fire.elite',0,0],['coldfang',0,0],['dawnknight',0,0],
+      ['jon',0,1],['wolf.frost.normal',0,1]];
+    const N=KS.length,SZ=96,ov=document.createElement('canvas');
+    ov.width=N*(SZ+8)+8;ov.height=SZ+40;ov.style.cssText='position:fixed;left:0;top:0;background:#223';
+    const ox=ov.getContext('2d');
+    let info=[];
+    KS.forEach((kd,i)=>{
+      const c=face3d(kd[0],SZ,kd[2]);
+      if(c){ox.drawImage(c,8+i*(SZ+8),8);
+        const px=c.getContext('2d').getImageData(SZ>>1,(SZ*.55)|0,1,1).data;
+        info.push(kd[0]+':'+(px[3]>0?'px('+px[0]+','+px[1]+','+px[2]+','+px[3]+')':'EMPTY'));
+      }else info.push(kd[0]+':NULL');
+    });
+    document.body.innerHTML='';document.body.appendChild(ov);
+    const d=document.createElement('div');d.style.cssText='position:fixed;left:0;top:'+(SZ+44)+'px;color:#7f7;font:14px monospace;background:#002;padding:6px';
+    d.textContent=info.join(' | ')+' | GL='+(window.A3D?A3D.isOk():'x');
+    document.body.appendChild(d);
+    await sleep(300);
+  }else if(M==='bn'){ // E4-1 目检：章节横幅 Kenney 牌匾
+    await cleanStart();
+    $('#bnTitle').textContent='第三章 · 北境';$('#bnSub').textContent='THE NORTH REMEMBERS';
+    $('#banner').classList.add('show');
+    $('#banner').style.transition='none';$('#banner').style.opacity='1'; // 虚拟时间下 CSS transition 迟滞，直设
+    $('#banner .bn-top').style.cssText='transition:none;width:720px';$('#banner .bn-bot').style.cssText='transition:none;width:720px';
+    for(let i=0;i<30;i++){window.__T.tick(16);await sleep(16);}
+  }else if(M==='rov'){ // E4-1 目检：招募卡（手动绘制，避开自动收尾计时器）
+    await cleanStart();
+    const u=makeUnit(FOES['wolf.frost.normal'],'enemy');
+    $('#roName').textContent=u.name;$('#roCls').textContent=u.cls+' · Lv.'+u.lv;
+    const cv=$('#roCv'),x=cv.getContext('2d');x.imageSmoothingEnabled=false;x.clearRect(0,0,cv.width,cv.height);
+    const p3=face3d(u.key,170,true);if(p3)x.drawImage(p3,(cv.width-170)/2,0,170,170);
+    $('#recruitOv').classList.add('show');$('#recruitOv').classList.remove('hidden');
+    $('#recruitOv').style.transition='none';$('#recruitOv').style.opacity='1';
+    await sleep(600);
+  }else if(M==='lov'){ // E4-1 目检：加载画面 Kenney 进度条
+    await cleanStart();
+    $('#ldName').textContent='君临';$('#ldSub').textContent="KING'S LANDING";
+    $('#loadOv').classList.add('show');
+    $('#loadOv').style.transition='none';$('#loadOv').style.opacity='1';
+    await sleep(500);
+  }else if(M==='dex'){ // E4-3 目检：图鉴面板（B 键）——铺一批 seen/击杀/驯服 + 选中命名 boss 详情
+    await cleanStart();
+    for(const b of BOSSNAMED.slice(0,10))dexSee(b.id);
+    for(const k of ['wolf.frost.normal','wolf.frost.elite','wolf.shadow.champ','demon.fire.elite','spider.poison.normal','golemIce.holy.boss'])dexSee(k);
+    dexSee('coldfang');
+    G.dex.kill['coldfang']=1;G.dex.kill['wolf.frost.elite']=3;G.dex.tame['wolf']=2;
+    dexSel='coldfang';renderDex();
+    $('#dexPanel').classList.add('show');
+    for(let i=0;i<70;i++){window.__T.tick(16);await sleep(16);}
+  }else if(M==='e4'){ // E4-3 断言：图鉴登记/渲染/筛选/详情/头像像素/计数/存档迁移
+    await cleanStart();
+    const L=[];const ok=(n,c)=>L.push(n+':'+(c?'OK':'FAIL'));
+    const hasPx=c=>{if(!c)return false;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;
+      for(let i=3;i<d.length;i+=4)if(d[i]>0)return true;return false;};
+    // A) G.dex 初始化 + dexSee 双写（整键+种键，兼容旧 G.seen）
+    ok('dex_init',!!G.dex&&!!G.dex.seen&&!!G.dex.kill&&!!G.dex.tame);
+    dexSee('coldfang');
+    ok('dex_see',G.dex.seen['coldfang']===1&&G.dex.seen['wolf']===1&&G.seen['coldfang']===1&&G.seen['wolf']===1);
+    // B) B 键开关
+    dispatchEvent(new KeyboardEvent('keydown',{key:'b'}));
+    ok('key_b_open',$('#dexPanel').classList.contains('show'));
+    // C) 全量卡片 = FOES 总数（≥600）
+    const cards=$('#dxGrid').querySelectorAll('.dxcard');
+    ok('grid_all',cards.length===Object.keys(FOES).length&&cards.length>=600);
+    // D) 筛选：冰元素收窄 / 命名 BOSS=36 / 可驯
+    document.querySelector('.dxchip[data-g="elem"][data-v="frost"]').click();
+    const c2=$('#dxGrid').querySelectorAll('.dxcard');
+    ok('filter_frost',c2.length>0&&c2.length<cards.length&&[...c2].every(el=>(FOES[el.dataset.key].elem||'none')==='frost'));
+    document.querySelector('.dxchip[data-g="elem"][data-v="all"]').click();
+    document.querySelector('.dxchip[data-g="boss"][data-v="1"]').click();
+    const c3=$('#dxGrid').querySelectorAll('.dxcard');
+    ok('filter_boss',c3.length===BOSSNAMED.length&&[...c3].every(el=>FOES[el.dataset.key].named));
+    document.querySelector('.dxchip[data-g="boss"][data-v="1"]').click();
+    document.querySelector('.dxchip[data-g="tame"][data-v="1"]').click();
+    const c4=$('#dxGrid').querySelectorAll('.dxcard');
+    ok('filter_tame',c4.length>0&&[...c4].every(el=>dexSp(el.dataset.key).tame));
+    document.querySelector('.dxchip[data-g="tame"][data-v="1"]').click();
+    ok('cnt_txt',$('#dxTop').textContent.includes('/'+Object.keys(FOES).length));
+    // E) 详情：seen 命名 boss（名/弱点/掉落/出没）；unseen 显示 ？？？
+    const nb=[...$('#dxGrid').querySelectorAll('.dxcard')].find(el=>el.dataset.key==='coldfang');
+    nb.click();
+    const de=$('#dxDe').textContent;
+    ok('de_named',de.includes('霜牙')&&de.includes('弱点')&&de.includes('掉落')&&de.includes('出没'));
+    const un=[...$('#dxGrid').querySelectorAll('.dxcard')].find(el=>el.classList.contains('un'));
+    un.click();
+    ok('de_unknown',$('#dxDe').textContent.includes('？？？'));
+    nb.click();
+    // F) 头像像素：卡片与详情画布均非空（分帧填充，等 70 帧）
+    for(let i=0;i<70;i++){window.__T.tick(16);await sleep(16);}
+    ok('card_px',hasPx(nb.querySelector('canvas')));
+    ok('de_px',hasPx($('#dxDe .dxpt')));
+    // G) B 键关闭 + 战斗内登记：波次自动 seen / 击杀计数
+    dispatchEvent(new KeyboardEvent('keydown',{key:'b'}));
+    ok('key_b_close',!$('#dexPanel').classList.contains('show'));
+    for(const u of G.players){u.hp=u.maxhp=9999;u.sp=u.maxsp=999;u.atk=999;}
+    initBattle([{banner:'E4',sub:'dex',foes:[{k:'wolf.frost.elite',x:SLOTS[1].x,y:SLOTS[1].y}]}],{});
+    await startWave(0);
+    ok('wave_see',G.dex.seen['wolf.frost.elite']===1&&G.dex.seen['wolf']===1);
+    const en=alive(G.enemies)[0];
+    await hitEnemy(G.players[0],en,99999,null,{});
+    ok('kill_cnt',G.dex.kill['wolf.frost.elite']===1);
+    await victory();
+    // H) 存档 v2 带 dex + 旧档迁移（无 dex 字段 → 由 seen 重建）
+    G.scene='explore';
+    saveGame();
+    let s=null;try{s=JSON.parse(localStorage.getItem('bhl_save_v1'));}catch(e){}
+    ok('save_dex',!!s&&!!s.dex&&s.dex.seen['coldfang']===1&&s.dex.kill['wolf.frost.elite']===1);
+    delete s.dex;localStorage.setItem('bhl_save_v1',JSON.stringify(s));
+    G.scene='title';
+    const r=await loadGame();
+    ok('migrate',r&&G.dex&&G.dex.seen['coldfang']===1&&!G.dex.kill['wolf.frost.elite']);
+    const pass=L.filter(l=>l.indexOf(':OK')>0).length;
+    document.body.innerHTML='<pre style="font:19px monospace;color:#7fffd4;background:#0b1220;padding:16px 30px;line-height:1.4">'+L.join('\\n')+'\\n'+pass+'/'+L.length+' PASS</pre>';
+    await sleep(300);
   }else if(M==='a2'){
     begin();await sleep(800);window.skipStory();await waitExplore();await sleep(100);
     MOBS.length=0;
@@ -742,5 +860,5 @@ function shoot(mode,file,budget){
   }
 }
 shoot('title',path.join(TMP,'title.html'),12000);
-for(const m of modes)shoot(m,path.join(TMP,'game.html'),(m==='a2'||m==='a4')?45000:(m==='a5')?600000:(m==='c1')?240000:(m==='e2'||m==='e3')?120000:(m==='c2'||m==='clix')?60000:(m==='title'||m==='tcont'||m==='e1')?12000:16000);
+for(const m of modes)shoot(m,path.join(TMP,'game.html'),(m==='a2'||m==='a4')?45000:(m==='a5')?600000:(m==='c1')?240000:(m==='e2'||m==='e3'||m==='e4')?120000:(m==='c2'||m==='clix')?60000:(m==='title'||m==='tcont'||m==='e1')?12000:16000);
 console.log('DONE');
