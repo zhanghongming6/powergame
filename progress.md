@@ -321,3 +321,14 @@
 - [x] harness e4 17 断言 17/17（最终代码复跑同）；dex 截图裁切目检：霜牙详情=冰狼头、chip 可读、??? 暗化 ✅
 - [x] 回归全绿：SMOKE1-4 PASS + E2 13/13；c1 19/19；c2 12/12；clix 13/13；camp ×3 = 3/3 WIN（第 3 跑 dom 空输出 flake，重跑 13/13；100% ≥60%）
 - [ ] 下一步：**E5** 比例审计 + 文档同步（MANUAL/WALKTHROUGH 装备/图鉴/boss 章）+ 清理，详见 task_plan.md
+
+## 2026-09-04 会话㉒ · v6.6（Phase F）开局：无效资源清理完成（F-A）
+- [x] 用户反馈：建模不符合主流视觉效果/部分建模缺失/城池墙体完全不对 → 立 Phase F（清理+城池墙体建模整改，详见 task_plan）；资产源=Quaternius 中世纪幻想套 poly.pizza CC0（用户选定），清理范围=仅无效资源
+- [x] A0 预检：19 活跃 p_* key 逐一核对；king/dragon/dragonEvo/orcEnemy 确认无 MODELS3D 消费（orcEnemy 无图池/无命名 boss/tame:0；dragon/dragonFlyby 仅 2D）；MF 消费仅 'king skeleton'(nk)/'cyclop'(giant)
+- [x] A1 31 死道具 key：_tmp3d glb+_dl3d.js 条目同删（烘焙是 _tmp3d/p_*.glb 自动发现，顺序要紧）；重烘 props 19 key 0.21MB（原 50 key 0.94MB）
+- [x] A2 死怪/角色：_bake3d GROUPS 去 king/dragon/dragonEvo/orcEnemy，MOB3D 删 orcEnemy 条（mobModel 回退链安全），face3d 白名单去 king；重烘 chars 6 key 4.46MB（原 8.2）、mobs 22 key 9.63MB（原 14.4）
+- [x] A3 删 assets3d/minitri.glb（无引用）
+- [x] A4 2D：loadAssets 改显式清单 TOWN_KEEP 32/DUN_KEEP 15；loadMF 收窄 ['king skeleton','cyclop']；删 499 无引用文件 14.16MB（town100/dun117/lpc34/mf187/ui61），留 assets/mf/LICENSE.txt 署名+king skeleton/cyclop.png；assets/ui 被引用恰 26 张全保留
+- [x] A5 双模式冒烟全绿：3D SMOKE1-4 PASS+E2 13/13；2D 回退（新 _smoke2d.js：Temp 副本把 `if(A3D.boot(c3)){` 换 `if(false){` → 保持 2d）SMOKE1-4 PASS
+- [x] 工具教训：删除清单脚本里 path.relative 结果含文件名，分支判断必须先取目录部分（首版把 baked 保留层与 MF 保留图误列删除，靠抽查拦下）
+- [ ] 收工：用户要求 20 分钟内停（记录+上传，周一继续）。**周一入口=task_plan.md Phase F-B**（Quaternius 14 键下载/烘焙/探针记 asp/朝向）→ F-C adapter 城建重做；c1/c2/clix/camp×3 全量回归在 F-B 开工前先跑一遍作基线（今日双模式冒烟已绿）

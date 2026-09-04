@@ -308,7 +308,7 @@ let FWD=0; // 模型原生朝向修正；若截图发现背向，改为 Math.PI�
 const MOB3D={wolf:['wolf',.6],spider:['spider',.65],giant:['giant',2.2],
   wight:['wight',1.1],walker:['walker',1.45],nk:['walker',1.6],bandit:['npc2',1.15],
   bat:['bat',.55],snake:['snake',.7],slime:['slime',.8],goblin:['goblin',.9],
-  skeleton:['skeleton',1.1],zombie:['zombie',1.1],orc:['orc',1.4],orcEnemy:['orcEnemy',2.0],
+  skeleton:['skeleton',1.1],zombie:['zombie',1.1],orc:['orc',1.4],
   demon:['demon',1.6],blueDemon:['blueDemon',1.5],golemIce:['golemIce',2.0],golemEvo:['golemEvo',1.8],
   shaman:['shaman',1.05],dragonWhelp:['dragonWhelp',1.6],direwolf:['direwolf',.9],
   wraith:['wraith',1.2],knightBlack:['knightBlack',1.25],rogue:['rogue',1.15]};

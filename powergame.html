@@ -864,7 +864,7 @@ function drawLpc(id,dir,frame,x,yb,scale,t){ // (x,yb)=底部中心；frame<0 �
   ctx.drawImage(sheet,sxF+b[0],(LPC_DIR[dir]??2)*64+b[1],b[2],b[3],x-b[2]*scale/2,yb-b[3]*scale,b[2]*scale,b[3]*scale);
 }
 function loadMF(){
-  return Promise.all(['skeleton','king skeleton','cyclop','dragon'].map(m=>new Promise(res=>{
+  return Promise.all(['king skeleton','cyclop'].map(m=>new Promise(res=>{
     const i=new Image();
     i.onload=()=>{MFIMG[m]=i;res();};i.onerror=()=>{MFIMG[m]=null;res();};
     i.src='assets/mf/monsters/'+encodeURIComponent(m)+'.png';
@@ -2785,7 +2785,7 @@ function runFx(fx){
 function face3d(key,size,full){ // E4：3D 头像（离屏渲染缓存）；2D 模式/无模型时返回 null 走 LPC 回退
   if(!RM3D()||!window.A3D||!A3D.renderPortrait)return null;
   let model=null,tint=0;
-  if(key==='jon'||key==='dany'||key==='arya'||key==='bri'||key==='npc1'||key==='npc2'||key==='king')model=key;
+  if(key==='jon'||key==='dany'||key==='arya'||key==='bri'||key==='npc1'||key==='npc2')model=key;
   else{
     const f=FOES[key];
     if(!f)return null;
@@ -3188,8 +3188,11 @@ function pad4(i){return String(i).padStart(4,'0');}
 function loadImg(k,src){return new Promise(r=>{const im=new Image();im.onload=()=>{ASSET.img[k]=im;r();};im.onerror=()=>{ASSET.img[k]=null;r();};im.src=src;});}
 async function loadAssets(){
   if(ASSET.ready)return;
+  const TOWN_KEEP=[0,1,2,3,4,5,25,43,48,49,50,52,53,54,72,73,74,76,77,78,83,90,92,93,96,97,98,104,105,106,108,112];
+  const DUN_KEEP=[18,28,63,64,65,72,74,84,85,86,95,98,99,100,111];
   const ps=[loadImg('rpg','assets/rpg_sheet.png')];
-  for(let i=0;i<132;i++){ps.push(loadImg('t'+i,'assets/town/tile_'+pad4(i)+'.png'));ps.push(loadImg('d'+i,'assets/dun/tile_'+pad4(i)+'.png'));}
+  for(const i of TOWN_KEEP)ps.push(loadImg('t'+i,'assets/town/tile_'+pad4(i)+'.png'));
+  for(const i of DUN_KEEP)ps.push(loadImg('d'+i,'assets/dun/tile_'+pad4(i)+'.png'));
   await Promise.all(ps);
   await loadLPC();await loadMF();
   buildTiles();

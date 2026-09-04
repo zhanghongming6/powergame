@@ -195,3 +195,11 @@ w_lsword_f/b、w_dagger_f/b、w_spear_f/b（各 _walk/_idle；武器仅 _walk）
 - 未见卡：canvas 不画+CSS filter brightness(.28) grayscale(1) 暗化，名显 ？？？；详情未见仅显大头像框+提示
 - 断言模式读法：`node _shot.js MODE dom` 才把页内 <pre> 结果打到 stdout；不带 dom 结果只在截图里（e4 首跑曾误以为无输出）
 - harness：e4（17 断言，budget 120000：登记双写/B 键开关/637 网格/三筛选/计数/命名详情/未见详情/双头像像素/波次 seen/击杀计数/存档迁移）；dex 截图模式（铺 seen+选中 coldfang 目检）
+
+## F-A 无效资源清理（2026-09-04 · 会话㉒）
+- **烘焙自动发现陷阱**：_bake3d.js 的 props 组=_tmp3d/p_*.glb 自动发现 → 清死 key 必须先从 _tmp3d 删 glb 再 bake，顺序反了死 key 复活；chars/mobs 是显式 GROUPS，删表同时删 glb 与 _dl3d.js 条目（防重新下载）
+- 死键判定证据链：king（NPC3D 无映射，仅存 face3d 白名单）；dragon/dragonEvo（loadMF 名单与 dragonFlyby 均为 2D 通道，无 MODELS3D 消费）；orcEnemy（四图遇敌池与 36 命名 boss 零引用、tame:0 不可驯 → 永不入战斗；MOB3D 删条后 mobModel 自然回退 ['npc2',1.0]，SPECIES 数据保留不影响图鉴）
+- MF 消费全量=FOES.nk.mf='king skeleton' 与 FOES.giant.mf='cyclop'（其余 'skeleton'/'dragon' 装载但零消费）→ loadMF 收窄为 2 项
+- 2D 引用集固化：loadAssets 显式 TOWN_KEEP 32 张 [0-5,25,43,48-50,52-54,72-74,76-78,83,90,92,93,96-98,104-106,108,112] / DUN_KEEP 15 张 [18,28,63-65,72,74,84-86,95,98-100,111]；assets/ui 被引用恰 26 张（bar 系 15+buttonLong 5+buttonSquare 4+panelInset_beige+panel_blue）；lpc 消费=44 层×(walk+idle)，其中 23 层在 baked/（LPC_BAKED），根目录同名文件属死文件
+- **2D 回退冒烟工具 _smoke2d.js**：先经 _shot.js tcont 刷新 Temp 副本，脚本将副本 `if(A3D.boot(c3)){` 替换为 `if(false){` 存 game2d.html → RENDER_MODE 恒 '2d' → ?smoke 断言链（用于任何 2D 侧改动的即时回归）
+- 清理总账：31 死道具+4 死模型（king/dragon/dragonEvo/orcEnemy）+minitri.glb+499 个 2D 文件（14.16MB）；注册表体积 chars 8.2→4.46MB、mobs 14.4→9.63MB、props 0.94→0.21MB

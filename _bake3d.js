@@ -66,10 +66,10 @@ function pruneGLB(buf,keepAnim){
 }
 
 const GROUPS={
-  models_chars:['jon','arya','dany','bri','npc1','npc2','king'],
-  models_mobs:['wolf','giant','spider','wight','walker','dragon','dragonEvo',
-    // E0 v6 新怪 18 种
-    'bat','snake','slime','goblin','skeleton','zombie','orc','orcEnemy','demon','blueDemon',
+  models_chars:['jon','arya','dany','bri','npc1','npc2'],
+  models_mobs:['wolf','giant','spider','wight','walker',
+    // E0 v6 新怪（v6.6 清 orcEnemy：无池/无命名 boss 引用）
+    'bat','snake','slime','goblin','skeleton','zombie','orc','demon','blueDemon',
     'golemIce','golemEvo','shaman','dragonWhelp','direwolf','wraith','knightBlack','rogue'],
 };
 const props=fs.readdirSync(DIR).filter(f=>f.startsWith('p_')&&f.endsWith('.glb')).map(f=>f.slice(0,-4));

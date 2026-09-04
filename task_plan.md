@@ -76,7 +76,27 @@
 - 清理：2D 回退代码保留（RENDER_MODE='2d' 兜底），仅删无引用旧美术文件；临时脚本清
 - 验证 + progress/findings 收工更新
 
-## 验收标准（v6）
+## Phase F（v6.6）：无效资源清理 + 城池/墙体建模整改（用户反馈 2026-09-04）
+反馈：「建模不符合主流视觉效果，甚至有些建模不存在；城池建模、墙体建模完全不对。」资产源用户已选 **Quaternius 中世纪幻想套（poly.pizza CDN，CC0，与现有角色/怪同家族）**；清理范围=仅无效资源（留 _lpc/_dl/_tmp3d 本地缓存、测试页、v3 备份）。改动面纪律：3D 全在 adapter3d.js+models_*.js；powergame.html 只动加载清单/白名单；2D 回退保持可用。
+
+### F-A 无效资源清理 ✅ 会话㉒（2026-09-04）
+- A0 预检：19 活跃 p_* key；king/dragon/dragonEvo/orcEnemy 无 MODELS3D 消费；MF 消费仅 'king skeleton'/'cyclop'
+- A1 31 死道具 GLB 从 _tmp3d+_dl3d.js 清除 → props 19 key（0.94→0.21MB）
+- A2 chars 去 king、mobs 去 dragon/dragonEvo/orcEnemy（GROUPS+MOB3D+face3d 白名单）→ chars 6 key（8.2→4.46MB）、mobs 22 key（14.4→9.63MB）
+- A3 删 assets3d/minitri.glb
+- A4 loadAssets 显式清单（TOWN_KEEP 32/DUN_KEEP 15）+loadMF 收窄 2 项；删 499 无引用 2D 文件 14.16MB（town100/dun117/lpc34/mf187/ui61；留 mf/LICENSE.txt+king skeleton/cyclop）；新增 _smoke2d.js（Temp 副本强制 2D）
+- A5 双模式冒烟全绿：3D SMOKE1-4 PASS+E2 13/13；2D 回退 SMOKE1-4 PASS（c1/c2/clix/camp 全量回归并入 F-B 前跑）
+
+### F-B Quaternius 新资产入库（周一开工）
+- _dl3d.js 追加 p_q_ 14 键（wallStone/wallTower/gateStone/gateWood/towerStone/towerWatch/castle/houseTower/houseA/inn/smith/market/bridge/dock；uuid 已验证在库）→ 下载+烘焙+probe3d 记录 asp/朝向
+
+### F-C adapter3d.js 城建/墙体重做
+- loadModels 存 asp + instTo 独立 sx/sz；clusterBuildings 洪泛聚类房（删悬浮屋顶）；城墙环转角塔+直行段固定 s；keep/tower/tall 换完整建筑模型；长城三段+烽燧+关门；桥按跨度缩放（盒面回退保留）；战斗 wall/city 主题换装
+
+### F-D/E/F：比例表（findings）→ 全量回归+截图目检 → 文档+收口
+- 风险已列：墙段 hash 抖动开缝（固定 s 化解）；桥拉长畸变（盒面回退）；模型朝向以 probe/models_debug 实测为准
+
+
 1. 图鉴条目 ≥500、命名 boss ≥36，全部可战/可见/可驯规则自洽
 2. 装备 ≥70（橙 ≥10）；掉落/强化/装备/存档全链路通
 3. 面板全 Kenney；头像 3D；图鉴/装备面板可用
