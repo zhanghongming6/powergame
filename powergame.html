@@ -3261,7 +3261,7 @@ function a3dCfg(){
     props.push({tx:p.tx,ty:p.ty,kind:p.kind||'',
       art:(p.data&&(p.data.art||p.data.kind))||'',
       label:(p.data&&p.data.label)||'',
-      cls:p.im?(IMK[p.im]||''):''});
+      cls:p.ak||(p.im?(IMK[p.im]||''):'')});
   }
   return {mapId:G.mapId,MW,MH,MAP,WATER,props};
 }
@@ -3330,10 +3330,10 @@ function terrainNorth(R,set,get){
 
 /* ---- 世界内容：建筑/地标/采集/篝火 ---- */
 const PROPS=[],INTERACT=[],POIS=[];let PROPAT={};
-function prop(tx,ty,im,solid,kind,data){
+function prop(tx,ty,im,solid,kind,data,ak){
   const under=MAP[ty*MW+tx];
   if(solid)MAP[ty*MW+tx]=11;
-  const p={tx,ty,im,solid,kind,data,under};
+  const p={tx,ty,im,solid,kind,data,under,ak:ak||''};
   PROPS.push(p);
   if(kind)INTERACT.push(p);
   if(solid)PROPAT[ty*MW+tx]=p;
@@ -3341,8 +3341,8 @@ function prop(tx,ty,im,solid,kind,data){
 }
 function house(x,y,grey){
   const roof=grey?[48,49,50]:[52,53,54],wall=grey?[76,78,77]:[72,74,73];
-  roof.forEach((t,i)=>prop(x+i,y,ASSET.img['t'+t],true));
-  wall.forEach((t,i)=>prop(x+i,y+1,ASSET.img['t'+t],true));
+  roof.forEach((t,i)=>prop(x+i,y,ASSET.img['t'+t],true,null,null,'t'+t));
+  wall.forEach((t,i)=>prop(x+i,y+1,ASSET.img['t'+t],true,null,null,'t'+t));
 }
 function wallRing(x0,y0,x1,y1,gaps){
   for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
@@ -3351,7 +3351,7 @@ function wallRing(x0,y0,x1,y1,gaps){
     let t=97;
     if(y===y0)t=x===x0?96:(x===x1?98:97);
     else if(x===x0||x===x1)t=108;
-    prop(x,y,ASSET.img['t'+t],true);
+    prop(x,y,ASSET.img['t'+t],true,null,null,'t'+t);
   }
 }
 function poi(n,s,x,y,r){POIS.push({n,s,x:x*TS+8,y:y*TS+8,r:r*TS,seen:false});}
@@ -3361,7 +3361,7 @@ function buildWorld(){
   MAPS[G.mapId].world();
 }
 function worldNorth(){
-  const P=(tx,ty,k,solid,kind,data)=>prop(tx,ty,ASSET.img[k],solid,kind,data);
+  const P=(tx,ty,k,solid,kind,data)=>prop(tx,ty,ASSET.img[k],solid,kind,data,k);
   // 临冬城
   wallRing(54,30,67,38,[[59,30],[60,30],[59,38],[60,38]]);
   house(55,32,true);house(63,32,false);house(63,35,false);house(55,35,false);
@@ -3609,7 +3609,7 @@ function terrainWinterfell(R,set,get){
   for(let y=6;y<=30;y++){set(24,y,3);set(25,y,3);}
 }
 function worldWinterfell(){
-  const P=(tx,ty,k,solid,kind,data)=>prop(tx,ty,ASSET.img[k],solid,kind,data);
+  const P=(tx,ty,k,solid,kind,data)=>prop(tx,ty,ASSET.img[k],solid,kind,data,k);
   // 双层城墙：外郭 + 内堡
   wallRing(9,7,39,29,[[24,29],[25,29]]);
   wallRing(20,10,28,16,[[24,16],[25,16]]);
@@ -3653,7 +3653,7 @@ function terrainWolfswood(R,set,get){
   for(let y=33;y<=39;y++)set(12,y,3);
 }
 function worldWolfswood(){
-  const P=(tx,ty,k,solid,kind,data)=>prop(tx,ty,ASSET.img[k],solid,kind,data);
+  const P=(tx,ty,k,solid,kind,data)=>prop(tx,ty,ASSET.img[k],solid,kind,data,k);
   P(40,31,'d64',true);P(50,31,'d65',true);P(40,41,'d65',true);P(50,41,'d64',true);P(45,33,'d63',true);
   P(45,37,'t83',false,'sign',{txt:'狼林深处 · 巨人的脚印比上回又深了一寸。'});
   // 狼穴
@@ -3680,7 +3680,7 @@ function terrainKingslanding(R,set,get){
   for(let x=46;x<=61;x++)set(x,40,10);
 }
 function worldKingslanding(){
-  const P=(tx,ty,k,solid,kind,data)=>prop(tx,ty,ASSET.img[k],solid,kind,data);
+  const P=(tx,ty,k,solid,kind,data)=>prop(tx,ty,ASSET.img[k],solid,kind,data,k);
   // 都城外墙
   wallRing(30,20,60,50,[[45,50],[46,50]]);
   // 红堡高台（内城）
@@ -3723,7 +3723,7 @@ function terrainDragonstone(R,set,get){
   for(let x=12;x<=24;x++)set(x,25,10);
 }
 function worldDragonstone(){
-  const P=(tx,ty,k,solid,kind,data)=>prop(tx,ty,ASSET.img[k],solid,kind,data);
+  const P=(tx,ty,k,solid,kind,data)=>prop(tx,ty,ASSET.img[k],solid,kind,data,k);
   // 火山口
   prop(35,16,null,true,'volcano');
   // 龙穴

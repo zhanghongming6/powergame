@@ -203,3 +203,49 @@ w_lsword_f/b、w_dagger_f/b、w_spear_f/b（各 _walk/_idle；武器仅 _walk）
 - 2D 引用集固化：loadAssets 显式 TOWN_KEEP 32 张 [0-5,25,43,48-50,52-54,72-74,76-78,83,90,92,93,96-98,104-106,108,112] / DUN_KEEP 15 张 [18,28,63-65,72,74,84-86,95,98-100,111]；assets/ui 被引用恰 26 张（bar 系 15+buttonLong 5+buttonSquare 4+panelInset_beige+panel_blue）；lpc 消费=44 层×(walk+idle)，其中 23 层在 baked/（LPC_BAKED），根目录同名文件属死文件
 - **2D 回退冒烟工具 _smoke2d.js**：先经 _shot.js tcont 刷新 Temp 副本，脚本将副本 `if(A3D.boot(c3)){` 替换为 `if(false){` 存 game2d.html → RENDER_MODE 恒 '2d' → ?smoke 断言链（用于任何 2D 侧改动的即时回归）
 - 清理总账：31 死道具+4 死模型（king/dragon/dragonEvo/orcEnemy）+minitri.glb+499 个 2D 文件（14.16MB）；注册表体积 chars 8.2→4.46MB、mobs 14.4→9.63MB、props 0.94→0.21MB
+
+## F-B Quaternius 新资产入库（2026-09-08 · 会话㉓）
+- **测量改 Node 直算**：probe3d.html 的 --dump-dom 在 84 键下停 'probing...'（GLTF 贴图异步解码不吃虚拟时间、无 stall 超时致 pend 不归零）。改 _bbox3d.js 纯 Node 解析 GLB 场景图 TRS→世界 AABB→归一(h=1,落地,水平居中)，复刻 probe 口径；jon 校验 baked(0.878,0.526) 与历史一致。全 64 候选+19 道具+jon 尺寸入 _tmp_bbox.txt
+- **套系聚类（画廊目检 cand_gallery.html + _shotgal.js 截图）**：三大族——①石制城防（灰白石+红顶：wall/wallTower/gateStone/towerStone/stoneTowerB/castle/castleFort/towerWatch）②彩色村镇（抹灰半木+红/青顶：houseA/houses3/townHouseC/inn/smith/market）③木质（棕：woodCastle/gateWood/docks/woodWall）。石墙+城内彩屋=中世纪瓮城正确搭配；木族排除出石城核心
+- **选定 17 键入 _tmp3d 重烘**（props 19→36 键 4.49MB；_tmp3dc 余 47 待 F-E 清）：
+  石防 p_q_wall/wallTower/gateStone/towerStone/stoneTowerB/castle/castleFort；
+  民用 p_q_houseA/houses3/townHouseC/inn/smith/market；
+  功能 p_q_bridgeSm/dock/windmill/towerWatch
+- **asp/朝向表（baked 归一 h=1；长轴=走向，front 待 F-C 摆放目检确认）**：
+  | key | raw(x,y,z,minY) | baked(fx,fz) | 走向/用途 |
+  | p_q_wall | 1.998,2.001,0.286,-0.001 | 0.999,0.143 | 长轴X=直行城墙段(1格,薄) |
+  | p_q_wallTower | 1.976,0.735,0.333,-0.007 | 2.687,0.453 | 长轴X=带塔墙段/转角 |
+  | p_q_gateStone | 1.976,0.737,0.333,-0.008 | 2.680,0.452 | 长轴X=城门楼 |
+  | p_q_towerStone | 0.857,1.198,0.723,-0.013 | 0.715,0.603 | 近方=角塔 |
+  | p_q_stoneTowerB | 0.838,1.357,0.614,-0.013 | 0.618,0.452 | 近方=高塔/tall |
+  | p_q_castle | 2.103,0.937,1.957,0 | 2.245,2.089 | 近方=主城 keep |
+  | p_q_castleFort | 2.126,1.352,1.957,-0.05 | 1.572,1.447 | 近方=主城 keep(紧凑) |
+  | p_q_houseA | 2.144,3.39,2.659,0 | 0.632,0.784 | 民居(半木) |
+  | p_q_houses3 | 1.353,1.063,1.461,0 | 1.273,1.374 | 民居(小) |
+  | p_q_townHouseC | 3.052,5.677,4.396,-0.013 | 0.538,0.774 | 民居(高窄) |
+  | p_q_inn | 4.029,3.491,4.021,-0.006 | 1.154,1.152 | 大屋/inn |
+  | p_q_smith | 3.89,3.003,3.283,-0.004 | 1.295,1.093 | 铁匠铺 |
+  | p_q_market | 1.9,0.553,1.867,-0.007 | 3.438,3.378 | 市集(矮摊,宽) |
+  | p_q_bridgeSm | 6.938,2.617,2.638,-0.276 | 2.651,1.008 | 长轴X=桥(跨水) |
+  | p_q_dock | 0.524,0.466,1.219,-0.354 | 1.126,2.617 | 长轴Z=栈桥 |
+  | p_q_windmill | 1.35,1.917,0.66,0 | 0.704,0.344 | 风车(地标,高) |
+  | p_q_towerWatch | 0.813,1.451,0.892,-0.007 | 0.560,0.615 | 瞭望塔/烽燧 |
+- **朝向约定**：长轴X 件（wall/wallTower/gateStone/bridgeSm）原生沿 X 走向，front=±Z；要沿 Z 走向需 rot=π/2。旧 p_wall 长轴Z（fx0.1,fz1）方向相反，F-C 换件时 rot 逻辑需翻转。近方件（塔/keep/屋）front=门侧，F-C 摆放截图定
+- **体积账**：选定 17 件 raw≈4.5MB→base64≈6.0MB（houseC1.5MB/townHouseB0.76MB 已换 houses3/townHouseC 省≈2MB）；models_props.js 0.21→6.28MB（36 键）
+- **真根因（用户"城池/墙体不存在"）**：a3dCfg 用 IMK 反查 image→key 得 cls，但城镇瓦片图在 F-A 清理后多图共用/末位覆盖 → 墙(t96-98/108)/房(t48-54/72-78) 的 cls 全塌成 'd111'（实测 skl2 nprops=211 cls={d111:203}）→ buildProps（新旧皆然）永不命中 → 3D 城池从未实例化（只剩地面贴色）。对策：prop() 增第7参 ak 存原始资产键，P()/house()/wallRing() 传入，a3dCfg cls 优先 p.ak；修后 skl2 实机截图见雉堞石墙+红顶角塔+青顶民居+keep，素材真正入游戏
+- **enterExplore 竞态加固**：重资产下 enterExplore 可能在 p_q_* 异步解析完成前跑 buildProps（TPL 不全→静默无建筑）；adapter enterExplore 改 buildTiles/buildProps 延后至 whenReady（exGen 代际防旧回调）
+
+## F-D 比例约定表（2026-09-08 · 实机目检后定稿；人=1.2u，instTo scale=(s, sy*s, s)，H=sy*s）
+| 槽位 | 模型 | s | sy | 实机H(u) | 足迹(u) | 对应cls |
+| cwall 直行城墙 | p_q_wall | 1.15 | 2.0 | 2.30 | 1.15×0.16 | t96/97/98/108(非转角) |
+| ctower 转角塔 | p_q_towerStone | 1.35 | 2.1 | 2.84 | 0.97×0.81 | 墙环 nx&&nz 转角 |
+| tower 独立塔 | p_q_stoneTowerB | 1.30 | 2.3 | 3.00 | 0.80×0.59 | t92 |
+| keep 主城 | p_q_castle | 2.20 | 1.5 | 3.30 | 4.94×4.60 | t105 |
+| keep2 主城(紧凑) | p_q_castleFort | 2.00 | 1.7 | 3.40 | 3.14×2.90 | t106 |
+| tall 高屋 | p_q_townHouseC | 1.50 | 1.7 | 2.55 | 0.81×1.16 | t93/112 |
+| door 城门楼 | p_q_gateStone | 1.70 | 2.2 | 3.74 | 4.56×0.77 | t90 |
+| dock 栈桥 | p_q_dock | 1.10-1.35 | 1 | ~1.2 | 1.2-1.5×2.9-3.5 | d72/74 |
+| house 民居(聚类) | houseA/houses3/townHouseC/inn/smith | max(w/fx,d/fz)*0.92 | H/s | clamp(1.7+0.14n,2.0,3.2) | ≈聚类w×d | t48-54+t72-78 连块 |
+- 层级自洽：墙2.3 < 角塔2.84 < 独立塔3.0 < keep3.3-3.4；民居2.0-3.2 在墙内合理；门楼3.74 为地标最高
+- 朝向：民居 rot=0 门面朝 +z（与 house() 墙砖行 y+1 同侧=朝路）；墙长轴X，horiz?0:π/2；塔/keep 近方 noRot
+- 目检：skl2（君临）半木民居门面朝路+雉堞环墙+红顶角塔；swf2（临冬城）keep+红顶塔+雪墙；fctest 合成瓮城全要素

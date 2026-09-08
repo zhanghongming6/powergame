@@ -87,13 +87,13 @@
 - A4 loadAssets 显式清单（TOWN_KEEP 32/DUN_KEEP 15）+loadMF 收窄 2 项；删 499 无引用 2D 文件 14.16MB（town100/dun117/lpc34/mf187/ui61；留 mf/LICENSE.txt+king skeleton/cyclop）；新增 _smoke2d.js（Temp 副本强制 2D）
 - A5 双模式冒烟全绿：3D SMOKE1-4 PASS+E2 13/13；2D 回退 SMOKE1-4 PASS（c1/c2/clix/camp 全量回归并入 F-B 前跑）
 
-### F-B Quaternius 新资产入库（周一开工）
+### F-B Quaternius 新资产入库 ✅ 2026-09-08（会话㉓）
 - _dl3d.js 追加 p_q_ 14 键（wallStone/wallTower/gateStone/gateWood/towerStone/towerWatch/castle/houseTower/houseA/inn/smith/market/bridge/dock；uuid 已验证在库）→ 下载+烘焙+probe3d 记录 asp/朝向
 
-### F-C adapter3d.js 城建/墙体重做
+### F-C adapter3d.js 城建/墙体重做 ✅ 2026-09-08（会话㉓）
 - loadModels 存 asp + instTo 独立 sx/sz；clusterBuildings 洪泛聚类房（删悬浮屋顶）；城墙环转角塔+直行段固定 s；keep/tower/tall 换完整建筑模型；长城三段+烽燧+关门；桥按跨度缩放（盒面回退保留）；战斗 wall/city 主题换装
 
-### F-D/E/F：比例表（findings）→ 全量回归+截图目检 → 文档+收口
+### F-D/E/F：比例表+回归+文档 ✅ 2026-09-08（会话㉓：F-D 比例表/目检、F-E 清理、F-F 文档+camp×3=100%）
 - 风险已列：墙段 hash 抖动开缝（固定 s 化解）；桥拉长畸变（盒面回退）；模型朝向以 probe/models_debug 实测为准
 
 
@@ -114,3 +114,5 @@
 | Explore 子代理 400 model Qwen3.8-max 不存在 | 1 | 显式 model=sonnet 重试成功 |
 | e2 cand_flagged FAIL（roll 段遗留 G.chapter=7 致 ch6 boss 仍候选） | 1 | D 段起始重置 `G.chapter=1;G.exp.region=REG.north` → 13/13 |
 | **zoom3x() 在 explore 场景挂死 Chrome**（swiftshader+虚拟时间下 spawnSync ETIMEDOUT 420s，残留进程） | E2 bpoi | 不在探索场景用 zoom3x；改拍原图后用 $TEMP/bfshot/crop.ps1 本地裁切（powershell -ExecutionPolicy Bypass -File crop.ps1 src x y w h dst） |
+
+

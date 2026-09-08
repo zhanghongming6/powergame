@@ -332,3 +332,20 @@
 - [x] A5 双模式冒烟全绿：3D SMOKE1-4 PASS+E2 13/13；2D 回退（新 _smoke2d.js：Temp 副本把 `if(A3D.boot(c3)){` 换 `if(false){` → 保持 2d）SMOKE1-4 PASS
 - [x] 工具教训：删除清单脚本里 path.relative 结果含文件名，分支判断必须先取目录部分（首版把 baked 保留层与 MF 保留图误列删除，靠抽查拦下）
 - [ ] 收工：用户要求 20 分钟内停（记录+上传，周一继续）。**周一入口=task_plan.md Phase F-B**（Quaternius 14 键下载/烘焙/探针记 asp/朝向）→ F-C adapter 城建重做；c1/c2/clix/camp×3 全量回归在 F-B 开工前先跑一遍作基线（今日双模式冒烟已绿）
+
+## 2026-09-08 会话㉓ · v6.6（Phase F-B + F-C）：城建/墙体重做完成
+- [x] F-B 烘焙解锁：node 直跑 _bake3d.js 需 --preserve-symlinks --preserve-symlinks-main（沙箱内 node 解析脚本 realpath 上溯 C:\Users\<u> 触发 EPERM）；还原 props 19 键 0.21MB + 生成 models_cand.js 64 键
+- [x] F-B 测量改 Node：probe3d --dump-dom 在 84 键停 'probing...'（贴图异步解码不吃虚拟时间且无 stall 超时）；新 _bbox3d.js 纯 Node 解析 GLB 场景图 TRS→世界 AABB→归一，jon 校验 (0.878,0.526) 吻合；全 84 键尺寸入 _tmp_bbox.txt
+- [x] F-B 套系目检：cand_gallery.html（仿 models_debug 的 stall 超时+实帧渲染）+ 新 _shotgal.js（截图落工作区 _tmp_shots/，绕开 TEMP 8.3 短名 EPERM）；三族=石城防/彩村镇/木质；选定 17 键（石防 wall/wallTower/gateStone/towerStone/stoneTowerB/castle/castleFort + 民用 houseA/houses3/townHouseC/inn/smith/market + 功能 bridgeSm/dock/windmill/towerWatch）移入 _tmp3d 重烘 props 36 键 4.49MB；asp/朝向表入 findings.md
+- [x] F-C adapter3d.js 重做：instTo 增逐格 c.s/c.sy；buildProps 重写——房屋洪泛聚类（屋顶 t48-54+墙 t72-78 连块=一栋完整建筑，删悬浮屋顶 p_roofGable/墙面板 p_wallWinShut）；城墙环 p_q_wall 固定 s+转角自动 p_q_towerStone；keep=p_q_castle；t92=p_q_stoneTowerB；t90 门=p_q_gateStone；dock=p_q_dock；战斗 city/wall 主题换 p_q_houseA/townHouseC/p_q_wall/p_q_towerStone
+- [x] F-C 目检：fctest.html 合成瓮城（wallRing+house+keep+gate+dock）截图=连续雉堞石城墙+红顶角塔+闸门楼+完整抹灰民居（悬浮屋顶消失）；真实游戏 explore 渲染无崩溃
+- [x] 回归：c1 19/19、clix 13/13、c2 12/12（c2 ch1/rest_obj 初 FAIL=虚拟时间预算被变重的 models_props 解析吃光，_shot.js c2 预算 60000→150000 后全绿，与既往按模式调预算一致）；a5 战役跑批中
+- [ ] 待办：F-D 比例表目检微调（keep/房屋朝向与高度）；F-E 清理（_tmp3dc 47 键/models_cand.js/probe3d/cand_gallery/fctest/_patch_fc/_bbox3d/_packmap/_shotgal 等开发件）；F-F 文档（MANUAL/WALKTHROUGH 城建章）+ camp×3 通关率
+- [x] 补：真根因=IMK 反查塌 cls('d111') 致 3D 城池从未实例化；prop/P/house/wallRing/a3dCfg 增 ak 原始键修复；enterExplore buildTiles/buildProps 延后至 whenReady(exGen 防竞态)；修后 skl2 实机见新城；回归 c1 19/19、c2 12/12、clix 13/13 复绿
+- [x] F-D 比例表定稿入 findings（墙2.3/角塔2.84/塔3.0/keep3.3-3.4/门楼3.74/民居2.0-3.2；民居门面朝+z 朝路）；t105/t106 分置 p_q_castle/p_q_castleFort 增主城形制变化；skl2+swf2 双图目检过
+- [x] F-E 清理：models_cand.js(20MB)+_tmp3dc(47glb)+cand_gallery+一次性脚本删除；probe3d 去 cand 引用；保留 fctest/_shotgal/_bbox3d 作可视化与测量工具
+- [x] F-F 文档：MANUAL 增"十三、城池与建筑(3D)"、WALKTHROUGH 增"十三、城池地标速览"；camp×3=3/3 WIN(100%≥60%)；keep2 后 c1 19/19 复验
+- [x] Phase F 全收口：回归 c1 19/19、c2 12/12、clix 13/13、a5 13/13、camp×3 100%；用户反馈"城池/墙体不对"根因(IMK 塌 cls)+建模整改均闭环
+- [x] 角色反馈"太丑"排查：chars_view 画廊目检=jon/arya/dany 写实低模 + npc1/npc2 Q版大头（风格混杂）+ **bri 无动画 clip 呈 T-pose 张臂**（最破）；jon/arya 贴图偏脏
+- [x] 本地可修项：bri 换为已入库的 KayKit Knight（_tmp3d/knightBlack.glb → bri.glb 重烘，key 不变故零代码改动，头像/肖像自动更新）；修后 bri clips:27 动画正常、披甲持巨剑；旧模备份 _tmp3d/bri_old.glb；c1 19/19 复绿
+- [ ] 受限：整套路人/主角级角色升级需新下载 CC0 人形包，但本环境当前 static.poly.pizza/poly.pizza/raw.githubusercontent/api.github 全部连接被拒（离线），无法取新模；待网络恢复按"搜索→下载→画廊比选→按既有 key 重烘（jon/arya/dany/bri/npc1/npc2，零代码改动）"流水线执行，可一次性统一全cast风格

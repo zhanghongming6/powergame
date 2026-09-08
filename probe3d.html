@@ -8,10 +8,8 @@
 <script src="assets3d/models_props.js"></script>
 <script>
 (function(){
-const KEYS=['p_wall','p_wallBlock','p_wallArch','p_wallDoor','p_wallWinShut','p_roofGable','p_pineTallA','p_oak','p_statue','p_rockTallA',
-  'jon','arya','wolf','spider','giant','wight','walker','npc1','npc2',
-  'bat','snake','slime','goblin','skeleton','zombie','orc','orcEnemy','demon','blueDemon',
-  'golemIce','golemEvo','shaman','dragonWhelp','direwolf','wraith','knightBlack','rogue'];
+// F-B：全部道具 + 人物基准（jon 高=1 单位≈人 1.2u 参照）
+const KEYS=Object.keys(window.MODELS3D||{}).filter(k=>k.indexOf('p_')===0||k==='jon').sort();
 const L=[];
 const loader=new THREE.GLTFLoader();
 function buf(b64){const s=atob(b64),u=new Uint8Array(s.length);for(let i=0;i<s.length;i++)u[i]=s.charCodeAt(i);return u.buffer;}
@@ -49,3 +47,4 @@ for(const k of KEYS){
 })();
 </script>
 </body></html>
+

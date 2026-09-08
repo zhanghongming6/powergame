@@ -860,5 +860,6 @@ function shoot(mode,file,budget){
   }
 }
 shoot('title',path.join(TMP,'title.html'),12000);
-for(const m of modes)shoot(m,path.join(TMP,'game.html'),(m==='a2'||m==='a4')?45000:(m==='a5')?600000:(m==='c1')?240000:(m==='e2'||m==='e3'||m==='e4')?120000:(m==='c2'||m==='clix')?60000:(m==='title'||m==='tcont'||m==='e1')?12000:16000);
+for(const m of modes)shoot(m,path.join(TMP,'game.html'),(m==='a2'||m==='a4')?45000:(m==='a5')?600000:(m==='c1')?240000:(m==='e2'||m==='e3'||m==='e4')?120000:(m==='clix')?60000:(m==='c2')?150000:(m==='title'||m==='tcont'||m==='e1')?12000:16000);
 console.log('DONE');
+

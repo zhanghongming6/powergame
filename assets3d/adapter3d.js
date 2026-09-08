@@ -7,6 +7,7 @@ const W=1280,H=720,TS=16;
 const CAMH=11.25;                 // 45° 斜视角相机高度（≈2h=22.5 格可见纵深）
 let renderer=null,scene=null,cam=null,ok=false,ready=false;
 let exGroup=null,waterMesh=null;
+let exGen=0;
 const fires=[];
 const exGeos=[],exMats=[];        // 本地图新建的几何/材质（清场时释放）
 const TPL={};                     // key -> {root,clips,geos:[{g,mat}]}
@@ -100,11 +101,12 @@ function instTo(group,geos,matsT,key,cells,opt){
   const o=opt||{};
   const mats=cells.map(c=>{
     const h=hash2(c.x|0,(c.z|0)+101);
-    const s=(o.s0!=null?o.s0:1)+((h%1000)/1000)*(((o.s1!=null?o.s1:1))-(o.s0!=null?o.s0:1));
+    const s=(c.s!=null)?c.s:((o.s0!=null?o.s0:1)+((h%1000)/1000)*(((o.s1!=null?o.s1:1))-(o.s0!=null?o.s0:1)));
+    const syv=(c.sy!=null)?c.sy:(o.sy||1);
     const rot=(c.rot!=null)?c.rot:(o.noRot?0:((h>>3)%628)/100);
     DUM.position.set(c.x,(o.y||0)+(c.y||0),c.z);
     DUM.rotation.set(0,rot,0);
-    DUM.scale.set(s,((o.sy||1))*s,s);
+    DUM.scale.set(s,syv*s,s);
     DUM.updateMatrix();
     return DUM.matrix.clone();
   });
@@ -214,6 +216,8 @@ function buildTiles(cfg){
 
 /* ---------- PROPS（建筑/采集/门/篝火） ---------- */
 const ROOFRE=/^t(48|49|50|52|53|54)$/,HWRE=/^t(72|73|74|76|77|78)$/;
+const HOUSERE=/^t(48|49|50|52|53|54|72|73|74|76|77|78)$/;
+const HASP={p_q_houses3:[1.273,1.374],p_q_houseA:[0.632,0.784],p_q_townHouseC:[0.538,0.774],p_q_inn:[1.154,1.152],p_q_smith:[1.295,1.093]};
 function buildProps(cfg){
   const WSET=new Set();
   for(const p of cfg.props){
@@ -221,15 +225,46 @@ function buildProps(cfg){
   }
   const B={};
   const add=(k,x,z,extra)=>{(B[k]=B[k]||[]).push(Object.assign({x,z},extra||{}));};
+  // 房屋洪泛聚类：屋顶+墙砖连块=一栋房，整块放一个完整建筑模型（删悬浮屋顶）
+  const HMAP=new Map();
+  for(const p of cfg.props)if(HOUSERE.test(p.cls))HMAP.set(p.tx+','+p.ty,p);
+  const seenH=new Set();
+  for(const k0 of HMAP.keys()){
+    if(seenH.has(k0))continue;
+    seenH.add(k0);const stack=[k0],cells=[];
+    while(stack.length){
+      const k=stack.pop();cells.push(k);
+      const ci=k.indexOf(',');const cx=+k.slice(0,ci),cy=+k.slice(ci+1);
+      const nbs=[[cx+1,cy],[cx-1,cy],[cx,cy+1],[cx,cy-1]];
+      for(const nb of nbs){const nk=nb[0]+','+nb[1];
+        if(HMAP.has(nk)&&!seenH.has(nk)){seenH.add(nk);stack.push(nk);}}
+    }
+    let minx=1e9,maxx=-1e9,minz=1e9,maxz=-1e9;
+    for(const k of cells){const ci=k.indexOf(',');const cx=+k.slice(0,ci),cy=+k.slice(ci+1);
+      if(cx<minx)minx=cx;if(cx>maxx)maxx=cx;if(cy<minz)minz=cy;if(cy>maxz)maxz=cy;}
+    const w=maxx-minx+1,d=maxz-minz+1,n=cells.length;
+    const hx=(minx+maxx)/2+.5,hz=(minz+maxz)/2+.5;
+    let key;
+    if(n<=3)key='p_q_houses3';
+    else if(n<=6)key=(hash2(minx,minz)&1)?'p_q_houseA':'p_q_townHouseC';
+    else key=(hash2(minx,minz)&1)?'p_q_inn':'p_q_smith';
+    const A=HASP[key];
+    const sc=Math.max(w/A[0],d/A[1])*0.92;
+    const th=Math.min(3.2,Math.max(2.0,1.7+0.14*n));
+    add('H:'+key,hx,hz,{rot:0,s:sc,sy:th/sc});
+  }
   for(const p of cfg.props){
     const x=p.tx+.5,z=p.ty+.5,c=p.cls;
     if(c==='t96'||c==='t97'||c==='t98'||c==='t108'){
-      const horiz=WSET.has((p.tx+1)+','+p.ty)||WSET.has((p.tx-1)+','+p.ty);
-      add('cwall',x,z,{rot:horiz?0:Math.PI/2});
-    }else if(c==='t92')add('tower',x,z);
-    else if(c==='t105'||c==='t106')add('keep',x,z);
-    else if(ROOFRE.test(c))add('roof',x,z,{rot:(hash2(p.tx,p.ty)&1)?0:Math.PI});
-    else if(HWRE.test(c))add('hwall',x,z,{rot:(hash2(p.tx,p.ty)&1)?0:Math.PI});
+      const nx=WSET.has((p.tx+1)+','+p.ty)||WSET.has((p.tx-1)+','+p.ty);
+      const nz=WSET.has(p.tx+','+(p.ty+1))||WSET.has(p.tx+','+(p.ty-1));
+      if(nx&&nz)add('ctower',x,z);
+      else add('cwall',x,z,{rot:nx?0:Math.PI/2});
+    }
+    else if(c==='t92')add('tower',x,z);
+    else if(c==='t105')add('keep',x,z);
+    else if(c==='t106')add('keep2',x,z);
+    else if(HOUSERE.test(c)){/* 聚类已处理 */}
     else if(c==='d63'||c==='d64'||c==='d65'||c==='d95')add('stone',x,z);
     else if(c==='t93'||c==='t112')add('tall',x,z);
     else if(c==='t104')add('chimney',x,z);
@@ -247,22 +282,23 @@ function buildProps(cfg){
     else if(p.kind==='volcano'){freeClone('p_rockTallA',x,z,0x2a2e36,0xff5a1a,6);
       const L=new THREE.PointLight(0xff7a2a,.8,8);L.position.set(x,1.6,z);exGroup.add(L);}
   }
-  instCells('p_wall',B.cwall,{s0:1.08,s1:1.08,sy:2.1,noRot:false});
-  instCells('p_wallBlock',B.tower,{s0:1.05,s1:1.05,sy:3.2,noRot:true});
-  instCells('p_wallBlock',B.keep,{s0:1.1,s1:1.1,sy:2.2,noRot:true});
-  instCells('p_roofGable',B.roof,{s0:1.2,s1:1.2,y:1.5});
-  instCells('p_wallWinShut',B.hwall,{s0:1,s1:1,sy:1.6});
+  instCells('p_q_wall',B.cwall,{s0:1.15,s1:1.15,sy:2.0,noRot:false});
+  instCells('p_q_towerStone',B.ctower,{s0:1.35,s1:1.35,sy:2.1,noRot:true});
+  instCells('p_q_stoneTowerB',B.tower,{s0:1.3,s1:1.3,sy:2.3,noRot:true});
+  instCells('p_q_castle',B.keep,{s0:2.2,s1:2.2,sy:1.5,noRot:true});
+  instCells('p_q_castleFort',B.keep2,{s0:2.0,s1:2.0,sy:1.7,noRot:true});
+  instCells('p_q_townHouseC',B.tall,{s0:1.5,s1:1.5,sy:1.7,noRot:true});
+  instCells('p_q_gateStone',B.door,{s0:1.7,s1:1.7,sy:2.2,noRot:true});
+  instCells('p_q_dock',B.dock,{s0:1.1,s1:1.35,noRot:true});
+  for(const hk in HASP)if(B['H:'+hk])instCells(hk,B['H:'+hk],{});
   instCells('p_statue',B.stone,{s0:1.2,s1:1.6});
   instCells('p_bush',B.bush,{s0:.35,s1:.5});
   instCells('p_rockSmallA',B.rock,{s0:.5,s1:.8});
   instCells('p_wallArch',B.arch,{s0:1.1,s1:1.1,sy:2.2,noRot:true});
   instCells('p_cart',B.cart,{s0:.8,s1:.8});
-  instCells('p_wallBlock',B.tall,{s0:1,s1:1,sy:2.6,noRot:true});
   instCells('p_chimney',B.chimney,{s0:1,s1:1,sy:1.6});
-  instCells('p_wallDoor',B.door,{s0:1,s1:1,sy:2.0,noRot:true});
   instCells('p_sign',B.sign,{s0:.8,s1:.95});
   instCells('p_stoneLargeA',B.bigstone,{s0:.6,s1:.8});
-  instCells('p_logstack',B.dock,{s0:.6,s1:.75});
 }
 function addFire(x,z){
   const T=TPL['p_campfire'];
@@ -289,8 +325,9 @@ function enterExplore(cfg){
   const dl=new THREE.DirectionalLight(env.sun,env.sunI);dl.position.set(8,14,6);exGroup.add(dl);
   buildGround(cfg);
   buildWater(cfg);
-  buildTiles(cfg);
-  buildProps(cfg);
+  const gen=++exGen;
+  const doBuild=()=>{if(gen!==exGen||!exGroup)return;buildTiles(cfg);buildProps(cfg);};
+  if(ready)doBuild();else whenReady().then(doBuild);
 }
 function clearExplore(){
   if(exGroup){
@@ -444,11 +481,10 @@ function buildBattle(theme){
     instTo(btGroup,btGeos,btMats,'p_bush',bLine(-10,10,4,-2.2,1),{s0:.4,s1:.6});
   }else if(theme==='city'){
     for(let x=-11;x<=9;x+=4){
-      instTo(btGroup,btGeos,btMats,'p_wallBlock',[{x:x,z:-2.6}],{s0:1.7,s1:1.7,sy:1.3,noRot:true});
-      instTo(btGroup,btGeos,btMats,'p_roofGable',[{x:x,z:-2.6,y:2.2}],{s0:1.25,s1:1.25});
+      instTo(btGroup,btGeos,btMats,((x/4|0)%2)?'p_q_houseA':'p_q_townHouseC',[{x:x,z:-2.6}],{s0:1.5,s1:1.5,sy:1.5,noRot:true});
     }
-    instTo(btGroup,btGeos,btMats,'p_wallBlock',[{x:-13.5,z:-2.8},{x:13.5,z:-2.8}],{s0:1.4,s1:1.4,sy:2.6,noRot:true});
-    instTo(btGroup,btGeos,btMats,'p_wall',bLine(-14,14,1,-2,0,Math.PI/2),{s0:1.05,s1:1.05,sy:1.6,noRot:true});
+    instTo(btGroup,btGeos,btMats,'p_q_towerStone',[{x:-13.5,z:-2.8},{x:13.5,z:-2.8}],{s0:1.5,s1:1.5,sy:2.2,noRot:true});
+    instTo(btGroup,btGeos,btMats,'p_q_wall',bLine(-14,14,1,-2,0,Math.PI/2),{s0:1.1,s1:1.1,sy:1.8,noRot:true});
   }else if(theme==='sea'){
     const wg=new THREE.PlaneGeometry(46,32);
     const wm=new THREE.MeshStandardMaterial({color:0x3d7ab5,transparent:true,opacity:.7,roughness:.35});
@@ -463,8 +499,8 @@ function buildBattle(theme){
       const L=new THREE.PointLight(0xff9a3a,.9,10);L.position.set(fx,.8,-4);btGroup.add(L);
     }
   }else{ // wall：背景墙排落位于地平线上方（z=-2.2 → 屏幕底部落在 y≈310）
-    instTo(btGroup,btGeos,btMats,'p_wall',bLine(-14,14,1,-2.2,0,Math.PI/2),{s0:1.12,s1:1.12,sy:2.9,noRot:true,tint:0x46566a});
-    instTo(btGroup,btGeos,btMats,'p_wallBlock',[{x:-13,z:-2.5},{x:13,z:-2.5}],{s0:1.5,s1:1.5,sy:2.8,noRot:true,tint:0x3a4a5e});
+    instTo(btGroup,btGeos,btMats,'p_q_wall',bLine(-14,14,1,-2.2,0,Math.PI/2),{s0:1.15,s1:1.15,sy:2.6,noRot:true});
+    instTo(btGroup,btGeos,btMats,'p_q_towerStone',[{x:-13,z:-2.5},{x:13,z:-2.5}],{s0:1.6,s1:1.6,sy:2.6,noRot:true});
     instTo(btGroup,btGeos,btMats,'p_rockSmallA',bLine(-12,12,6,-0.9,1),{s0:.4,s1:.7});
   }
 }
@@ -639,7 +675,9 @@ function project3D(xTile,yUp,zTile){
 }
 
 return {boot,loadModels,whenReady,enterExplore,renderExplore,renderBattle,projectUnit,project3D,MOB3D,mobModel,renderPortrait,
-  dbg:()=>JSON.stringify({ok,bt:btGroup?btGroup.children.length:-1,un:btUnits.size,th:btTheme,tpl:Object.keys(TPL).length}),
+  dbg:()=>JSON.stringify({ok,bt:btGroup?btGroup.children.length:-1,ex:exGroup?exGroup.children.length:-1,un:btUnits.size,th:btTheme,tpl:Object.keys(TPL).length}),
   isReady:()=>ready,isOk:()=>ok,
   info:()=>renderer?renderer.info.render.calls:0};
 })();
+
+

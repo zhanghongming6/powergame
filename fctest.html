@@ -1,0 +1,49 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>fctest</title>
+<style>html,body{margin:0;background:#000}canvas{display:block}</style></head><body>
+<canvas id="cv" width="1280" height="720"></canvas>
+<pre id="log" style="position:absolute;left:4px;top:4px;color:#7fffd4;font:11px monospace;z-index:9">boot</pre>
+<script src="assets3d/three.min.js"></script>
+<script src="assets3d/GLTFLoader.js"></script>
+<script src="assets3d/SkeletonUtils.js"></script>
+<script src="assets3d/models_chars.js"></script>
+<script src="assets3d/models_mobs.js"></script>
+<script src="assets3d/models_props.js"></script>
+<script src="assets3d/adapter3d.js"></script>
+<script>
+(function(){
+const MW=28,MH=28,MAP=new Array(MW*MH).fill(1);
+for(let y=0;y<MH;y++)for(let x=0;x<MW;x++)if(x>=24)MAP[y*MW+x]=4;
+const props=[];
+const P=(tx,ty,cls,kind,art)=>props.push({tx,ty,cls:cls||'',kind:kind||null,art:art||null});
+function wallRing(x0,y0,x1,y1){for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+  if(x!==x0&&x!==x1&&y!==y0&&y!==y1)continue;let t=97;
+  if(y===y0)t=(x===x0)?96:(x===x1?98:97);else if(x===x0||x===x1)t=108;P(x,y,'t'+t);}}
+function house(x,y,grey){const roof=grey?[48,49,50]:[52,53,54],wall=grey?[76,78,77]:[72,74,73];
+  roof.forEach((t,i)=>P(x+i,y,'t'+t));wall.forEach((t,i)=>P(x+i,y+1,'t'+t));}
+wallRing(6,6,20,18);
+house(9,9,false);house(13,9,true);house(17,9,false);
+house(9,13,true);house(17,13,false);
+P(13,15,'t105');P(15,15,'t106');
+P(13,18,'t90');
+P(2,10,'t92');P(25,4,'t92');
+P(10,11,'t93');P(14,10,'t104');
+P(12,12,'t83');P(15,12,'d63');
+P(24,10,'d72');P(24,12,'d74');P(25,11,'d72');
+P(12,11,null,'fire');P(5,20,null,'gather','ore');P(4,21,null,'gather','wood');
+const cfg={mapId:'kingslanding',MW,MH,MAP,WATER:[],props};
+const cv=document.getElementById('cv');
+const L=[];const put=m=>{document.getElementById('log').textContent=m;};
+if(!A3D.boot(cv)){put('BOOT_FAIL');document.title='FC_DONE';return;}
+A3D.loadModels();
+A3D.whenReady().then(()=>{
+  A3D.enterExplore(cfg);
+  const view={camX:-104,camY:20,hero:null,npcs:[],mobs:[],follower:null};
+  let f=0,t=0;
+  const tick=()=>{t+=16;A3D.renderExplore(16,t,view);
+    if(++f<70)setTimeout(tick,16);
+    else{put('FC '+A3D.dbg());document.title='FC_DONE';}};
+  tick();
+});
+})();
+</script></body></html>
+

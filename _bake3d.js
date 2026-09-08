@@ -90,3 +90,21 @@ for(const [file,keys] of Object.entries(GROUPS)){
   fs.writeFileSync(path.join(OUT,file+'.js'),lines.join('\n'),'utf8');
   console.log(file+'.js',Math.round(bytes/1024/1024*100)/100,'MB raw');
 }
+
+// ---- F-B 候选件：_tmp3dc/*.glb → assets3d/models_cand.js（仅探针/画廊用，选定后删除）----
+const DIRC=path.join(__dirname,'_tmp3dc');
+if(fs.existsSync(DIRC)){
+  const ck=fs.readdirSync(DIRC).filter(f=>f.endsWith('.glb')).map(f=>f.slice(0,-4)).sort();
+  if(ck.length){
+    const lines=['// 自动生成（_bake3d.js）：F-B 城建候选件 base64，仅开发探针用，勿随游戏发布'];
+    lines.push('window.MODELS3D=window.MODELS3D||{};');
+    let bytes=0;
+    for(const k of ck){
+      const out=pruneGLB(fs.readFileSync(path.join(DIRC,k+'.glb')),null);
+      bytes+=out.length;
+      lines.push(`MODELS3D.${k}='${out.toString('base64')}';`);
+    }
+    fs.writeFileSync(path.join(OUT,'models_cand.js'),lines.join('\n'),'utf8');
+    console.log('models_cand.js',ck.length,'keys',Math.round(bytes/1024/1024*100)/100,'MB raw');
+  }
+}
