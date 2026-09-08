@@ -483,8 +483,8 @@ function buildBattle(theme){
     for(let x=-11;x<=9;x+=4){
       instTo(btGroup,btGeos,btMats,((x/4|0)%2)?'p_q_houseA':'p_q_townHouseC',[{x:x,z:-2.6}],{s0:1.5,s1:1.5,sy:1.5,noRot:true});
     }
-    instTo(btGroup,btGeos,btMats,'p_q_towerStone',[{x:-13.5,z:-2.8},{x:13.5,z:-2.8}],{s0:1.5,s1:1.5,sy:2.2,noRot:true});
-    instTo(btGroup,btGeos,btMats,'p_q_wall',bLine(-14,14,1,-2,0,Math.PI/2),{s0:1.1,s1:1.1,sy:1.8,noRot:true});
+    instTo(btGroup,btGeos,btMats,'p_q_towerStone',[{x:-8.5,z:-2.8},{x:8.5,z:-2.8}],{s0:1.5,s1:1.5,sy:2.2,noRot:true});
+    instTo(btGroup,btGeos,btMats,'p_q_wall',bLine(-14,14,1,-2,0,0),{s0:1.1,s1:1.1,sy:1.8,noRot:true});
   }else if(theme==='sea'){
     const wg=new THREE.PlaneGeometry(46,32);
     const wm=new THREE.MeshStandardMaterial({color:0x3d7ab5,transparent:true,opacity:.7,roughness:.35});
@@ -499,8 +499,8 @@ function buildBattle(theme){
       const L=new THREE.PointLight(0xff9a3a,.9,10);L.position.set(fx,.8,-4);btGroup.add(L);
     }
   }else{ // wall：背景墙排落位于地平线上方（z=-2.2 → 屏幕底部落在 y≈310）
-    instTo(btGroup,btGeos,btMats,'p_q_wall',bLine(-14,14,1,-2.2,0,Math.PI/2),{s0:1.15,s1:1.15,sy:2.6,noRot:true});
-    instTo(btGroup,btGeos,btMats,'p_q_towerStone',[{x:-13,z:-2.5},{x:13,z:-2.5}],{s0:1.6,s1:1.6,sy:2.6,noRot:true});
+    instTo(btGroup,btGeos,btMats,'p_q_wall',bLine(-14,14,1,-2.2,0,0),{s0:1.15,s1:1.15,sy:2.6,noRot:true});
+    instTo(btGroup,btGeos,btMats,'p_q_towerStone',[{x:-8,z:-2.5},{x:8,z:-2.5}],{s0:1.6,s1:1.6,sy:2.6,noRot:true});
     instTo(btGroup,btGeos,btMats,'p_rockSmallA',bLine(-12,12,6,-0.9,1),{s0:.4,s1:.7});
   }
 }
@@ -679,5 +679,6 @@ return {boot,loadModels,whenReady,enterExplore,renderExplore,renderBattle,projec
   isReady:()=>ready,isOk:()=>ok,
   info:()=>renderer?renderer.info.render.calls:0};
 })();
+
 
 
