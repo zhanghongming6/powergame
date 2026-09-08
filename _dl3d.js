@@ -133,3 +133,24 @@ for(const [name,url] of list){
   else console.log('ok',name,Math.round(sz/1024)+'K');
 }
 console.log(fail?('FAILED '+fail):'ALL OK, total '+Math.round(list.reduce((a,[n])=>a+szOf(n),0)/1024/1024*100)/100+'MB');
+// ---- 全 cast 升级候选（离线预置清单；网络恢复后运行本脚本即下载至 _tmp3dchar/）----
+const DIRH=path.join(__dirname,'_tmp3dchar');fs.mkdirSync(DIRH,{recursive:true});
+const CHARCAND=[
+ ['c_heroB',PP+'69689495-028d-4b81-8678-792338a5693e.glb'],   // Adventurer B（男主备选）
+ ['c_soldier',PP+'1083c1d3-d1d4-4682-adf6-bc516d06ac84.glb'], // Character Soldier（女骑/守卫备选）
+ ['c_farmer',PP+'81f2f0cf-6f53-4b57-92ea-dba0928620f2.glb'],  // Farmer（男村民）
+ ['c_womanB',PP+'ba7a1955-ea51-4cb9-a561-188bdef0a6c7.glb'],  // Animated Woman B（女贵/女村民）
+ ['c_womanC',PP+'cf08b740-dd48-443e-9fde-6d3d54abf119.glb'],  // Animated Woman C
+ ['c_human',PP+'170235d2-cdeb-4cb2-a82f-4828585138fe.glb'],   // Animated Human（男村民备选）
+ ['c_king',PP+'9a5fae7e-25f1-4d24-8818-b2355c3764fb.glb'],    // King
+ ['c_monk',PP+'eb331582-3a64-4a5a-8b46-75b9c1243830.glb'],    // Monk
+ ['c_pirate',PP+'c814c745-1cf5-4d92-bd85-200c66eb7843.glb'],  // Pirate Captain
+ ['c_thief',PP+'89ad1551-2d10-4896-95b9-25540b17b5c4.glb'],   // Thief（女刺备选）
+];
+for(const [name,url] of CHARCAND){
+  const f=path.join(DIRH,name+'.glb');
+  if(fs.existsSync(f)&&fs.statSync(f).size>500)continue;
+  const r=cp.spawnSync('curl',['-4','-sL','--connect-timeout','20','-o',f,url],{encoding:'utf8',timeout:90000});
+  const sz=fs.existsSync(f)?fs.statSync(f).size:0;
+  console.log((r.status===0&&sz>500)?('ok '+name+Math.round(sz/1024)+'K'):('FAIL '+name+' '+sz));
+}

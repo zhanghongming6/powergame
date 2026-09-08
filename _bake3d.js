@@ -108,3 +108,17 @@ if(fs.existsSync(DIRC)){
     console.log('models_cand.js',ck.length,'keys',Math.round(bytes/1024/1024*100)/100,'MB raw');
   }
 }
+
+// ---- 全 cast 候选：_tmp3dchar/*.glb → assets3d/models_charcand.js（仅画廊比选用，选定后按既有 key 重烘）----
+const DIRH=path.join(__dirname,'_tmp3dchar');
+if(fs.existsSync(DIRH)){
+  const hk=fs.readdirSync(DIRH).filter(f=>f.endsWith('.glb')).map(f=>f.slice(0,-4)).sort();
+  if(hk.length){
+    const lines=['// 自动生成（_bake3d.js）：全 cast 候选 base64，仅开发比选用，勿随游戏发布'];
+    lines.push('window.MODELS3D=window.MODELS3D||{};');
+    let bytes=0;
+    for(const k of hk){const out=pruneGLB(fs.readFileSync(path.join(DIRH,k+'.glb')),KEEP_ANIM);bytes+=out.length;lines.push(`MODELS3D.${k}='${out.toString('base64')}';`);}
+    fs.writeFileSync(path.join(OUT,'models_charcand.js'),lines.join('\n'),'utf8');
+    console.log('models_charcand.js',hk.length,'keys',Math.round(bytes/1024/1024*100)/100,'MB raw');
+  }
+}
